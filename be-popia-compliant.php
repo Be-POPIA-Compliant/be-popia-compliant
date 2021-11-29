@@ -414,7 +414,7 @@ function be_popia_compliant_dashboard(){
             </div>
             <div class="be_popia_compliant_dashboard_two">';
                 
-                if((isset($body)) && (!empty($body)) && ($body != '') && ($body != "[]") && (($_SESSION['beta'] == 1) ||($_SESSION['live'] == 1))) {
+                if((isset($body)) && (!empty($body)) && ($body != '') && ($body != "[]") && (($_SESSION['beta'] == 1) || ($_SESSION['live'] == 1))) {
                     global $wpdb;
 
                     $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
@@ -1569,7 +1569,6 @@ function be_popia_compliant_echo_footer() {
         );
 
         
-        
         if($needComms == 1 && $needMarketing == 0) {
 
             $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND (id != 3) AND (id != 59) AND is_active = 1");
@@ -1679,7 +1678,7 @@ function be_popia_compliant_echo_footer() {
                             </a>
                         </div>
                         <div class="be_popia_compliant_links">
-                            <a href="' . $privacy .'" target="_blank"><span style="white-space:nowrap">PRIVACY POLICY</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . $data .'"target="_blank"><span style="white-space:nowrap">DATA REQUESTS</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . $parties .'" target="_blank"><span style="white-space:nowrap">RESPONSIBLE PARTIES</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://bepopiacompliant.co.za/information_regulator" target="_blank"><span style="white-space:nowrap">INFORMATION REGULATOR</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            <a href="' . esc_url( $privacy ) .'" target="_blank"><span style="white-space:nowrap">PRIVACY POLICY</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url( $data ) .'"target="_blank"><span style="white-space:nowrap">DATA REQUESTS</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url( $parties ) .'" target="_blank"><span style="white-space:nowrap">RESPONSIBLE PARTIES</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://bepopiacompliant.co.za/information_regulator" target="_blank"><span style="white-space:nowrap">INFORMATION REGULATOR</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         </div>
                     </div>
                 </div>';
