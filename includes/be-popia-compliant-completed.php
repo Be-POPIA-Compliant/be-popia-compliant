@@ -27,7 +27,7 @@ function be_popia_compliant_active_check() {
         if ( 200 !== $response_code ) {
             echo " Error in pinging API, Please try again later.";
         }
-    
+   
         if ( 200 === $response_code ) {
             $trim_brackets = trim($body, "[{}]");
             $explode = explode(',', $trim_brackets); 
@@ -42,7 +42,7 @@ function be_popia_compliant_active_check() {
 
                 if($go_on == 1){
                     global $wpdb;
-                    $privacy = 1;
+                    $privacy = '';
                     $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
                     
                     $wpdb->update( $table_name, array( 'value' => 0),array('id'=>3)); 
@@ -98,7 +98,7 @@ function be_popia_compliant_active_check() {
                                 </div>
                                 <div class="be_popia_compliant_links">
                                         ';
-                                        echo '<a href="' . esc_url( $privacy ) .'" target="_blank"><span style="white-space:nowrap">PRIVACY POLICY</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url( 'https://manageconsent.co.za/manage_consent/' . $_SERVER['SERVER_NAME'] ) . '" target="_blank"><span style="white-space:nowrap">MANAGE CONSENT</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url( 'https://bepopiacompliant.co.za/responsible_parties/' . $_SERVER['SERVER_NAME'] ) . '" target="_blank"><span style="white-space:nowrap">RESPONSIBLE PARTIES</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://bepopiacompliant.co.za/#/regulator/' . $_SERVER['SERVER_NAME']  . '" target="_blank"><span style="white-space:nowrap">INFORMATION REGULATOR</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' ;
+                                        echo '<a href="' . esc_url( 'https://bepopicompliant.co.za/#/privacy/' . $_SERVER['SERVER_NAME'] ) . '" target="_blank"><span style="white-space:nowrap">PRIVACY POLICY</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url( 'https://manageconsent.co.za/manage_consent/' . $_SERVER['SERVER_NAME'] ) . '" target="_blank"><span style="white-space:nowrap">MANAGE CONSENT</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url( 'https://bepopiacompliant.co.za/#/details/' . $_SERVER['SERVER_NAME'] ) . '" target="_blank"><span style="white-space:nowrap">RESPONSIBLE PARTIES</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://bepopiacompliant.co.za/#/regulator/' . $_SERVER['SERVER_NAME']  . '" target="_blank"><span style="white-space:nowrap">INFORMATION REGULATOR</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' ;
                                         
                                     echo '
                                 </div>

@@ -332,11 +332,12 @@ function be_popia_compliant_dashboard(){
         if ( 200 !== $response_code ) {
             echo esc_html__( "Error in pinging API" . $response_code );
         }
-    
+
+        // Remember to comment out below
         // if ( 200 === $response_code ) {
         //     echo "BODY: " . $body;
         // }
-
+        // Remember to comment out above
      
      
     echo '
