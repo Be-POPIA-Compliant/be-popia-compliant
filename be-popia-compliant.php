@@ -94,6 +94,7 @@ function be_popia_compliant_add_user_details_to_py($user_id){
 }
 
 
+
 //------------------------------------------------//
 //* Create Database Table for Be POPIA Compliant *//
 //------------------------------------------------//
