@@ -147,9 +147,72 @@ function be_popia_compliant_create() {
         PRIMARY KEY (id))";
     dbDelta($be_popia_compliant_query_admin);
 
-    
+    date_default_timezone_set('Africa/Johannesburg');
 
-    // echo '<script>console.log('.$wpdb->last_error.')</script>';
+    $url = "https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME'];
+        
+    $args = array(
+        'headers' => array(
+            'Content-Type' => 'application/json',
+        ),
+        'body'    => array(),
+    );
+
+    $response = wp_remote_get( $url, $args );
+
+    $response_code = wp_remote_retrieve_response_code( $response );
+    $body         = wp_remote_retrieve_body( $response );
+
+    if ( 401 === $response_code ) {
+        echo "Unauthorized access";
+    }
+
+    if ( 200 !== $response_code ) {
+        echo esc_html__( "Error in pinging API" . $response_code );
+    }
+
+    if ( 200 === $response_code ) {
+        $body = json_decode( $body );
+
+        if($body != []){
+                $t = time();
+            $body = array(
+                'activated' => $t,
+                'active' => 1
+            );
+            $args = array(
+                'headers' => array(
+                'Content-Type'   => 'application/json',
+                ),
+                'body'      => json_encode($body),
+                'method'    => 'PUT'
+            );
+
+            $result =  wp_remote_request( "https://py.bepopiacompliant.co.za/api/plugindetails/". $_SERVER['SERVER_NAME'], $args );
+        } else {
+            $t = date("h:i:sa d-m-Y",time());
+            $url  = 'https://py.bepopiacompliant.co.za/api/plugindetails/';
+            $body = array(
+                'domain' => $_SERVER['SERVER_NAME'],
+                'downloaded' => $t,
+                'activated' => $t,
+                'active' => 1
+            );
+
+            $args = array(
+                'method'      => 'POST',
+                'timeout'     => 45,
+                'sslverify'   => false,
+                'headers'     => array(
+                    'Content-Type'  => 'application/json',
+                ),
+                'body'        => json_encode($body),
+            );
+
+            $request = wp_remote_post( $url, $args );
+        }
+    }
+            
 }
 
 function be_popia_compliant_insert_data() {
@@ -277,6 +340,7 @@ function be_popia_compliant_insert_p_data() {
             array( 'title' => 'API Key'),
             array( 'title' => 'Company Key'),
             array( 'title' => 'Suspended'),
+            array( 'title' => 'Complete'),
             // array( 'title' => 'flag_IR_Problem', 'value' => '(They have been experiancing technical issues with the Portal, which results in not being accessible)<br> - If this is still the case, they provided a <a href=https://www.justice.gov.za/inforeg/docs/forms/InfoRegSA-eForm-InformationOfficersRegistration-2021.pdf target="_blank">PDF Registration</a> as an alternative, that can be filled out in the browser. You\'d still have to print it out in order to sign the document. Thereafter you can send it via email to: <a href=mailto:registration.IR@justice.gov.za>registration.IR@justice.gov.za</a>'),
         );
 
@@ -311,7 +375,7 @@ function be_popia_compliant_dashboard_go_pro(){
 
 
 function be_popia_compliant_dashboard(){
-    $url = "https://py.bepopiacompliant.co.za/api/domain/" . $_SERVER['SERVER_NAME'];
+        $url = "https://py.bepopiacompliant.co.za/api/domain/" . $_SERVER['SERVER_NAME'];
         
         $args = array(
             'headers' => array(
@@ -332,13 +396,27 @@ function be_popia_compliant_dashboard(){
         if ( 200 !== $response_code ) {
             echo esc_html__( "Error in pinging API" . $response_code );
         }
+    
+        if ( 200 === $response_code ) {
+            $body = json_decode( $body );
 
-        // Remember to comment out below
-        // if ( 200 === $response_code ) {
-        //     echo "BODY: " . $body;
-        // }
-        // Remember to comment out above
-     
+            foreach ( $body as $data ) {
+                $privacy_policy = $data->privacy_policy;
+                $domain_form_complete = $data->domain_form_complete;
+                $consent_form_complete = $data->consent_form_complete;
+                $other_parties = $data->other_parties;
+
+                global $wpdb;
+                $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
+
+                if($domain_form_complete == 1 && $consent_form_complete == 1 && $other_parties != null){
+                    $wpdb->update( $table_name, array( 'value' => 1),array('id'=> 4)); 
+                } else {
+                    $wpdb->update( $table_name, array( 'value' => 0),array('id'=> 4)); 
+                }
+            }
+        }
+        
      
     echo '
         <div class="be_popia_compliant_wrap_dashboard">
@@ -350,9 +428,10 @@ function be_popia_compliant_dashboard(){
                 $result_api = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 1");
                 $result_company = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 2");
                 $result_suspended = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 3");
-                $result_complete = '';
+                $result_complete = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 4");
 
-                if((isset($result_api->value) && $result_api->value !='') && (isset($result_company->value) && $result_company->value != '') && $result_suspended->value != 1 && $result_complete == 1){
+
+                if((isset($result_api->value) && $result_api->value !='') && (isset($result_company->value) && $result_company->value != '') && $result_suspended->value != 1 && $result_complete->value == 1){
                     echo'
                     <div class="be_popia_compliant_p_version">
                         You are using a pro version of BPC
@@ -366,7 +445,7 @@ function be_popia_compliant_dashboard(){
                         </div>
                     </div>
                     ';
-                } elseif((isset($result_api->value) && $result_api->value !='') && (isset($result_company->value) && $result_company->value != '') && $result_suspended->value != 1 && $result_complete != 1){
+                } elseif((isset($result_api->value) && $result_api->value !='') && (isset($result_company->value) && $result_company->value != '') && $result_suspended->value != 1 && $result_complete->value != 1){
                     echo'
                     <div class="be_popia_compliant_p_version">
                         You are connected to Pro, but action on your account is required and the free version is still in effect. <a href="https://bepopiacompliant.co.za" style="color:#B7191A"; target="_blank"><span style="line-height: 45px; margin: 30px important;"> Fix it now!</span></a>
@@ -1612,7 +1691,46 @@ function be_popia_compliant_echo_footer() {
     $result_suspended = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 3");
     if (isset( $_COOKIE['cookie-accepted'])){
         if(isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https'){
+            $url = "https://py.bepopiacompliant.co.za/api/domain/" . $_SERVER['SERVER_NAME'];
         
+            $args = array(
+                'headers' => array(
+                    'Content-Type' => 'application/json',
+                ),
+                'body'    => array(),
+            );
+        
+            $response = wp_remote_get( $url, $args );
+        
+            $response_code = wp_remote_retrieve_response_code( $response );
+            $body         = wp_remote_retrieve_body( $response );
+        
+            if ( 401 === $response_code ) {
+                echo "Unauthorized access";
+            }
+        
+            if ( 200 !== $response_code ) {
+                echo esc_html__( "Error in pinging API" . $response_code );
+            }
+        
+            if ( 200 === $response_code ) {
+                $body = json_decode( $body );
+
+                foreach ( $body as $data ) {
+                    $domain_form_complete = $data->domain_form_complete;
+                    $consent_form_complete = $data->consent_form_complete;
+                    $other_parties = $data->other_parties;
+                    
+                    global $wpdb;
+                    $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
+
+                    if($domain_form_complete == 1 && $consent_form_complete == 1 && $other_parties != null){
+                        $wpdb->update( $table_name, array( 'value' => 1),array('id'=> 4)); 
+                    } else {
+                        $wpdb->update( $table_name, array( 'value' => 0),array('id'=> 4)); 
+                    }
+                }
+            }
             if(((isset($result_api->value) && $result_api->value != '') && ((isset($result_company->value)) && $result_company->value != ''))){
                 include_once(plugin_dir_path(__FILE__).'/includes/be-popia-compliant-completed.php');
 
