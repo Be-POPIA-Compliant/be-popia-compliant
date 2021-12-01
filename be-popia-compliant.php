@@ -94,8 +94,6 @@ function be_popia_compliant_add_user_details_to_py($user_id){
 }
 
 
-
-
 //------------------------------------------------//
 //* Create Database Table for Be POPIA Compliant *//
 //------------------------------------------------//
@@ -177,7 +175,13 @@ function be_popia_compliant_create() {
         $body = json_decode( $body );
 
         if($body != []){
-                $t = time();
+            foreach ( $body as $data ) {
+                $id = $data->id;
+            }
+            
+            $url = "https://py.bepopiacompliant.co.za/api/plugindetails/". $id;
+        
+            $t = date("h:i:sa d-m-Y",time());
             $body = array(
                 'activated' => $t,
                 'active' => 1
@@ -190,7 +194,7 @@ function be_popia_compliant_create() {
                 'method'    => 'PUT'
             );
 
-            $result =  wp_remote_request( "https://py.bepopiacompliant.co.za/api/plugindetails/". $_SERVER['SERVER_NAME'], $args );
+            $result =  wp_remote_request( $url, $args );
         } else {
             $t = date("h:i:sa d-m-Y",time());
             $url  = 'https://py.bepopiacompliant.co.za/api/plugindetails/';
@@ -363,6 +367,121 @@ register_activation_hook( __FILE__, 'be_popia_compliant_insert_data' );
 register_activation_hook( __FILE__, 'be_popia_compliant_insert_p_data' );
 
 
+function be_popia_compliant_deactivate_plugin(){
+    date_default_timezone_set('Africa/Johannesburg');
+
+    $url = "https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME'];
+        
+    $args = array(
+        'headers' => array(
+            'Content-Type' => 'application/json',
+        ),
+        'body'    => array(),
+    );
+
+    $response = wp_remote_get( $url, $args );
+
+    $response_code = wp_remote_retrieve_response_code( $response );
+    $body         = wp_remote_retrieve_body( $response );
+
+    if ( 401 === $response_code ) {
+        echo "Unauthorized access";
+    }
+
+    if ( 200 !== $response_code ) {
+        echo esc_html__( "Error in pinging API" . $response_code );
+    }
+
+    if ( 200 === $response_code ) {
+        $body = json_decode( $body );
+
+        if($body != []){
+            foreach ( $body as $data ) {
+                $id = $data->id;
+            }
+            
+            $url = "https://py.bepopiacompliant.co.za/api/plugindetails/". $id;
+        
+            $t = date("h:i:sa d-m-Y",time());
+            $body = array(
+                'deactivated' => $t,
+                'active' => 0
+            );
+            $args = array(
+                'headers' => array(
+                'Content-Type'   => 'application/json',
+                ),
+                'body'      => json_encode($body),
+                'method'    => 'PUT'
+            );
+
+            $result =  wp_remote_request( $url, $args );
+        }
+    }
+}
+
+
+register_deactivation_hook( __FILE__, 'be_popia_compliant_deactivate_plugin' );
+
+
+
+function be_popia_compliant_delete_plugin(){
+    date_default_timezone_set('Africa/Johannesburg');
+
+    $url = "https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME'];
+        
+    $args = array(
+        'headers' => array(
+            'Content-Type' => 'application/json',
+        ),
+        'body'    => array(),
+    );
+
+    $response = wp_remote_get( $url, $args );
+
+    $response_code = wp_remote_retrieve_response_code( $response );
+    $body         = wp_remote_retrieve_body( $response );
+
+    if ( 401 === $response_code ) {
+        echo "Unauthorized access";
+    }
+
+    if ( 200 !== $response_code ) {
+        echo esc_html__( "Error in pinging API" . $response_code );
+    }
+
+    if ( 200 === $response_code ) {
+        $body = json_decode( $body );
+
+        if($body != []){
+            foreach ( $body as $data ) {
+                $id = $data->id;
+            }
+            
+            $url = "https://py.bepopiacompliant.co.za/api/plugindetails/". $id;
+        
+            $t = date("h:i:sa d-m-Y",time());
+            $body = array(
+                'deleted' => $t,
+                'active' => 0
+            );
+            $args = array(
+                'headers' => array(
+                'Content-Type'   => 'application/json',
+                ),
+                'body'      => json_encode($body),
+                'method'    => 'PUT'
+            );
+
+            $result =  wp_remote_request( $url, $args );
+        }
+    }
+}
+
+
+register_uninstall_hook( __FILE__, 'be_popia_compliant_delete_plugin' );
+
+
 function be_popia_compliant_dashboard_go_pro(){
     $output = '
         <div class="be_popia_compliant_wrap">
@@ -419,6 +538,7 @@ function be_popia_compliant_dashboard(){
             }
         }
         
+    
      
     echo '
         <div class="be_popia_compliant_wrap_dashboard">
