@@ -1950,30 +1950,25 @@ function be_popia_compliant_echo_footer() {
                                     $admin_pages = [ 'index.php', 'edit.php', 'plugins.php' ];
                                 
                                 
-                                    $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER["SERVER_NAME"]);
-                                        
+                                    $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME']);
                                     $args = array(
                                         'headers' => array(
                                             'Content-Type' => 'application/json',
                                         ),
                                         'body'    => array(),
                                     );
-                                
                                     $response = wp_remote_get( wp_http_validate_url($url), $args );
-                                
                                     $response_code = wp_remote_retrieve_response_code( $response );
-                                    $data = wp_remote_retrieve_body( $response );
-                                
+                                    $body         = wp_remote_retrieve_body( $response );
+                        
                                     if ( 401 === $response_code ) {
                                         echo "Unauthorized access";
                                     }
-                                
                                     if ( 200 !== $response_code ) {
                                         echo esc_html( "Error in pinging API" . $response_code );
                                     }
-                                
                                     if ( 200 === $response_code ) {
-                                        $body = json_decode( $data );
+                                        $body = json_decode( $body );
             
                                         if($body != []){
                                             foreach ( $body as $data ) {
@@ -1985,8 +1980,8 @@ function be_popia_compliant_echo_footer() {
                                     if(isset($disapproved_reason) && ($disapproved_reason != 'null')) {
                                         
                                     
-                                    if ( in_array( $pagenow, $admin_pages ) ) {
-                                        if(isset($disapproved_reason)) {
+                                        if ( in_array( $pagenow, $admin_pages ) ) { 
+                                            if(isset($disapproved_reason)) {
                                                 ?>
                                                 <div class="notice notice-danger is-dismissible"> <p>
                                                     <?php
