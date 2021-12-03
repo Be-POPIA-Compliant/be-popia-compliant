@@ -795,7 +795,6 @@ function be_popia_compliant_notice() {
                     }
                 }
             }
-
 }
 
 add_action( 'admin_notices', 'be_popia_compliant_notice' );
@@ -1945,6 +1944,74 @@ function be_popia_compliant_echo_footer() {
                                         </div>
                                     </div>
                                 </div>';
+                            } else {
+                                function be_popia_compliant_disapproved_reason() {
+                                    global $pagenow;
+                                    $admin_pages = [ 'index.php', 'edit.php', 'plugins.php' ];
+                                
+                                
+                                    $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER["SERVER_NAME"]);
+                                        
+                                    $args = array(
+                                        'headers' => array(
+                                            'Content-Type' => 'application/json',
+                                        ),
+                                        'body'    => array(),
+                                    );
+                                
+                                    $response = wp_remote_get( wp_http_validate_url($url), $args );
+                                
+                                    $response_code = wp_remote_retrieve_response_code( $response );
+                                    $data = wp_remote_retrieve_body( $response );
+                                
+                                    if ( 401 === $response_code ) {
+                                        echo "Unauthorized access";
+                                    }
+                                
+                                    if ( 200 !== $response_code ) {
+                                        echo esc_html( "Error in pinging API" . $response_code );
+                                    }
+                                
+                                    if ( 200 === $response_code ) {
+                                        $data = json_decode( $data );
+                                
+                                        foreach ( $data as $datapoint ) {
+                                            $server_message = $datapoint->value;
+                                
+                                            $word1 = 'LIVE';
+                                            $word2 = 'notdefined';
+                                
+                                            if($_SESSION['beta'] == 1) $word2 = 'BETA';
+                                            if(strpos($server_message, $word2) !== false)
+                                            {$_SESSION['beta'] = 1; } else {$_SESSION['beta'] = 0;}
+                                
+                                            if(strpos($server_message, $word1) !== false)
+                                            {$_SESSION['live'] = 1; } else {$_SESSION['live'] = 0;}
+                                        }
+                                        // echo "server_message:
+                                
+                                        // " . $server_message;
+                                    }    
+                                
+                                    if(isset($server_message) && ($server_message != 'null')) {
+                                        
+                                    
+                                            if ( in_array( $pagenow, $admin_pages ) ) {
+                                                if(isset($server_message)) {
+                                                        ?>
+                                                        <div class="notice notice-warning is-dismissible"> <p>
+                                                            <?php
+                                                            echo esc_html( $server_message );
+                                                            ?>
+                                                        </p></div>
+                                                        <?
+                                
+                                                    }
+                                                }
+                                            }
+                                }
+                                
+                                add_action( 'admin_notices', 'be_popia_compliant_disapproved_reason' );
                             }
                         }
                     }
