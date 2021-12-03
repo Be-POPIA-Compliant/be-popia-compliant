@@ -1973,42 +1973,31 @@ function be_popia_compliant_echo_footer() {
                                     }
                                 
                                     if ( 200 === $response_code ) {
-                                        $data = json_decode( $data );
-                                
-                                        foreach ( $data as $datapoint ) {
-                                            $server_message = $datapoint->value;
-                                
-                                            $word1 = 'LIVE';
-                                            $word2 = 'notdefined';
-                                
-                                            if($_SESSION['beta'] == 1) $word2 = 'BETA';
-                                            if(strpos($server_message, $word2) !== false)
-                                            {$_SESSION['beta'] = 1; } else {$_SESSION['beta'] = 0;}
-                                
-                                            if(strpos($server_message, $word1) !== false)
-                                            {$_SESSION['live'] = 1; } else {$_SESSION['live'] = 0;}
+                                        $body = json_decode( $data );
+            
+                                        if($body != []){
+                                            foreach ( $body as $data ) {
+                                                $disapproved_reason = $data->disapproved_reason;
+                                            }
                                         }
-                                        // echo "server_message:
-                                
-                                        // " . $server_message;
                                     }    
                                 
-                                    if(isset($server_message) && ($server_message != 'null')) {
+                                    if(isset($disapproved_reason) && ($disapproved_reason != 'null')) {
                                         
                                     
-                                            if ( in_array( $pagenow, $admin_pages ) ) {
-                                                if(isset($server_message)) {
-                                                        ?>
-                                                        <div class="notice notice-warning is-dismissible"> <p>
-                                                            <?php
-                                                            echo esc_html( $server_message );
-                                                            ?>
-                                                        </p></div>
-                                                        <?
-                                
-                                                    }
-                                                }
+                                    if ( in_array( $pagenow, $admin_pages ) ) {
+                                        if(isset($disapproved_reason)) {
+                                                ?>
+                                                <div class="notice notice-danger is-dismissible"> <p>
+                                                    <?php
+                                                    echo esc_html( $disapproved_reason );
+                                                    ?>
+                                                </p></div>
+                                                <?
+                        
                                             }
+                                        }
+                                    }
                                 }
                                 
                                 add_action( 'admin_notices', 'be_popia_compliant_disapproved_reason' );
