@@ -168,7 +168,7 @@ function be_popia_compliant_create() {
     }
 
     if ( 200 !== $response_code ) {
-        echo esc_html__( "Error in pinging API" . $response_code );
+        echo esc_html( "Error in pinging API" . $response_code );
     }
 
     if ( 200 === $response_code ) {
@@ -389,7 +389,7 @@ function be_popia_compliant_deactivate_plugin(){
     }
 
     if ( 200 !== $response_code ) {
-        echo esc_html__( "Error in pinging API" . $response_code );
+        echo esc_html( "Error in pinging API" . $response_code );
     }
 
     if ( 200 === $response_code ) {
@@ -447,7 +447,7 @@ function be_popia_compliant_delete_plugin(){
     }
 
     if ( 200 !== $response_code ) {
-        echo esc_html__( "Error in pinging API" . $response_code );
+        echo esc_html( "Error in pinging API" . $response_code );
     }
 
     if ( 200 === $response_code ) {
@@ -491,7 +491,7 @@ function be_popia_compliant_dashboard_go_pro(){
         </div>
     ';
 
-    echo esc_html__( $output );
+    echo esc_html( $output );
 }
 
 
@@ -515,7 +515,7 @@ function be_popia_compliant_dashboard(){
         }
     
         if ( 200 !== $response_code ) {
-            echo esc_html__( "Error in pinging API" . $response_code );
+            echo esc_html( "Error in pinging API" . $response_code );
         }
     
         if ( 200 === $response_code ) {
@@ -755,7 +755,7 @@ function be_popia_compliant_notice() {
     }
 
     if ( 200 !== $response_code ) {
-        echo esc_html__( "Error in pinging API" . $response_code );
+        echo esc_html( "Error in pinging API" . $response_code );
     }
 
     if ( 200 === $response_code ) {
@@ -787,7 +787,7 @@ function be_popia_compliant_notice() {
                         ?>
                         <div class="notice notice-warning is-dismissible"> <p>
                             <?php
-                            echo esc_html__( $server_message );
+                            echo esc_html( $server_message );
                             ?>
                         </p></div>
                         <?
@@ -1760,52 +1760,52 @@ add_action('wp_footer', 'be_popia_compliant_echo_footer');
 function be_popia_compliant_echo_footer() {
     global $wpdb;
         
-        $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
+    $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
 
-        $needComms = $wpdb->get_var( $wpdb->prepare(
-            " SELECT does_comply FROM $table_name WHERE id = 2")
-        );
-        
-        $needMarketing = $wpdb->get_var( $wpdb->prepare(
-            " SELECT does_comply FROM $table_name WHERE id = 3")
-        );
+    $needComms = $wpdb->get_var( $wpdb->prepare(
+        " SELECT does_comply FROM $table_name WHERE id = 2")
+    );
+    
+    $needMarketing = $wpdb->get_var( $wpdb->prepare(
+        " SELECT does_comply FROM $table_name WHERE id = 3")
+    );
 
-        
-        if($needComms == 1 && $needMarketing == 0) {
+    
+    if($needComms == 1 && $needMarketing == 0) {
 
-            $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND (id != 3) AND (id != 59) AND is_active = 1");
-            $rowcount = $wpdb->num_rows;
+        $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND (id != 3) AND (id != 59) AND is_active = 1");
+        $rowcount = $wpdb->num_rows;
 
-            $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND (id != 3) AND (id != 59) AND is_active = 1");
-            $rowcount2 = $wpdb->num_rows;
+        $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND (id != 3) AND (id != 59) AND is_active = 1");
+        $rowcount2 = $wpdb->num_rows;
 
-        } elseif($needComms == 0 && $needMarketing == 1) {
+    } elseif($needComms == 0 && $needMarketing == 1) {
 
-            $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND (id != 2) AND (id != 58) AND is_active = 1");
-            $rowcount = $wpdb->num_rows;
+        $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND (id != 2) AND (id != 58) AND is_active = 1");
+        $rowcount = $wpdb->num_rows;
 
-            $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND (id != 2) AND (id != 58) AND is_active = 1");
-            $rowcount2 = $wpdb->num_rows;
+        $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND (id != 2) AND (id != 58) AND is_active = 1");
+        $rowcount2 = $wpdb->num_rows;
 
-        } elseif($needComms == 1 && $needMarketing == 1) {
+    } elseif($needComms == 1 && $needMarketing == 1) {
 
-            $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND is_active = 1");
-            $rowcount = $wpdb->num_rows;
+        $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND is_active = 1");
+        $rowcount = $wpdb->num_rows;
 
-            $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND is_active = 1");
-            $rowcount2 = $wpdb->num_rows;
+        $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND is_active = 1");
+        $rowcount2 = $wpdb->num_rows;
 
-        } elseif($needMarketing == 0 && $needComms == 0) {
-            $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND (id != 2) AND (id != 3) AND (id != 58) AND (id != 59) AND is_active = 1");
-            $rowcount = $wpdb->num_rows;
+    } elseif($needMarketing == 0 && $needComms == 0) {
+        $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND (id != 2) AND (id != 3) AND (id != 58) AND (id != 59) AND is_active = 1");
+        $rowcount = $wpdb->num_rows;
 
-            $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND (id != 2) AND (id != 3) AND (id != 58) AND (id != 59) AND is_active = 1");
-            $rowcount2 = $wpdb->num_rows;
-        }
-        
-        $_SESSION['rowcount'] = $rowcount2;
-        $_SESSION['rowcount2'] = $rowcount2;
-        $rowcount = ($rowcount / $rowcount2) * 100;
+        $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND (id != 2) AND (id != 3) AND (id != 58) AND (id != 59) AND is_active = 1");
+        $rowcount2 = $wpdb->num_rows;
+    }
+    
+    $_SESSION['rowcount'] = $rowcount2;
+    $_SESSION['rowcount2'] = $rowcount2;
+    $rowcount = ($rowcount / $rowcount2) * 100;
 
     $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
     $result_api = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 1");
@@ -1832,7 +1832,7 @@ function be_popia_compliant_echo_footer() {
             }
         
             if ( 200 !== $response_code ) {
-                echo esc_html__( "Error in pinging API" . $response_code );
+                echo esc_html( "Error in pinging API" . $response_code );
             }
         
             if ( 200 === $response_code ) {
