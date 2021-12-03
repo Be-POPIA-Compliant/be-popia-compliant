@@ -1,6 +1,4 @@
 <?php
-
-
 function be_popia_compliant_active_check() {
     if ( isset($_REQUEST) ) {
         global $wpdb;    

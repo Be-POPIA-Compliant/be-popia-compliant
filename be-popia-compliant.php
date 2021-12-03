@@ -1849,6 +1849,35 @@ function be_popia_compliant_echo_footer() {
                     }
                 }
             }
+
+            $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME']);
+            $args = array(
+                'headers' => array(
+                    'Content-Type' => 'application/json',
+                ),
+                'body'    => array(),
+            );
+            $response = wp_remote_get( wp_http_validate_url($url), $args );
+            $response_code = wp_remote_retrieve_response_code( $response );
+            $body         = wp_remote_retrieve_body( $response );
+
+            if ( 401 === $response_code ) {
+                echo "Unauthorized access";
+            }
+            if ( 200 !== $response_code ) {
+                echo esc_html( "Error in pinging API" . $response_code );
+            }
+            if ( 200 === $response_code ) {
+                echo 'body' . $body;
+                $body = json_decode( $body );
+
+                if($body != []){
+                    foreach ( $body as $data ) {
+                        $id = $data->id;
+                    }
+                }
+            }
+            
             if(((isset($result_api->value) && $result_api->value != '') && ((isset($result_company->value)) && $result_company->value != ''))){
                 include_once(plugin_dir_path(__FILE__).'/includes/be-popia-compliant-completed.php');
 
@@ -1864,6 +1893,8 @@ function be_popia_compliant_echo_footer() {
                 $parties = $wpdb->get_var( $wpdb->prepare(
                     " SELECT content FROM $table_name WHERE id = 32")
                 );
+                
+
                 echo '<style>
                     .BePopiaCompliant {
                         background-color: whitesmoke;
