@@ -4,7 +4,7 @@
     Plugin Name: Be POPIA Compliant
     Plugin URI: https://bepopiacompliant.co.za
     Description: The only plugin that assists with POPIA Compliance for any site that operates in South Africa. <a href="https://bepopiacompliant.co.za/popia/act/index.php" target="_blank">https://bepopiacompliant.co.za/popia/act/index.php</a> for the full legislation.
-    Version: 1.0.1
+    Version: 1.0.3
     Author: Web-X
     Author URI: https://web-x.co.za/
     License: GPLv2 or later
@@ -891,7 +891,7 @@ function be_popia_compliant_notice() {
             if ( in_array( $pagenow, $admin_pages ) ) { 
                 if(isset($disapproved_reason)) {
                     ?>
-                    <div class="notice notice-danger is-dismissible"> 
+                    <div class="notice notice-error is-dismissible"> 
                         <p><?php
                             echo esc_html( $disapproved_reason );?>
                         </p>
@@ -972,7 +972,10 @@ function be_popia_compliant_dashboard_checklist(){
         <div class="be_popia_compliant_wrap">
         
             <h1 style="text-align-last: center;font-size:50px;">POPIA CHECKLIST</h1>
-            <center><h3>Please note that this only take effect for FREE version or when membership to Pro version has lapsed.<h/3></center>
+            <center><h3>Please note that this only take effect for FREE version or when membership to Pro version has expired.<br>
+            Seem like a hasstle? <a href="https://bepopiacompliant.co.za" target="_blank">Use Pro for quick and easy setup</a> and skip all below!
+            </h3>
+            </center>
             
             <div class="Progress">
                     <div id="completed_consent" style="display:none;">
@@ -1497,7 +1500,7 @@ function be_popia_compliant_checklist_update_compliance() {
         if($needComms == 1 && $needMarketing == 0) {
 
             $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND (id != 3) AND (id != 59) AND is_active = 1");
-            $rowcount = $wpdb->num_rows;
+            $rowcount = sanitize_text_field( $wpdb->num_rows );
 
             $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND (id != 3) AND (id != 59) AND is_active = 1");
             $rowcount2 = $wpdb->num_rows;
@@ -1913,7 +1916,7 @@ function be_popia_compliant_echo_footer() {
     $result_company = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 2");
     $result_suspended = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 3");
     if (isset( $_COOKIE['cookie-accepted'])){
-        if(isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https'){
+        if(is_ssl()) {
             $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/domain/" . $_SERVER['SERVER_NAME']);
         
             $args = array(
@@ -1956,7 +1959,6 @@ function be_popia_compliant_echo_footer() {
             }
                     if(((isset($result_api->value) && $result_api->value != '') && ((isset($result_company->value)) && $result_company->value != ''))){
                         include_once(plugin_dir_path(__FILE__).'/includes/be-popia-compliant-completed.php');
-        
                     } elseif($rowcount == 100) {
                         $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME']);
                         $args = array(
@@ -2016,6 +2018,7 @@ function be_popia_compliant_echo_footer() {
                                         width: 75%;
                                         padding: 1%;
                                         font-weight:900;
+                                        font-size: 23px;
                                     }
                                     .be_popia_compliant_links a {
                                         color: #BD2E2E;
@@ -2030,6 +2033,7 @@ function be_popia_compliant_echo_footer() {
                                             margin: auto auto auto 0;
                                             width: 100%;
                                             font-weight: 900;
+                                            font-size: 23px;
                                         }
                                         .cont1 {
                                             margin: auto;
@@ -2055,7 +2059,7 @@ function be_popia_compliant_echo_footer() {
                     }
                 }
             }
-        }
+        } //isSSL
     }
 }
 
