@@ -109,8 +109,8 @@ function be_popia_compliant_active_check() {
                     
                     $wpdb->update( $table_name, array( 'value' => 1),array('id'=>3)); 
 
-                    $rowcount = esc_html($_SESSION['rowcount']);
-                    $rowcount2 = esc_html($_SESSION['rowcount2']);
+                    $rowcount = sanitize_text_field($_SESSION['rowcount']);
+                    $rowcount2 = sanitize_text_field($_SESSION['rowcount2']);
 
                     $rowcount = ($rowcount / $rowcount2) * 100;
 
@@ -122,7 +122,7 @@ function be_popia_compliant_active_check() {
                         ),
                         'body'    => array(),
                     );
-                    $response = wp_remote_get( wp_http_validate_url($url), $args );
+                    $response = wp_remote_get( $url, $args );
                     $response_code = wp_remote_retrieve_response_code( $response );
                     $body         = wp_remote_retrieve_body( $response );
         
