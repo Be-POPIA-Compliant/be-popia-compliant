@@ -824,7 +824,7 @@ function be_popia_compliant_notice() {
             if ( in_array( $pagenow, $admin_pages ) ) { 
                 if(isset($disapproved_reason)) {
                     ?>
-                    <div class="notice notice-danger is-dismissible"> 
+                    <div class="notice notice-error is-dismissible"> 
                         <p><?php
                             echo esc_html( $disapproved_reason );?>
                         </p>
@@ -906,7 +906,7 @@ function be_popia_compliant_dashboard_checklist(){
         
             <h1 style="text-align-last: center;font-size:50px;">POPIA CHECKLIST</h1>
             <center><h3>Please note that this only take effect for FREE version or when membership to Pro version has expired.<br>
-            Seem like a hasstle? <a href="https://bepopiacompliant.co.za" class=" target="_blank">Use Pro for quick and easy setup</a> and skip all below!
+            Seem like a hasstle? <a href="https://bepopiacompliant.co.za" target="_blank">Use Pro for quick and easy setup</a> and skip all below!
             </h3>
             </center>
             
@@ -1892,7 +1892,6 @@ function be_popia_compliant_echo_footer() {
             }
                     if(((isset($result_api->value) && $result_api->value != '') && ((isset($result_company->value)) && $result_company->value != ''))){
                         include_once(plugin_dir_path(__FILE__).'/includes/be-popia-compliant-completed.php');
-        
                     } elseif($rowcount == 100) {
                         $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME']);
                         $args = array(
@@ -1993,7 +1992,7 @@ function be_popia_compliant_echo_footer() {
                     }
                 }
             }
-        }
+        } //isSSL
     }
 }
 
