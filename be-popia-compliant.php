@@ -147,8 +147,6 @@ function be_popia_compliant_create() {
         PRIMARY KEY (id))";
     dbDelta($be_popia_compliant_query_admin);
 
-    date_default_timezone_set('Africa/Johannesburg');
-
     $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME']);
         
     $args = array(
@@ -368,7 +366,6 @@ register_activation_hook( __FILE__, 'be_popia_compliant_insert_p_data' );
 
 
 function be_popia_compliant_deactivate_plugin(){
-    date_default_timezone_set('Africa/Johannesburg');
 
     $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME']);
         
@@ -426,8 +423,7 @@ register_deactivation_hook( __FILE__, 'be_popia_compliant_deactivate_plugin' );
 
 
 function be_popia_compliant_delete_plugin(){
-    date_default_timezone_set('Africa/Johannesburg');
-
+    
     $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME']);
         
     $args = array(
@@ -967,7 +963,7 @@ function be_popia_compliant_dashboard_checklist(){
                                         echo '
                                         <div class="be_popia_compliant_tab">
                                             <input class="be_popia_compliant_input"  type="radio" id="rd' . esc_attr( $result->id ) . '" name="rd">
-                                            <label '; if($result->does_comply == 0){echo 'class="be_popia_compliant_tab-label"';} else {echo'class="be_popia_compliant_tab-label_completed"';} echo ' for="rd' . esc_attr( $result->id ) . '">' . $result->title . '</label>
+                                            <label '; if($result->does_comply == 0){echo 'class="be_popia_compliant_tab-label"';} else {echo'class="be_popia_compliant_tab-label_completed"';} echo ' for="rd' . esc_attr( $result->id ) . '">' . esc_attr( $result->title ) . '</label>
                                             ';
                                             if($result->description != ""){
 
@@ -1025,7 +1021,7 @@ function be_popia_compliant_dashboard_checklist(){
                                             echo '
                                             <div class="be_popia_compliant_tab">
                                                 <input class="be_popia_compliant_input"  type="radio" id="rd' . esc_attr( $result->id ) . '" name="rd">
-                                                <label '; if($result->does_comply == 0){echo 'class="be_popia_compliant_tab-label"';} else {echo'class="be_popia_compliant_tab-label_completed"';} echo ' for="rd' . esc_attr( $result->id ) . '">' . $result->title . '</label>
+                                                <label '; if($result->does_comply == 0){echo 'class="be_popia_compliant_tab-label"';} else {echo'class="be_popia_compliant_tab-label_completed"';} echo ' for="rd' . esc_attr( $result->id ) . '">' . esc_attr( $result->title ) . '</label>
                                                 ';
                                                 if($result->description != ""){
 
@@ -1049,7 +1045,7 @@ function be_popia_compliant_dashboard_checklist(){
                                             echo '
                                             <div class="be_popia_compliant_tab">
                                                 <input class="be_popia_compliant_input"  type="radio" id="rd' . esc_attr( $result->id ) . '" name="rd">
-                                                <label '; if($result->does_comply == 0){echo 'class="be_popia_compliant_tab-label"';} else {echo'class="be_popia_compliant_tab-label_completed"';} echo ' for="rd' . esc_attr( $result->id ) . '" id="be_popia_compliant_tab-label' . esc_attr( $result->id ) . '">' . $result->title . '</label>
+                                                <label '; if($result->does_comply == 0){echo 'class="be_popia_compliant_tab-label"';} else {echo'class="be_popia_compliant_tab-label_completed"';} echo ' for="rd' . esc_attr( $result->id ) . '" id="be_popia_compliant_tab-label' . esc_attr( $result->id ) . '">' . esc_attr( $result->title ) . '</label>
                                                 <div class="be_popia_compliant_tab-content"><br>
                                                     
                                                     ' . esc_attr( $result->description ) . '
@@ -1138,7 +1134,7 @@ function be_popia_compliant_dashboard_checklist(){
                                             echo '
                                 <div class="be_popia_compliant_tab">
                                     <input class="be_popia_compliant_input"  type="radio" id="rd' . esc_attr( $result->id ) . '" name="rd">
-                                    <label '; if($result->does_comply == 0){echo 'class="be_popia_compliant_tab-label"';} else {echo'class="be_popia_compliant_tab-label_completed"';} echo ' for="rd' . esc_attr( $result->id ) . '" id="be_popia_compliant_tab-label' . esc_attr( $result->id ) . '">' . $result->title . '</label>
+                                    <label '; if($result->does_comply == 0){echo 'class="be_popia_compliant_tab-label"';} else {echo'class="be_popia_compliant_tab-label_completed"';} echo ' for="rd' . esc_attr( $result->id ) . '" id="be_popia_compliant_tab-label' . esc_attr( $result->id ) . '">' . esc_attr( $result->title ) . '</label>
                                     <div class="be_popia_compliant_tab-content"><br>
                                         
                                         ' . esc_attr( $result->description ) . '
@@ -1228,7 +1224,7 @@ function be_popia_compliant_dashboard_checklist(){
                                 echo '
                                 <div class="be_popia_compliant_tab">
                                     <input class="be_popia_compliant_input"  type="radio" id="rd' . esc_attr( $result->id ) . '" name="rd">
-                                    <label '; if($result->does_comply == 0){echo 'class="be_popia_compliant_tab-label"';} else {echo'class="be_popia_compliant_tab-label_completed"';} echo ' for="rd' . esc_attr( $result->id ) . '" id="be_popia_compliant_tab-label' . esc_attr( $result->id ) . '">' . $result->title . '</label>
+                                    <label '; if($result->does_comply == 0){echo 'class="be_popia_compliant_tab-label"';} else {echo'class="be_popia_compliant_tab-label_completed"';} echo ' for="rd' . esc_attr( $result->id ) . '" id="be_popia_compliant_tab-label' . esc_attr( $result->id ) . '">' . esc_attr( $result->title ) . '</label>
                                     <div class="be_popia_compliant_tab-content"><br>
                                         
                                         ' . $result->description  . '
