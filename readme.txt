@@ -13,6 +13,43 @@ The only plugin that assists with POPIA Compliance for any site that operates in
 The only plugin that assists with POPIA Compliance for any site that operates in South Africa. 
 We provide a checklist with all the conditions as per the Protection of  Personal Information Act, Act 4 of 2013. If you\'d rather read up by your self, please visit https://bepopiacompliant.co.za/popia/act/index.php for the full legislation.
 
+== 3rd Party and External Services ==
+For our plugin to work on your site, we rely on our server to communicate with your plugin. This 3rd party service together with the circumstances under which we make calls are documented herein:
+
+We make calls to our server, using our plugin from your WordPress website. This enables us to perform data requests on your behalf, as well as to send you notifications, and to do certain checks so you get the best we can offer. For your security we have programmed the calls in such a manner, to only allow transmission between sites that contain our plugin and our server with a specific URL only. Each call is signed with your API Key and therefore no unauthorised calls can be made to our plugin.
+
+Link to service: https://bepopiacompliant.co.za/
+Link to service Privacy Policy: https://bepopiacompliant.co.za/#/privacy/80
+
+Below is a list of calls we make together with a description of what is being transmitted and for what reason:
+
+https://py.bepopiacompliant.co.za/api/newusercreated
+- each time a user registers on your website, we collect your domain name, user ID and email address and send it to our database to log an entry so that we can collect further data that you store about that user in the case of a data request.
+
+https://py.bepopiacompliant.co.za/api/plugindetailscheck/“server_name”
+- we collect your domain name to check if your domain is registered with us to use our plugin.
+
+https://py.bepopiacompliant.co.za/api/plugindetails/$id 
+- to indicate whether our plugin is active, inactive or deleted from your website.
+
+https://py.bepopiacompliant.co.za/api/plugindetails/
+- to indicate when our plugin is installed on your website.
+
+https://py.bepopiacompliant.co.za/api/domain/"server_name"
+- to get data from our database to indicate that you completed the pro steps and save it to your database.
+
+https://py.bepopiacompliant.co.za/api/getmessage/
+- to show you any notifications about POPIA updates in your admin panel, that we might need to share.
+
+https://py.bepopiacompliant.co.za/api/plugindetailscheck/“server_name”
+- to show a message if we disapprove of the use of our plugin on your website, especially if we determine that you do not comply with POPIA using the free version, but claims that you are compliant.
+
+https://py.bepopiacompliant.co.za/api/domainapicheck/$company_key
+- to validate your entered key for using the pro version in our database to ensure you are registered with us as a pro member.
+
+https://py.bepopiacompliant.co.za/api/domain/check_expiry/"server_name"
+- to check whether your pro membership has expired on our database.
+
 == Installation ==
 Install from WordPress Library
 
