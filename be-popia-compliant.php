@@ -905,7 +905,10 @@ function be_popia_compliant_dashboard_checklist(){
         <div class="be_popia_compliant_wrap">
         
             <h1 style="text-align-last: center;font-size:50px;">POPIA CHECKLIST</h1>
-            <center><h3>Please note that this only take effect for FREE version or when membership to Pro version has lapsed.<h/3></center>
+            <center><h3>Please note that this only take effect for FREE version or when membership to Pro version has expired.<br>
+            Seem like a hasstle? <a href="https://bepopiacompliant.co.za" class=" target="_blank">Use Pro for quick and easy setup</a> and skip all below!
+            </h3>
+            </center>
             
             <div class="Progress">
                     <div id="completed_consent" style="display:none;">
@@ -1430,7 +1433,7 @@ function be_popia_compliant_checklist_update_compliance() {
         if($needComms == 1 && $needMarketing == 0) {
 
             $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND (id != 3) AND (id != 59) AND is_active = 1");
-            $rowcount = $wpdb->num_rows;
+            $rowcount = sanitize_text_field( $wpdb->num_rows );
 
             $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND (id != 3) AND (id != 59) AND is_active = 1");
             $rowcount2 = $wpdb->num_rows;

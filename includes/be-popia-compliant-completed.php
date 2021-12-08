@@ -109,8 +109,8 @@ function be_popia_compliant_active_check() {
                     
                     $wpdb->update( $table_name, array( 'value' => 1),array('id'=>3)); 
 
-                    $rowcount = sanitize_text_field($_SESSION['rowcount']);
-                    $rowcount2 = sanitize_text_field($_SESSION['rowcount2']);
+                    $rowcount = sanitize_text_field( $_SESSION['rowcount'] );
+                    $rowcount2 = sanitize_text_field( $_SESSION['rowcount2'] );
 
                     $rowcount = ($rowcount / $rowcount2) * 100;
 
