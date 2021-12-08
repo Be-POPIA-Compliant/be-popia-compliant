@@ -168,7 +168,7 @@ function be_popia_compliant_create() {
     }
 
     if ( 200 !== $response_code ) {
-        echo esc_html( "Error in pinging API" . $response_code );
+        echo "Error in pinging API" . esc_html( $response_code );
     }
 
     if ( 200 === $response_code ) {
@@ -389,7 +389,7 @@ function be_popia_compliant_deactivate_plugin(){
     }
 
     if ( 200 !== $response_code ) {
-        echo esc_html( "Error in pinging API" . $response_code );
+        echo "Error in pinging API" . esc_html( $response_code );
     }
 
     if ( 200 === $response_code ) {
@@ -447,7 +447,7 @@ function be_popia_compliant_delete_plugin(){
     }
 
     if ( 200 !== $response_code ) {
-        echo esc_html( "Error in pinging API" . $response_code );
+        echo "Error in pinging API" . esc_html( $response_code );
     }
 
     if ( 200 === $response_code ) {
@@ -515,7 +515,7 @@ function be_popia_compliant_dashboard(){
     }
 
     if ( 200 !== $response_code ) {
-        echo esc_html( "Error in pinging API" . $response_code );
+        echo "Error in pinging API" . esc_html( $response_code );
     }
 
     if ( 200 === $response_code ) {
@@ -754,7 +754,7 @@ function be_popia_compliant_notice() {
     }
 
     if ( 200 !== $response_code ) {
-        echo esc_html( "Error in pinging API" . $response_code );
+        echo "Error in pinging API" . esc_html( $response_code );
     }
 
     if ( 200 === $response_code ) {
@@ -810,7 +810,7 @@ function be_popia_compliant_notice() {
         echo "Unauthorized access";
     }
     if ( 200 !== $response_code ) {
-        echo esc_html( "Error in pinging API" . $response_code );
+        echo "Error in pinging API" . esc_html( $response_code );
     }
     if ( 200 === $response_code ) {
         $body = json_decode( $body );
@@ -993,7 +993,7 @@ function be_popia_compliant_dashboard_checklist(){
 
                                     echo'
                                         <div class="be_popia_compliant_tab-section-content">
-                                            ' . $result->description . '   
+                                            ' . esc_html( $result->description ) . '   
                                         </div>';
                                     }
                                 echo'
