@@ -60,6 +60,71 @@ function be_popia_compliant_add_user_details_to_py($user_id){
     $new_user = get_userdata($user_id);
     $user_email = $new_user -> user_email;
     $domain = $_SERVER['SERVER_NAME'];
+    $first_name = '';
+    $surname = '';
+
+    $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/getuserid/" . $user_email);
+        
+    $args = array(
+        'headers' => array(
+            'Content-Type' => 'application/json',
+        ),
+        'body'    => array(),
+    );
+
+    $response = wp_remote_get( wp_http_validate_url($url), $args );
+
+    $response_code = wp_remote_retrieve_response_code( $response );
+    $body         = wp_remote_retrieve_body( $response );
+
+    if ( 401 === $response_code ) {
+        echo "Unauthorized access";
+    }
+
+    if ( 200 !== $response_code ) {
+        echo "Error in pinging API" . esc_html( $response_code );
+    }
+
+    if ( 200 === $response_code ) {
+        $body = json_decode( $body );   
+        
+        foreach ( $body as $data ) {
+            $user_id = $data->id;
+        }     
+    }
+    if(isset($user_id)){
+        $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/getname/" . $user_id);
+        
+        $args = array(
+            'headers' => array(
+                'Content-Type' => 'application/json',
+            ),
+            'body'    => array(),
+        );
+    
+        $response = wp_remote_get( wp_http_validate_url($url), $args );
+    
+        $response_code = wp_remote_retrieve_response_code( $response );
+        $body         = wp_remote_retrieve_body( $response );
+    
+        if ( 401 === $response_code ) {
+            echo "Unauthorized access";
+        }
+    
+        if ( 200 !== $response_code ) {
+            echo "Error in pinging API" . esc_html( $response_code );
+        }
+    
+        if ( 200 === $response_code ) {
+            $body = json_decode( $body );   
+            
+            foreach ( $body as $data ) {
+                $first_name = $data->data_officer_first_name;
+                $surname = $data->data_officer_surname;
+            }     
+        }
+    }
+    
 
     if( ! $new_user ){
         error_log( 'Unable to get userdata!' );
@@ -70,7 +135,9 @@ function be_popia_compliant_add_user_details_to_py($user_id){
     $body = array(
         'domain' => $domain,
         'email' => $user_email,
-        'user_id' => $user_id
+        'user_id' => $user_id,
+        'first_name' => $first_name,
+        'surname' => $surname
     );
 
     $args = array(
@@ -533,7 +600,7 @@ function be_popia_compliant_dashboard(){
             }
         }
     }
-        
+      
      
     echo '
         <div class="be_popia_compliant_wrap_dashboard">
