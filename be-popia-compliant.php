@@ -1952,6 +1952,7 @@ function be_popia_compliant_echo_footer() {
                                         width: 75%;
                                         padding: 1%;
                                         font-weight:900;
+                                        font-size: 23px;
                                     }
                                     .be_popia_compliant_links a {
                                         color: #BD2E2E;
@@ -1966,6 +1967,7 @@ function be_popia_compliant_echo_footer() {
                                             margin: auto auto auto 0;
                                             width: 100%;
                                             font-weight: 900;
+                                            font-size: 23px;
                                         }
                                         .cont1 {
                                             margin: auto;
