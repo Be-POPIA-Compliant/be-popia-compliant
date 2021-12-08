@@ -496,49 +496,48 @@ function be_popia_compliant_dashboard_go_pro(){
 
 
 function be_popia_compliant_dashboard(){
-        $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/domain/" . $_SERVER['SERVER_NAME']);
-        
-        $args = array(
-            'headers' => array(
-                'Content-Type' => 'application/json',
-            ),
-            'body'    => array(),
-        );
+    $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/domain/" . $_SERVER['SERVER_NAME']);
     
-        $response = wp_remote_get( wp_http_validate_url($url), $args );
-    
-        $response_code = wp_remote_retrieve_response_code( $response );
-        $body         = wp_remote_retrieve_body( $response );
-    
-        if ( 401 === $response_code ) {
-            echo "Unauthorized access";
-        }
-    
-        if ( 200 !== $response_code ) {
-            echo esc_html( "Error in pinging API" . $response_code );
-        }
-    
-        if ( 200 === $response_code ) {
-            $body = json_decode( $body );
+    $args = array(
+        'headers' => array(
+            'Content-Type' => 'application/json',
+        ),
+        'body'    => array(),
+    );
 
-            foreach ( $body as $data ) {
-                $privacy_policy = $data->privacy_policy;
-                $domain_form_complete = $data->domain_form_complete;
-                $consent_form_complete = $data->consent_form_complete;
-                $other_parties = $data->other_parties;
+    $response = wp_remote_get( wp_http_validate_url($url), $args );
 
-                global $wpdb;
-                $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
+    $response_code = wp_remote_retrieve_response_code( $response );
+    $body         = wp_remote_retrieve_body( $response );
 
-                if($domain_form_complete == 1 && $consent_form_complete == 1 && $other_parties != null){
-                    $wpdb->update( $table_name, array( 'value' => 1),array('id'=> 4)); 
-                } else {
-                    $wpdb->update( $table_name, array( 'value' => 0),array('id'=> 4)); 
-                }
+    if ( 401 === $response_code ) {
+        echo "Unauthorized access";
+    }
+
+    if ( 200 !== $response_code ) {
+        echo esc_html( "Error in pinging API" . $response_code );
+    }
+
+    if ( 200 === $response_code ) {
+        $body = json_decode( $body );
+
+        foreach ( $body as $data ) {
+            $privacy_policy = $data->privacy_policy;
+            $domain_form_complete = $data->domain_form_complete;
+            $consent_form_complete = $data->consent_form_complete;
+            $other_parties = $data->other_parties;
+
+            global $wpdb;
+            $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
+
+            if($domain_form_complete == 1 && $consent_form_complete == 1 && $other_parties != null){
+                $wpdb->update( $table_name, array( 'value' => 1),array('id'=> 4)); 
+            } else {
+                $wpdb->update( $table_name, array( 'value' => 0),array('id'=> 4)); 
             }
         }
+    }
         
-    
      
     echo '
         <div class="be_popia_compliant_wrap_dashboard">
@@ -782,19 +781,63 @@ function be_popia_compliant_notice() {
     if(isset($server_message) && ($server_message != 'null')) {
         
     
-            if ( in_array( $pagenow, $admin_pages ) ) {
-                if(isset($server_message)) {
-                        ?>
-                        <div class="notice notice-warning is-dismissible"> <p>
-                            <?php
-                            echo esc_html( $server_message );
-                            ?>
-                        </p></div>
-                        <?
+        if ( in_array( $pagenow, $admin_pages ) ) {
+            if(isset($server_message)) {
+                ?>
+                <div class="notice notice-warning is-dismissible"> <p>
+                    <?php
+                    echo esc_html( $server_message );
+                    ?>
+                </p></div>
+                <?
 
-                    }
+            }
+        }
+    }
+
+    $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME']);
+    $args = array(
+        'headers' => array(
+            'Content-Type' => 'application/json',
+        ),
+        'body'    => array(),
+    );
+    $response = wp_remote_get( wp_http_validate_url($url), $args );
+    $response_code = wp_remote_retrieve_response_code( $response );
+    $body         = wp_remote_retrieve_body( $response );
+
+    if ( 401 === $response_code ) {
+        echo "Unauthorized access";
+    }
+    if ( 200 !== $response_code ) {
+        echo esc_html( "Error in pinging API" . $response_code );
+    }
+    if ( 200 === $response_code ) {
+        $body = json_decode( $body );
+
+        if($body != []){
+            foreach ( $body as $data ) {
+                $disapproved_reason = $data->disapproved_reason;
+                $is_approved = $data->is_approved;
+            }
+        }
+    }    
+
+    if(isset($is_approved) && ($is_approved == 0)) {
+        if(isset($disapproved_reason) && ($disapproved_reason != 'null')) {        
+            if ( in_array( $pagenow, $admin_pages ) ) { 
+                if(isset($disapproved_reason)) {
+                    ?>
+                    <div class="notice notice-danger is-dismissible"> 
+                        <p><?php
+                            echo esc_html( $disapproved_reason );?>
+                        </p>
+                    </div>
+                    <?
                 }
             }
+        }
+    }
 }
 
 add_action( 'admin_notices', 'be_popia_compliant_notice' );
@@ -1944,58 +1987,6 @@ function be_popia_compliant_echo_footer() {
                                         </div>
                                     </div>
                                 </div>';
-                            } else {
-                                function be_popia_compliant_disapproved_reason() {
-                                    global $pagenow;
-                                    $admin_pages = [ 'index.php', 'edit.php', 'plugins.php' ];
-                                
-                                
-                                    $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME']);
-                                    $args = array(
-                                        'headers' => array(
-                                            'Content-Type' => 'application/json',
-                                        ),
-                                        'body'    => array(),
-                                    );
-                                    $response = wp_remote_get( wp_http_validate_url($url), $args );
-                                    $response_code = wp_remote_retrieve_response_code( $response );
-                                    $body         = wp_remote_retrieve_body( $response );
-                        
-                                    if ( 401 === $response_code ) {
-                                        echo "Unauthorized access";
-                                    }
-                                    if ( 200 !== $response_code ) {
-                                        echo esc_html( "Error in pinging API" . $response_code );
-                                    }
-                                    if ( 200 === $response_code ) {
-                                        $body = json_decode( $body );
-            
-                                        if($body != []){
-                                            foreach ( $body as $data ) {
-                                                $disapproved_reason = $data->disapproved_reason;
-                                            }
-                                        }
-                                    }    
-                                
-                                    if(isset($disapproved_reason) && ($disapproved_reason != 'null')) {
-                                        
-                                    
-                                        if ( in_array( $pagenow, $admin_pages ) ) { 
-                                            if(isset($disapproved_reason)) {
-                                                ?>
-                                                <div class="notice notice-danger is-dismissible"> <p>
-                                                    <?php
-                                                    echo esc_html( $disapproved_reason );
-                                                    ?>
-                                                </p></div>
-                                                <?
-                        
-                                            }
-                                        }
-                                    }
-                                }
-                                
-                                add_action( 'admin_notices', 'be_popia_compliant_disapproved_reason' );
                             }
                         }
                     }
