@@ -130,7 +130,7 @@ function be_popia_compliant_active_check() {
                         echo "Unauthorized access";
                     }
                     if ( 200 !== $response_code ) {
-                        echo esc_html( "Error in pinging API" . $response_code );
+                        echo "Error in pinging API" . esc_html( $response_code );
                     }
                     if ( 200 === $response_code ) {
                         // echo 'body' . $body;

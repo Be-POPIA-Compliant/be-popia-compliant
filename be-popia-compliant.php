@@ -1091,7 +1091,7 @@ function be_popia_compliant_dashboard_checklist(){
                                                 <label '; if($result->does_comply == 0){echo 'class="be_popia_compliant_tab-label"';} else {echo'class="be_popia_compliant_tab-label_completed"';} echo ' for="rd' . esc_attr( $result->id ) . '" id="be_popia_compliant_tab-label' . esc_attr( $result->id ) . '">' . esc_attr( $result->title ) . '</label>
                                                 <div class="be_popia_compliant_tab-content"><br>
                                                     
-                                                    ' . esc_attr( $result->description ) . '
+                                                    ' . esc_html($result->description ) . '
                                                         ';
                                                         if($result->type == 1 || $result->type == 5 || $result->type == 6 || $result->type == 7){
                                                             
@@ -1180,7 +1180,7 @@ function be_popia_compliant_dashboard_checklist(){
                                     <label '; if($result->does_comply == 0){echo 'class="be_popia_compliant_tab-label"';} else {echo'class="be_popia_compliant_tab-label_completed"';} echo ' for="rd' . esc_attr( $result->id ) . '" id="be_popia_compliant_tab-label' . esc_attr( $result->id ) . '">' . esc_attr( $result->title ) . '</label>
                                     <div class="be_popia_compliant_tab-content"><br>
                                         
-                                        ' . esc_attr( $result->description ) . '
+                                        ' . esc_html( $result->description ) . '
                                             ';
                                             if($result->type == 1 || $result->type == 5 || $result->type == 6 || $result->type == 7){
                                             
@@ -1270,7 +1270,7 @@ function be_popia_compliant_dashboard_checklist(){
                                     <label '; if($result->does_comply == 0){echo 'class="be_popia_compliant_tab-label"';} else {echo'class="be_popia_compliant_tab-label_completed"';} echo ' for="rd' . esc_attr( $result->id ) . '" id="be_popia_compliant_tab-label' . esc_attr( $result->id ) . '">' . esc_attr( $result->title ) . '</label>
                                     <div class="be_popia_compliant_tab-content"><br>
                                         
-                                        ' . $result->description  . '
+                                        ' . esc_html( $result->description ) . '
                                             ';
                                             if($result->type == 1 || $result->type == 5 || $result->type == 6 || $result->type == 7){
                                                 
@@ -1461,7 +1461,7 @@ function be_popia_compliant_checklist_update_compliance() {
 
         $rowcount = ($rowcount / $rowcount2) * 100;
         
-        echo $rowcount;
+        echo esc_html( $rowcount );
     }
 
    die();
@@ -1866,7 +1866,7 @@ function be_popia_compliant_echo_footer() {
             }
         
             if ( 200 !== $response_code ) {
-                echo esc_html( "Error in pinging API" . $response_code );
+                echo "Error in pinging API" . esc_html( $response_code );
             }
         
             if ( 200 === $response_code ) {
@@ -1906,7 +1906,7 @@ function be_popia_compliant_echo_footer() {
                             echo "Unauthorized access";
                         }
                         if ( 200 !== $response_code ) {
-                            echo esc_html( "Error in pinging API" . $response_code );
+                            echo "Error in pinging API" . esc_html( $response_code );
                         }
                         if ( 200 === $response_code ) {
                             // echo 'body' . $body;
