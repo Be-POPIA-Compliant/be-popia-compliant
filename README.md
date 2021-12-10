@@ -13,8 +13,9 @@ License: License: GPLv2 or later
 The only plugin that assists with POPIA Compliance for any site that operates in South Africa. https://bepopiacompliant.co.za/popia/act/index.php for the full legislation.
 
 == Description ==
+== What BePOPIA Compliant provide you ==
 The only plugin that assists with POPIA Compliance for any site that operates in South Africa. 
-We provide a checklist with all the conditions as per the Protection of  Personal Information Act, Act 4 of 2013. If you\'d rather read up by your self, please visit https://bepopiacompliant.co.za/popia/act/index.php for the full legislation.
+We provide a checklist with all the conditions as per the Protection of Personal Information Act, Act 4 of 2013. If you'd rather read up by your self, please visit https://bepopiacompliant.co.za/popia/act/index.php for the full legislation. Using our Pro Plugin, you will already be able to receive consent without lifting a finger! As of January, data requests will also be processed on your behalf.
 
 == 3rd Party and External Services ==
 For our plugin to work on your site, we rely on our server to communicate with your plugin. This 3rd party service together with the circumstances under which we make calls are documented herein:
@@ -54,14 +55,13 @@ https://py.bepopiacompliant.co.za/api/domain/check_expiry/"server_name"
 - to check whether your pro membership has expired on our database.
 
 == Installation ==
-Install from WordPress Library
-
+== Install from WordPress Library ==
 Log in to the admin panel of your WordPress website, click on \"plugins\", then again at the top left on \"Add New\".
 Now type \"POPIA\" into the search bar and wait for the plugins to filter. Note that at the date of recording, none of the other plugins provides a fully-fledged solution to POPIA, even though stating it. They merely provide cookie consent options that are only a small portion of the POPI Act requirements and are already included in our plugin. Now click on \"Install Now\". After installation, activate the plugin. Thereafter you will find the heading \"POPIA Compliance\" in the
 left-hand menu.
 
-Install From Website
-Follow the following link and download the latest version of the BPC Plugin
+== Install From Website ==
+Follow the following link and download the latest version of the BPC Plugin directly from our website.
 https://bepopiacompliant.co.za/bpc_plugin.zip
 
 == Frequently Asked Questions ==
@@ -145,9 +145,15 @@ A20: If you have a website, that collects any data such as customer emails, tele
 1. Be POPIA Compliant (BPC) | Dashboard - Gives you a brief overview of the BPC plugin.
 2. Be POPIA Compliant (BPC) | Checklist - Complete all these instructions and tick them as you complete them.
 3. Be POPIA Compliant (BPC) | Cookie Settings - Customize your Cookie Notice Banner to match your brand.
+4. A Cookie Consent Banner will appear for your visitors to accept the use of cookies.
+5. Once Cookie Consent was given, and your site is compliant, the POPIA Compliance banner will be posted to the bottom of your site pages.
 
 == Changelog ==
+1.0.1
+- Added functionality on PRO for emails to be sent for collecting consent once a user registers on your site (Ensure you ask for email as usernames)
+
 1.0.0
+- Initial release
 
 == Upgrade Notice ==
 Initial Be POPIA Compliant Plugin
