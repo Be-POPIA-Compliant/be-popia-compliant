@@ -87,13 +87,16 @@ function be_popia_compliant_add_user_details_to_py($user_id){
 
     if ( 200 === $response_code ) {
         $body = json_decode( $body );   
-        
-        foreach ( $body as $data ) {
-            $user_id = $data->id;
-        }     
+        if(empty($body)){
+
+        } else {
+            foreach ( $body as $data ) {
+                $py_user_id = $data->id;
+            }     
+        }
     }
-    if(isset($user_id)){
-        $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/getname/" . $user_id);
+    if(isset($py_user_id)){
+        $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/getwpname/" . $py_user_id);
         
         $args = array(
             'headers' => array(
@@ -137,7 +140,8 @@ function be_popia_compliant_add_user_details_to_py($user_id){
         'email' => $user_email,
         'user_id' => $user_id,
         'first_name' => $first_name,
-        'surname' => $surname
+        'surname' => $surname,
+        'py_user_id' => $py_user_id
     );
 
     $args = array(
@@ -157,7 +161,37 @@ function be_popia_compliant_add_user_details_to_py($user_id){
     }
 
     $response = wp_remote_retrieve_body( $request );
+    if(!isset($py_user_id)){
+        $characters = '23456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ';
+        $charactersLength = strlen($characters);
+        $randomString = '';
+        for ($i = 0; $i < 8; $i++) {
+            $randomString .= $characters[rand(0, $charactersLength - 1)];
+        }
+        $url  = wp_http_validate_url('https://py.bepopiacompliant.co.za/api/users/');
+        $body = array(
+            'username' => $user_email,
+            'password' => $randomString
+        );
 
+        $args = array(
+            'method'      => 'POST',
+            'timeout'     => 45,
+            'sslverify'   => false,
+            'headers'     => array(
+                'Content-Type'  => 'application/json',
+            ),
+            'body'        => json_encode($body),
+        );
+
+        $request = wp_remote_post( wp_http_validate_url(wp_http_validate_url($url)), $args );
+
+        if ( is_wp_error( $request ) || wp_remote_retrieve_response_code( $request ) != 200 ) {
+            error_log( print_r( $request, true ) );
+        }
+
+        $response = wp_remote_retrieve_body( $request );
+    }
 }
 
 
@@ -600,7 +634,8 @@ function be_popia_compliant_dashboard(){
             }
         }
     }
-      
+    
+    
      
     echo '
         <div class="be_popia_compliant_wrap_dashboard">
