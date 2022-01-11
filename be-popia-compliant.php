@@ -713,7 +713,7 @@ function be_popia_compliant_dashboard(){
             </div>
             <div class="be_popia_compliant_dashboard_two">';
                 
-                if((isset($body)) && (!empty($body)) && ($body != '') && ($body != "[]") && (($_SESSION['beta'] == 1) || ($_SESSION['live'] == 1))) {
+                if((isset($body)) && (!empty($body)) && ($body != '') && ($body != "[]")) {
                     global $wpdb;
 
                     $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
