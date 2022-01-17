@@ -4,7 +4,7 @@
     Plugin Name: Be POPIA Compliant
     Plugin URI: https://bepopiacompliant.co.za
     Description: The only plugin that assists with POPIA Compliance for any site that operates in South Africa. <a href="https://bepopiacompliant.co.za/popia/act/index.php" target="_blank">https://bepopiacompliant.co.za/popia/act/index.php</a> for the full legislation.
-    Version: 1.0.4
+    Version: 1.0.1
     Author: Web-X
     Author URI: https://web-x.co.za/
     License: GPLv2 or later
@@ -713,7 +713,7 @@ function be_popia_compliant_dashboard(){
             </div>
             <div class="be_popia_compliant_dashboard_two">';
                 
-                if((isset($body)) && (!empty($body)) && ($body != '') && ($body != "[]")) {
+                if((isset($body)) && (!empty($body)) && ($body != '') && ($body != "[]") && (($_SESSION['beta'] == 1) || ($_SESSION['live'] == 1))) {
                     global $wpdb;
 
                     $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
@@ -1582,7 +1582,7 @@ function be_popia_compliant_cookie_enqueue_scripts() {
     // load styles and script for plugin only if cookies are not accepted
     if ( !isset( $_COOKIE['cookie-accepted'] ) ) {
         wp_enqueue_style( 'styles', plugins_url( 'styles.css', __FILE__ ) );
-        wp_enqueue_script( 'be_popia_compliant_cookie_script', plugins_url( 'includes/js/be_popia_compliant_cookie_script.js', __FILE__ ), array( 'jquery' ), 1.0, true );
+        wp_enqueue_script( 'be_popia_compliant_cookie_script', plugins_url( 'public/js/be_popia_compliant_cookie_script.js', __FILE__ ), array( 'jquery' ), 1.0, true );
         wp_localize_script( 'be_popia_compliant_cookie_script', 'be_popia_compliant_cookie_script_ajax_object',
             array( 
                 'ajax_url' => admin_url( 'admin-ajax.php' ),
