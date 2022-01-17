@@ -1547,7 +1547,7 @@ function be_popia_compliant_cookie_enqueue_scripts() {
     // load styles and script for plugin only if cookies are not accepted
     if ( !isset( $_COOKIE['cookie-accepted'] ) ) {
         wp_enqueue_style( 'styles', plugins_url( 'styles.css', __FILE__ ) );
-        wp_enqueue_script( 'be_popia_compliant_cookie_script', plugins_url( 'public/js/be_popia_compliant_cookie_script.js', __FILE__ ), array( 'jquery' ), 1.0, true );
+        wp_enqueue_script( 'be_popia_compliant_cookie_script', plugins_url( 'includes/js/be_popia_compliant_cookie_script.js', __FILE__ ), array( 'jquery' ), 1.0, true );
         wp_localize_script( 'be_popia_compliant_cookie_script', 'be_popia_compliant_cookie_script_ajax_object',
             array( 
                 'ajax_url' => admin_url( 'admin-ajax.php' ),
