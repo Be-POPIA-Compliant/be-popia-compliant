@@ -4,7 +4,7 @@
     Plugin Name: Be POPIA Compliant
     Plugin URI: https://bepopiacompliant.co.za
     Description: The only plugin that assists with POPIA Compliance for any site that operates in South Africa. <a href="https://bepopiacompliant.co.za/popia/act/index.php" target="_blank">https://bepopiacompliant.co.za/popia/act/index.php</a> for the full legislation.
-    Version: 1.0.7
+    Version: 1.0.4
     Author: Web-X
     Author URI: https://web-x.co.za/
     License: GPLv2 or later
@@ -82,7 +82,7 @@ function be_popia_compliant_add_user_details_to_py($user_id){
     }
 
     if ( 200 !== $response_code ) {
-        echo "Error in pinging API Code:601" . esc_html( $response_code );
+        echo "Error in pinging API" . esc_html( $response_code );
     }
 
     if ( 200 === $response_code ) {
@@ -115,7 +115,7 @@ function be_popia_compliant_add_user_details_to_py($user_id){
         }
     
         if ( 200 !== $response_code ) {
-            echo "Error in pinging API Code:602" . esc_html( $response_code );
+            echo "Error in pinging API" . esc_html( $response_code );
         }
     
         if ( 200 === $response_code ) {
@@ -267,7 +267,7 @@ function be_popia_compliant_create() {
     }
 
     if ( 200 !== $response_code ) {
-        echo "Error in pinging API Code:603" . esc_html( $response_code );
+        echo "Error in pinging API" . esc_html( $response_code );
     }
 
     if ( 200 === $response_code ) {
@@ -487,7 +487,7 @@ function be_popia_compliant_deactivate_plugin(){
     }
 
     if ( 200 !== $response_code ) {
-        echo "Error in pinging API Code:604" . esc_html( $response_code );
+        echo "Error in pinging API" . esc_html( $response_code );
     }
 
     if ( 200 === $response_code ) {
@@ -544,7 +544,7 @@ function be_popia_compliant_delete_plugin(){
     }
 
     if ( 200 !== $response_code ) {
-        echo "Error in pinging API Code:605" . esc_html( $response_code );
+        echo "Error in pinging API" . esc_html( $response_code );
     }
 
     if ( 200 === $response_code ) {
@@ -612,7 +612,7 @@ function be_popia_compliant_dashboard(){
     }
 
     if ( 200 !== $response_code ) {
-        echo "Error in pinging API Code:606" . esc_html( $response_code );
+        echo "Error in pinging API" . esc_html( $response_code );
     }
 
     if ( 200 === $response_code ) {
@@ -852,7 +852,7 @@ function be_popia_compliant_notice() {
     }
 
     if ( 200 !== $response_code ) {
-        echo "Error in pinging API Code:607" . esc_html( $response_code );
+        echo "Error in pinging API" . esc_html( $response_code );
     }
 
     if ( 200 === $response_code ) {
@@ -908,7 +908,7 @@ function be_popia_compliant_notice() {
         echo "Unauthorized access";
     }
     if ( 200 !== $response_code ) {
-        echo "Error in pinging API Code:608" . esc_html( $response_code );
+        echo "Error in pinging API" . esc_html( $response_code );
     }
     if ( 200 === $response_code ) {
         $body = json_decode( $body );
@@ -969,7 +969,7 @@ function be_popia_compliant_p_key_save() {
         }
     
         if ( 200 !== $response_code ) {
-            echo " Error in pinging API Code:609";
+            echo " Error in pinging API";
         }
     
         if ( 200 === $response_code ) {
@@ -984,7 +984,7 @@ function be_popia_compliant_p_key_save() {
                     $wpdb->update( $table_name, array( 'value' => $suspended ),array('id'=>3)); 
                 }
             } else {
-                echo " Error in pinging API Code:610";
+                echo " Error in pinging API";
             }
         }
     }
@@ -1582,7 +1582,7 @@ function be_popia_compliant_cookie_enqueue_scripts() {
     // load styles and script for plugin only if cookies are not accepted
     if ( !isset( $_COOKIE['cookie-accepted'] ) ) {
         wp_enqueue_style( 'styles', plugins_url( 'styles.css', __FILE__ ) );
-        wp_enqueue_script( 'be_popia_compliant_cookie_script', plugins_url( 'includes/js/be_popia_compliant_cookie_script.js', __FILE__ ), array( 'jquery' ), 1.0, true );
+        wp_enqueue_script( 'be_popia_compliant_cookie_script', plugins_url( 'public/js/be_popia_compliant_cookie_script.js', __FILE__ ), array( 'jquery' ), 1.0, true );
         wp_localize_script( 'be_popia_compliant_cookie_script', 'be_popia_compliant_cookie_script_ajax_object',
             array( 
                 'ajax_url' => admin_url( 'admin-ajax.php' ),
@@ -1971,7 +1971,7 @@ function be_popia_compliant_echo_footer() {
             }
         
             if ( 200 !== $response_code ) {
-                echo "Error in pinging API Code:611" . esc_html( $response_code );
+                echo "Error in pinging API" . esc_html( $response_code );
             }
         
             if ( 200 === $response_code ) {
@@ -2010,7 +2010,7 @@ function be_popia_compliant_echo_footer() {
                             echo "Unauthorized access";
                         }
                         if ( 200 !== $response_code ) {
-                            echo "Error in pinging API Code:612" . esc_html( $response_code );
+                            echo "Error in pinging API" . esc_html( $response_code );
                         }
                         if ( 200 === $response_code ) {
                             // echo 'body' . $body;

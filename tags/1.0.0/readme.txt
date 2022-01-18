@@ -2,16 +2,16 @@
 Contributors: bepopiacompliant
 Tags: POPI, POPIA, POPI Act, BePOPIACompliant, Be POPIA Compliant, Be POPI Compliant
 Requires at least: 5.4
-Tested up to: 5.8.3
+Tested up to: 5.8.2
 Requires PHP: 7.4
-Stable tag: 1.0.7
+Stable tag: 1.0.0
 License: License: GPLv2 or later
 
 The only plugin that assists with POPIA Compliance for any site that operates in South Africa. https://bepopiacompliant.co.za/popia/act/index.php for the full legislation.
 
 == Description ==
 The only plugin that assists with POPIA Compliance for any site that operates in South Africa. 
-We provide a checklist with all the conditions as per the Protection of  Personal Information Act, Act 4 of 2013. If you'd rather read up by your self, please visit https://bepopiacompliant.co.za/popia/act/index.php for the full legislation.
+We provide a checklist with all the conditions as per the Protection of  Personal Information Act, Act 4 of 2013. If you\'d rather read up by your self, please visit https://bepopiacompliant.co.za/popia/act/index.php for the full legislation.
 
 == 3rd Party and External Services ==
 For our plugin to work on your site, we rely on our server to communicate with your plugin. This 3rd party service together with the circumstances under which we make calls are documented herein:
@@ -53,8 +53,8 @@ https://py.bepopiacompliant.co.za/api/domain/check_expiry/"server_name"
 == Installation ==
 Install from WordPress Library
 
-Log in to the admin panel of your WordPress website, click on "plugins", then again at the top left on "Add New".
-Now type "POPIA" into the search bar and wait for the plugins to filter. Note that at the date of recording, none of the other plugins provides a fully-fledged solution to POPIA, even though stating it. They merely provide cookie consent options that are only a small portion of the POPI Act requirements and are already included in our plugin. Now click on "Install Now". After installation, activate the plugin. Thereafter you will find the heading "POPIA Compliance" in the
+Log in to the admin panel of your WordPress website, click on \"plugins\", then again at the top left on \"Add New\".
+Now type \"POPIA\" into the search bar and wait for the plugins to filter. Note that at the date of recording, none of the other plugins provides a fully-fledged solution to POPIA, even though stating it. They merely provide cookie consent options that are only a small portion of the POPI Act requirements and are already included in our plugin. Now click on \"Install Now\". After installation, activate the plugin. Thereafter you will find the heading \"POPIA Compliance\" in the
 left-hand menu.
 
 Install From Website
@@ -63,7 +63,7 @@ https://bepopiacompliant.co.za/bpc_plugin.zip
 
 == Frequently Asked Questions ==
 Q1: What is a cookie anyway? 
-A1: A cookie is a digital record, (text files with small pieces of data), stored on your computer, or better, in your browser. This is used to track, personalise and save information about each user's session. Any data can be stored and retrieved from a cookie. It is up to the developer of the site or system what goes in there. Cookies let websites remember you, your website logins, shopping carts and much more information. But they can also be a treasure trove of your private information for criminals to spy on.
+A1: A cookie is a digital record, (text files with small pieces of data), stored on your computer, or better, in your browser. This is used to track, personalise and save information about each user\'s session. Any data can be stored and retrieved from a cookie. It is up to the developer of the site or system what goes in there. Cookies let websites remember you, your website logins, shopping carts and much more information. But they can also be a treasure trove of your private information for criminals to spy on.
 This being said, having a Cookie notice or giving consent to having cookies stored in your browser, is but one small segment of the many regulations to be implemented to Be POPIA compliant.
 
 Q2: What is POPIA?
@@ -82,14 +82,14 @@ A5: According to the POPI Act, if you have a filing system, on paper or digital,
 Q6: I am running a small online business on the side as a sole proprietor can I be prosecuted?
 A6: Yes, unfortunately, you are directly liable and may be fined or may end up in prison or both. We suggest you register a company to protect yourself from any unforeseen judgements. You will still be held liable, but there is a small barrier between owners of a company and the company, since the company if registered is seen as a juristic person.
 
-Q7: What happens if we don't comply with POPIA?
+Q7: What happens if we don\'t comply with POPIA?
 A7: There are significant consequences for non-compliance, including up to R10 million rands in fines or up to 10 years in prison, or both.
 
 Q8: What is considered personal information?
 A8: Personal information is any information about an identifiable living, natural person or a juristic person including but not limited to race, gender, sex, sexual orientation, marital status, nationality, age, physical or mental health, disability, language, education, any data relating to medical, financial or employment records, ID number, email address, physical or postal address, location info, phone numbers, blood type or biometric data, personal opinions or references, private or confidential correspondence or even views or opinions of another person about you.
 
 Q9: What is a data subject?
-A9: Any person, a living natural person, or a juristic person, that's data is being processed.
+A9: Any person, a living natural person, or a juristic person, that\'s data is being processed.
 
 Q10: What is generally considered a breach of POPIA? 
 A10: The following is the common breaches:
