@@ -23,7 +23,7 @@ function be_popia_compliant_active_check() {
         }
     
         if ( 200 !== $response_code ) {
-            echo " Error in pinging API, Please try again later.";
+            echo " Error in pinging API Code:613, Please try again later.";
         }
    
         if ( 200 === $response_code ) {
@@ -132,7 +132,7 @@ function be_popia_compliant_active_check() {
                         echo "Unauthorized access";
                     }
                     if ( 200 !== $response_code ) {
-                        echo "Error in pinging API" . esc_html( $response_code );
+                        echo "Error in pinging API Code:614" . esc_html( $response_code );
                     }
 
                     if ( 200 === $response_code ) {
@@ -235,7 +235,7 @@ function be_popia_compliant_active_check() {
                                 echo "Unauthorized access";
                             }
                             if ( 200 !== $response_code ) {
-                                echo "Error in pinging API" . esc_html( $response_code );
+                                echo "Error in pinging API Code:615" . esc_html( $response_code );
                             }
                             if ( 200 === $response_code ) {
                                 // echo 'body' . $body;
