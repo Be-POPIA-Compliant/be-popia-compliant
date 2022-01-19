@@ -4,28 +4,28 @@ function be_popia_compliant_active_check() {
         global $wpdb;    
 
         $url = "https://py.bepopiacompliant.co.za/api/domain/check_expiry/" . $_SERVER['SERVER_NAME'];
-        
+
         $args = array(
             'headers' => array(
                 'Content-Type' => 'application/json',
             ),
             'body' => array(),
         );
-    
+
         $response = wp_remote_get( $url, $args );
-    
+
         $response_code = wp_remote_retrieve_response_code( $response );
         $body = wp_remote_retrieve_body( $response );
 
-        
+
         if ( 401 === $response_code ) {
             echo "Unauthorized access, You do not seem to be authorised to access this data!";
         }
-    
+
         if ( 200 !== $response_code ) {
             echo " Error in pinging API Code:613, Please try again later.";
         }
-   
+
         if ( 200 === $response_code ) {
             $trim_brackets = trim($body, "[{}]");
             $explode = explode(',', $trim_brackets); 
@@ -42,7 +42,7 @@ function be_popia_compliant_active_check() {
                     global $wpdb;
                     $privacy = '';
                     $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
-                    
+
                     $wpdb->update( $table_name, array( 'value' => 0),array('id'=>3)); 
                         echo '<style>
                             .BePopiaCompliant {
@@ -99,16 +99,15 @@ function be_popia_compliant_active_check() {
                                 <div class="be_popia_compliant_links">
                                         ';
                                         echo '<a href="' . esc_url( 'https://bepopicompliant.co.za/#/privacy/' . $_SERVER['SERVER_NAME'] ) . '" target="_blank"><span style="white-space:nowrap">PRIVACY POLICY</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url( 'https://manageconsent.co.za/#/main/request/' . $_SERVER['SERVER_NAME'] ) . '" target="_blank"><span style="white-space:nowrap">MANAGE CONSENT</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url( 'https://bepopiacompliant.co.za/#/details/' . $_SERVER['SERVER_NAME'] ) . '" target="_blank"><span style="white-space:nowrap">RESPONSIBLE PARTIES</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://bepopiacompliant.co.za/#/regulator/' . $_SERVER['SERVER_NAME']  . '" target="_blank"><span style="white-space:nowrap">INFORMATION REGULATOR</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' ;
-                                        
+
                                     echo '
                                 </div>
                             </div>
                         </div>';
-                        
                 } else {
                     global $wpdb;
                     $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
-                    
+
                     $wpdb->update( $table_name, array( 'value' => 1),array('id'=>3)); 
 
                     $rowcount = sanitize_text_field( $_SESSION['rowcount'] );
@@ -127,7 +126,7 @@ function be_popia_compliant_active_check() {
                     $response = wp_remote_get( $url, $args );
                     $response_code = wp_remote_retrieve_response_code( $response );
                     $body         = wp_remote_retrieve_body( $response );
-        
+
                     if ( 401 === $response_code ) {
                         echo "Unauthorized access";
                     }
@@ -138,7 +137,7 @@ function be_popia_compliant_active_check() {
                     if ( 200 === $response_code ) {
                     // echo 'body' . $body;
                     $body = json_decode( $body );
-        
+
                         if($body != []){
                             foreach ( $body as $data ) {
                                 $is_approved = $data->is_approved;
@@ -230,7 +229,7 @@ function be_popia_compliant_active_check() {
                             $response = wp_remote_get( wp_http_validate_url($url), $args );
                             $response_code = wp_remote_retrieve_response_code( $response );
                             $body         = wp_remote_retrieve_body( $response );
-                
+
                             if ( 401 === $response_code ) {
                                 echo "Unauthorized access";
                             }
@@ -240,7 +239,7 @@ function be_popia_compliant_active_check() {
                             if ( 200 === $response_code ) {
                                 // echo 'body' . $body;
                                 $body = json_decode( $body );
-                
+
                                 if($body != []){
                                     foreach ( $body as $data ) {
                                         $is_approved = $data->is_approved;
@@ -255,8 +254,7 @@ function be_popia_compliant_active_check() {
                                     $parties = $wpdb->get_var( $wpdb->prepare(
                                         " SELECT content FROM $table_name WHERE id = 32")
                                     );
-                                    
-                    
+
                                     echo '<style>
                                         .BePopiaCompliant {
                                             background-color: whitesmoke;
@@ -315,7 +313,6 @@ function be_popia_compliant_active_check() {
                                         </div>
                                     </div>';
                                 }
-                    
                             }       
                         }
 
