@@ -1,5 +1,6 @@
 <?php
 function be_popia_compliant_active_check() {
+    
     if ( isset($_REQUEST) ) {
         global $wpdb;    
 
@@ -15,6 +16,7 @@ function be_popia_compliant_active_check() {
         $response = wp_remote_get( $url, $args );
 
         $response_code = wp_remote_retrieve_response_code( $response );
+
         $body = wp_remote_retrieve_body( $response );
 
 
@@ -30,13 +32,17 @@ function be_popia_compliant_active_check() {
             $trim_brackets = trim($body, "[{}]");
             $explode = explode(',', $trim_brackets); 
             $trim_date = str_replace('"renew_date":', '', $explode[1]); 
-            $go_on = str_replace('"is_subscribed":', '', $explode[2]);      
+            $go_on = str_replace('"is_subscribed":', '', $explode[2]); 
+            $consent_form_complete = str_replace('"consent_form_complete":', '', $explode[3]);   
+            $domain_form_complete = str_replace('"domain_form_complete":', '', $explode[4]);   
+            $other_parties = str_replace('"other_parties":', '', $explode[5]);      
             $trim_date = trim($trim_date, '"');
             $go_on = trim($go_on, '"');
             $date = strtotime($trim_date);
             $date = date('Y-m-d',$date);
+            echo $consent_form_complete;
 
-            if($date >= date("Y-m-d")){
+            if($date >= date("Y-m-d") && $consent_form_complete == 1 && $domain_form_complete == 1 && $other_parties != null){
 
                 if($go_on == 1){
                     global $wpdb;
@@ -144,15 +150,9 @@ function be_popia_compliant_active_check() {
                                 if($is_approved){
                                     if($rowcount == 100) {
                                         $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
-                                        $privacy = $wpdb->get_var( $wpdb->prepare(
-                                            " SELECT content FROM $table_name WHERE id = 6")
-                                        );
-                                        $data = $wpdb->get_var( $wpdb->prepare(
-                                            " SELECT content FROM $table_name WHERE id = 21")
-                                        );
-                                        $parties = $wpdb->get_var( $wpdb->prepare(
-                                            " SELECT content FROM $table_name WHERE id = 32")
-                                        );
+                                        $privacy = $wpdb->get_var("SELECT content FROM $table_name WHERE id = 6");
+                                        $data = $wpdb->get_var("SELECT content FROM $table_name WHERE id = 21");
+                                        $parties = $wpdb->get_var("SELECT content FROM $table_name WHERE id = 32");
                                         echo '<style>
                                             .BePopiaCompliant {
                                                 background-color: whitesmoke;
@@ -216,9 +216,44 @@ function be_popia_compliant_active_check() {
                     } 
                 }
             } else {
-                    $rowcount = ($_SESSION['rowcount'] / $_SESSION['rowcount2'] ) *100;
+                global $wpdb;
+                $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
+            
+                $needComms = $wpdb->get_var("SELECT does_comply FROM $table_name WHERE id = 2");
+            
+                $needMarketing = $wpdb->get_var("SELECT does_comply FROM $table_name WHERE id = 3");
+                
+                if($needComms == 1 && $needMarketing == 0) {
+                    $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND (id != 3) AND (id != 59) AND is_active = 1");
+                    $rowcount = $wpdb->num_rows;
+            
+                    $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND (id != 3) AND (id != 59) AND is_active = 1");
+                    $rowcount2 = $wpdb->num_rows;
+            
+                } elseif($needComms == 0 && $needMarketing == 1) {
+                    $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND (id != 2) AND (id != 58) AND is_active = 1");
+                    $rowcount = $wpdb->num_rows;
+            
+                    $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND (id != 2) AND (id != 58) AND is_active = 1");
+                    $rowcount2 = $wpdb->num_rows;
+            
+                } elseif($needComms == 1 && $needMarketing == 1) {
+                    $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND is_active = 1");
+                    $rowcount = $wpdb->num_rows;
+            
+                    $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND is_active = 1");
+                    $rowcount2 = $wpdb->num_rows;
+            
+                } elseif($needMarketing == 0 && $needComms == 0) {
+                    $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND (id != 2) AND (id != 3) AND (id != 58) AND (id != 59) AND is_active = 1");
+                    $rowcount = $wpdb->num_rows;
+            
+                    $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND (id != 2) AND (id != 3) AND (id != 58) AND (id != 59) AND is_active = 1");
+                    $rowcount2 = $wpdb->num_rows;
+                }
+                $rowcounttotal = ($rowcount / $rowcount2) * 100;
 
-                    if($rowcount == 100) {
+                    if($rowcounttotal == 100) {
                             $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME']);
                             $args = array(
                                 'headers' => array(
@@ -245,15 +280,9 @@ function be_popia_compliant_active_check() {
                                         $is_approved = $data->is_approved;
                                         if($is_approved){
                                     $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
-                                    $privacy = $wpdb->get_var( $wpdb->prepare(
-                                        " SELECT content FROM $table_name WHERE id = 6")
-                                    );
-                                    $data = $wpdb->get_var( $wpdb->prepare(
-                                        " SELECT content FROM $table_name WHERE id = 21")
-                                    );
-                                    $parties = $wpdb->get_var( $wpdb->prepare(
-                                        " SELECT content FROM $table_name WHERE id = 32")
-                                    );
+                                    $privacy = $wpdb->get_var("SELECT content FROM $table_name WHERE id = 6");
+                                    $data = $wpdb->get_var("SELECT content FROM $table_name WHERE id = 21");
+                                    $parties = $wpdb->get_var("SELECT content FROM $table_name WHERE id = 32");
 
                                     echo '<style>
                                         .BePopiaCompliant {
@@ -321,6 +350,7 @@ function be_popia_compliant_active_check() {
             }
         }
     }
-   die();
+
 }
+
 be_popia_compliant_active_check();
