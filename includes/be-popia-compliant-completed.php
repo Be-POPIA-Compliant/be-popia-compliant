@@ -40,7 +40,7 @@ function be_popia_compliant_active_check() {
             $go_on = trim($go_on, '"');
             $date = strtotime($trim_date);
             $date = date('Y-m-d',$date);
-            echo $consent_form_complete;
+
 
             if($date >= date("Y-m-d") && $consent_form_complete == 1 && $domain_form_complete == 1 && $other_parties != null){
 
