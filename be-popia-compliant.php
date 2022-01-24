@@ -4,7 +4,7 @@
     Plugin Name: Be POPIA Compliant
     Plugin URI: https://bepopiacompliant.co.za
     Description: The only plugin that assists with POPIA Compliance for any site that operates in South Africa. <a href="https://bepopiacompliant.co.za/popia/act/index.php" target="_blank">https://bepopiacompliant.co.za/popia/act/index.php</a> for the full legislation.
-    Version: 1.0.14
+    Version: 1.0.15
     Author: Web-X
     Author URI: https://web-x.co.za/
     License: GPLv2 or later
@@ -50,6 +50,13 @@ if(!defined('ABSPATH')){
 }
 
 session_start();
+
+
+
+$_SESSION['v'] = '1.0.15';
+
+
+
 
 $_SESSION['beta'] = 1;
 
@@ -191,12 +198,10 @@ function be_popia_compliant_add_user_details_to_py($user_id){
 
         $response = wp_remote_retrieve_body( $request );
     }
+
 }
 
 
-//------------------------------------------------//
-//* Create Database Table for Be POPIA Compliant *//
-//------------------------------------------------//
 
 add_filter( 'plugin_action_links_' . plugin_basename(__FILE__), 'add_action_links' );
  
@@ -208,6 +213,7 @@ function add_action_links ( $actions ) {
    );
    $actions = array_merge( $actions, $mylinks );
    return $actions;
+   
 }
 
 function be_popia_compliant_user_scripts() {
@@ -218,6 +224,10 @@ function be_popia_compliant_user_scripts() {
 
 add_action( 'admin_print_styles', 'be_popia_compliant_user_scripts' );
 
+
+//------------------------------------------------//
+//* Create Database Table for Be POPIA Compliant *//
+//------------------------------------------------//
 
 function be_popia_compliant_create() {
     global $wpdb;
@@ -1704,7 +1714,7 @@ function be_popia_compliant_cookie_display_cookie_info() {
     <div class="be_popia_compliant-cookie-info-container" style="<?php echo 'background-color: '.esc_attr( $background_color ).'; '.esc_attr( $cookie_info_placemet ).': 0' ?>" id="be_popia_compliant-cookie-info-container">
        <!-- remove action method!!! -->
         <form method="post" id="cookie-form"> 
-            <p class="be_popia_compliant-cookie-info" style="<?php echo 'color: '.esc_attr( $text_color ) ?>"><?php echo wp_kses( $cookie_message, $allowed_html ); ?></p>
+            <p class="be_popia_compliant-cookie-info" style="<?php echo 'color: '.esc_attr( $text_color ) ?>"><?php echo wp_kses( $cookie_message, $allowed_html ); ?><span style="font-size:0px">  <?php if(isset($_SESSION['v'])) echo 'V ' . $_SESSION['v'];?></span></p>
             <div class="be_popia_compliant-buttons">
             <button type="submit" name="cookie-accept-button" class="be_popia_compliant-cookie-accept-button" id="cookie-accept-button" style="<?php echo 'background-color: '.esc_attr( $button_background_color ) ?>" ><span class="button-text" style="<?php echo 'color: '.esc_attr( $button_text_color ) ?>"><?php echo esc_html( $cookie_info_button ); ?></span></button>
             <?php if ( $show_policy_privacy ) { ?>

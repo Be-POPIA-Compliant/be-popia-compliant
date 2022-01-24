@@ -7,7 +7,7 @@ Tags: POPI, POPIA, POPI Act, BePOPIACompliant, Be POPIA Compliant, Be POPI Compl
 Requires at least: 5.4
 Tested up to: 5.9
 Requires PHP: 7.3
-Stable tag: 1.0.14
+Stable tag: 1.0.15
 License: License: GPLv2 or later
 
 The only plugin that assists with POPIA Compliance for any site that operates in South Africa. https://bepopiacompliant.co.za/popia/act/index.php for the full legislation.
@@ -150,6 +150,8 @@ A20: If you have a website, that collects any data such as customer emails, tele
 
 == Changelog ==
 
+= 1.0.15 =
+* Added Hidden Versin number for easier debugging.
 
 = 1.0.14 =
 * Fixed file not found in some instances
