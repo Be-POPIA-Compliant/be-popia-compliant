@@ -2142,4 +2142,5 @@ function be_popia_compliant_echo_footer() {
     }
 }
 
+
 add_action('wp_footer', 'be_popia_compliant_echo_footer');
