@@ -2043,7 +2043,7 @@ function be_popia_compliant_echo_footer() {
                 }
             }
                     if(((isset($result_api->value) && $result_api->value != '') && ((isset($result_company->value)) && $result_company->value != ''))){
-                        include_once(plugin_dir_path(__FILE__).'/includes/be-popia-compliant-completed.php');x
+                        include_once(plugin_dir_path(__FILE__).'includes/be-popia-compliant-completed.php');x
                     } elseif($rowcount == 100) {
                         $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME']);
                         $args = array(
