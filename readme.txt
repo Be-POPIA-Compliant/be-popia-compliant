@@ -2,9 +2,9 @@
 Contributors: bepopiacompliant
 Tags: POPI, POPIA, POPI Act, BePOPIACompliant, Be POPIA Compliant, Be POPI Compliant
 Requires at least: 5.4
-Tested up to: 5.8.3
+Tested up to: 5.9
 Requires PHP: 7.3
-Stable tag: 1.0.12
+Stable tag: 1.0.13
 License: License: GPLv2 or later
 
 The only plugin that assists with POPIA Compliance for any site that operates in South Africa. https://bepopiacompliant.co.za/popia/act/index.php for the full legislation.
@@ -144,6 +144,10 @@ A20: If you have a website, that collects any data such as customer emails, tele
 3. Be POPIA Compliant (BPC) | Cookie Settings - Customize your Cookie Notice Banner to match your brand.
 
 == Changelog ==
+
+= 1.0.13 =
+* Tested compatibality for WordPress 5.9.
+* Added Links to Main Plugin Menu for ease of navigation.
 
 = 1.0.12 =
 * Fix - Error in pinging API.

@@ -4,7 +4,7 @@
     Plugin Name: Be POPIA Compliant
     Plugin URI: https://bepopiacompliant.co.za
     Description: The only plugin that assists with POPIA Compliance for any site that operates in South Africa. <a href="https://bepopiacompliant.co.za/popia/act/index.php" target="_blank">https://bepopiacompliant.co.za/popia/act/index.php</a> for the full legislation.
-    Version: 1.0.12
+    Version: 1.0.13
     Author: Web-X
     Author URI: https://web-x.co.za/
     License: GPLv2 or later
@@ -197,6 +197,18 @@ function be_popia_compliant_add_user_details_to_py($user_id){
 //------------------------------------------------//
 //* Create Database Table for Be POPIA Compliant *//
 //------------------------------------------------//
+
+add_filter( 'plugin_action_links_' . plugin_basename(__FILE__), 'add_action_links' );
+ 
+function add_action_links ( $actions ) {
+   $mylinks = array(
+    '<a href="' . admin_url( 'admin.php?page=be_popia_compliant_checklist' ) . '">Checklist</a>',
+    '<a href="' . admin_url( 'admin.php?page=privacy-policy' ) . '">Cookie Banner</a>',
+    '<a href="https://bepopiacompliant.co.za/#/main" target="_blank" style="color:#D63638;font-weight:700;">Go Pro</a>',
+   );
+   $actions = array_merge( $actions, $mylinks );
+   return $actions;
+}
 
 function be_popia_compliant_user_scripts() {
     $plugin_url = wp_http_validate_url(plugin_dir_url( __FILE__ ));
@@ -1074,7 +1086,7 @@ function be_popia_compliant_dashboard_checklist(){
                 <div class="be_popia_compliant_col">
                     <div class="be_popia_compliant_tabs">';
                         foreach($results as $result){
-
+                            $marketing = 38;
                             if($result->id == 3) {
                                 if($result->does_comply == 1) {
                                     $marketing = 39;
@@ -1102,7 +1114,7 @@ function be_popia_compliant_dashboard_checklist(){
 
                                     echo'
                                         <div class="be_popia_compliant_tab-section-content">
-                                            ' . esc_html( $result->description ) . '   
+                                            ' . $result->description . '   
                                         </div>';
                                     }
                                 echo'
@@ -1379,7 +1391,7 @@ function be_popia_compliant_dashboard_checklist(){
                                     <label '; if($result->does_comply == 0){echo 'class="be_popia_compliant_tab-label"';} else {echo'class="be_popia_compliant_tab-label_completed"';} echo ' for="rd' . esc_attr( $result->id ) . '" id="be_popia_compliant_tab-label' . esc_attr( $result->id ) . '">' . esc_attr( $result->title ) . '</label>
                                     <div class="be_popia_compliant_tab-content"><br>
                                         
-                                        ' . esc_html( $result->description ) . '
+                                        ' . $result->description . '
                                             ';
                                             if($result->type == 1 || $result->type == 5 || $result->type == 6 || $result->type == 7){
 
@@ -1571,7 +1583,7 @@ function be_popia_compliant_checklist_update_compliance(){
 
         $rowcount = ($rowcount / $rowcount2) * 100;
 
-        // echo esc_html( $rowcount );
+        echo esc_html( $rowcount );
     }
 
    die();
@@ -2031,7 +2043,7 @@ function be_popia_compliant_echo_footer() {
                 }
             }
                     if(((isset($result_api->value) && $result_api->value != '') && ((isset($result_company->value)) && $result_company->value != ''))){
-                        include_once(plugin_dir_path(__FILE__).'/includes/be-popia-compliant-completed.php');
+                        include_once(plugin_dir_path(__FILE__).'/includes/be-popia-compliant-completed.php');x
                     } elseif($rowcount == 100) {
                         $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME']);
                         $args = array(
@@ -2129,20 +2141,5 @@ function be_popia_compliant_echo_footer() {
         } //isSSL
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 add_action('wp_footer', 'be_popia_compliant_echo_footer');
