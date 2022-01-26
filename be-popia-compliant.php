@@ -4,7 +4,7 @@
     Plugin Name: Be POPIA Compliant
     Plugin URI: https://bepopiacompliant.co.za
     Description: The only plugin that assists with POPIA Compliance for any site that operates in South Africa. <a href="https://bepopiacompliant.co.za/popia/act/index.php" target="_blank">https://bepopiacompliant.co.za/popia/act/index.php</a> for the full legislation.
-    Version: 1.0.15
+    Version: 1.0.16
     Author: Web-X
     Author URI: https://web-x.co.za/
     License: GPLv2 or later
@@ -53,7 +53,7 @@ session_start();
 
 
 
-$_SESSION['v'] = '1.0.15';
+$_SESSION['v'] = '1.0.16';
 
 
 
@@ -1558,7 +1558,6 @@ function be_popia_compliant_checklist_update_compliance(){
         $needMarketing = $wpdb->get_var("SELECT does_comply FROM $table_name WHERE id = 3");
 
 
-
         if($needComms == 1 && $needMarketing == 0) {
 
             $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND (id != 3) AND (id != 59) AND is_active = 1");
@@ -1591,7 +1590,7 @@ function be_popia_compliant_checklist_update_compliance(){
             $rowcount2 = $wpdb->num_rows;
         }
 
-        $rowcount = ($rowcount / $rowcount2) * 100;
+        $rowcount = ($rowcount / --$rowcount2) * 100;
 
         echo esc_html( $rowcount );
     }
@@ -1968,6 +1967,7 @@ function be_popia_compliant_echo_footer() {
 
         $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND (id != 3) AND (id != 59) AND is_active = 1");
         $rowcount2 = $wpdb->num_rows;
+        --$rowcount2;
 
     } elseif($needComms == 0 && $needMarketing == 1) {
 
@@ -1976,6 +1976,7 @@ function be_popia_compliant_echo_footer() {
 
         $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND (id != 2) AND (id != 58) AND is_active = 1");
         $rowcount2 = $wpdb->num_rows;
+        --$rowcount2;
 
     } elseif($needComms == 1 && $needMarketing == 1) {
 
@@ -1984,6 +1985,7 @@ function be_popia_compliant_echo_footer() {
 
         $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND is_active = 1");
         $rowcount2 = $wpdb->num_rows;
+        --$rowcount2;
 
     } elseif($needMarketing == 0 && $needComms == 0) {
         $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND (id != 2) AND (id != 3) AND (id != 58) AND (id != 59) AND is_active = 1");
@@ -1991,9 +1993,10 @@ function be_popia_compliant_echo_footer() {
 
         $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND (id != 2) AND (id != 3) AND (id != 58) AND (id != 59) AND is_active = 1");
         $rowcount2 = $wpdb->num_rows;
+        --$rowcount2;
     }
 
-    $_SESSION['rowcount'] = $rowcount2;
+    $_SESSION['rowcount'] = $rowcount;
     $_SESSION['rowcount2'] = $rowcount2;
     $rowcount = ($rowcount / $rowcount2) * 100;
 
@@ -2001,13 +2004,7 @@ function be_popia_compliant_echo_footer() {
     $result_api = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 1");
     $result_company = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 2");
     $result_suspended = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 3");
-    
-    
-    
-    
-    
-    
-    
+
     
     
     if (isset( $_COOKIE['cookie-accepted'])){
