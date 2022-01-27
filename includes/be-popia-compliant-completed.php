@@ -251,7 +251,7 @@ function be_popia_compliant_active_check() {
                     $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND (id != 2) AND (id != 3) AND (id != 58) AND (id != 59) AND is_active = 1");
                     $rowcount2 = $wpdb->num_rows;
                 }
-                $rowcounttotal = ($rowcount / $rowcount2) * 100;
+                $rowcounttotal = ($rowcount / --$rowcount2) * 100;
 
                     if($rowcounttotal == 100) {
                             $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME']);

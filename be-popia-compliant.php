@@ -4,8 +4,8 @@
     Plugin Name: Be POPIA Compliant
     Plugin URI: https://bepopiacompliant.co.za
     Description: The only plugin that assists with POPIA Compliance for any site that operates in South Africa. <a href="https://bepopiacompliant.co.za/popia/act/index.php" target="_blank">https://bepopiacompliant.co.za/popia/act/index.php</a> for the full legislation.
-    Version: 1.0.16
-    Author: Web-X
+    Version: 1.0.17
+    Author: Web-X | For Everything Web (South Africa)
     Author URI: https://web-x.co.za/
     License: GPLv2 or later
     Text Domain: be_popia_compliant
@@ -53,7 +53,7 @@ session_start();
 
 
 
-$_SESSION['v'] = '1.0.16';
+$_SESSION['v'] = '1.0.17';
 
 
 
