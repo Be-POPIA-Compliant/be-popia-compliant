@@ -420,3 +420,9 @@
 div#page-container {
     overflow-x: hidden !important;
 }
+
+input.bpc_down {
+    margin-top: 12px !important;
+    align-items: center !important;
+    text-align: center !important;
+}

@@ -57,9 +57,20 @@ $_SESSION['v'] = '1.0.17';
 
 
 
+global $wpdb;
 
-$_SESSION['beta'] = 1;
+$table_name = $wpdb->prefix . 'be_popia_compliant_admin';
+$result_api = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 1");
 
+if((isset($result_api->value) && $result_api->value !='')){
+    $_SESSION['hasPro'] = 1;
+    // $_SESSION['disable'] = "disabled";
+    $_SESSION['disable'] = "";
+} else {
+    $_SESSION['disable'] = "";
+}
+
+/* Trigger when new user account is created*/
 add_action('user_register','be_popia_compliant_add_user_details_to_py');
 
 function be_popia_compliant_add_user_details_to_py($user_id){
@@ -101,6 +112,7 @@ function be_popia_compliant_add_user_details_to_py($user_id){
             }     
         }
     }
+
     if(isset($py_user_id)){
         $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/getwpname/" . $py_user_id);
 
@@ -133,7 +145,6 @@ function be_popia_compliant_add_user_details_to_py($user_id){
             }     
         }
     }
-
 
     if( ! $new_user ){
         error_log( 'Unable to get userdata!' );
@@ -198,48 +209,50 @@ function be_popia_compliant_add_user_details_to_py($user_id){
 
         $response = wp_remote_retrieve_body( $request );
     }
-
 }
 
-
-
-add_filter( 'plugin_action_links_' . plugin_basename(__FILE__), 'add_action_links' );
- 
+/* Adds new links to plugin in plugins.php */
 function add_action_links ( $actions ) {
-   $mylinks = array(
-    '<a href="' . admin_url( 'admin.php?page=be_popia_compliant_checklist' ) . '">Checklist</a>',
-    '<a href="' . admin_url( 'admin.php?page=privacy-policy' ) . '">Cookie Banner</a>',
-    '<a href="https://bepopiacompliant.co.za/#/main" target="_blank" style="color:#D63638;font-weight:700;">Go Pro</a>',
-   );
+    if(isset($_SESSION['hasPro']) && ($_SESSION['hasPro'] == 1)) {
+        $mylinks = array(
+            '<a href="' . admin_url( 'admin.php?page=be_popia_compliant_checklist' ) . '"><b>POPIA Checklist</b></a>',
+            '<a href="' . admin_url( 'admin.php?page=privacy-policy' ) . '"><b>Cookie Banner</b></a>',
+            '<a href="' . admin_url( 'users.php' ) . '"><b>Consent Provided</b></a>'
+        );
+    } else {
+        $mylinks = array(
+            '<a href="' . admin_url( 'admin.php?page=be_popia_compliant_checklist' ) . '"><b>POPIA Checklist</b></a>',
+            '<a href="' . admin_url( 'admin.php?page=privacy-policy' ) . '"><b>Cookie Banner</b></a>',
+            '<a href="' . admin_url( 'users.php' ) . '"><b>Consent Provided</b></a>',
+            '<a href="https://bepopiacompliant.co.za/#/main" target="_blank" style="color:#D63638;font-weight:700;">Go Pro</a>',
+        );
+    };
    $actions = array_merge( $actions, $mylinks );
    return $actions;
-   
 }
 
+add_filter( 'plugin_action_links_' . plugin_basename(__FILE__), 'add_action_links' );
+
+
+/* Enqueue scripts*/
 function be_popia_compliant_user_scripts() {
     $plugin_url = wp_http_validate_url(plugin_dir_url( __FILE__ ));
-
     wp_enqueue_style( 'style',  $plugin_url . "styles.css");
 }
 
 add_action( 'admin_print_styles', 'be_popia_compliant_user_scripts' );
 
-
 //------------------------------------------------//
 //* Create Database Table for Be POPIA Compliant *//
 //------------------------------------------------//
-
 function be_popia_compliant_create() {
-    global $wpdb;
-    
-    
+    global $wpdb;   
 
         $table_name = $wpdb->base_prefix.'be_popia_compliant_checklist';
         $query = $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table_name ) );
 
         if ( ! $wpdb->get_var( $query ) == $table_name ) {
             
-
         $be_popia_compliant_tb_checklist= $wpdb->prefix ."be_popia_compliant_checklist";
     
         require_once(ABSPATH ."wp-admin/includes/upgrade.php");
@@ -254,19 +267,7 @@ function be_popia_compliant_create() {
             does_comply int(1) DEFAULT '0',
             is_active int(1) DEFAULT'1',
             PRIMARY KEY (id))";
-        dbDelta($be_popia_compliant_query_checklist);
-    
-    
-        // $be_popia_compliant_tb_logs= $wpdb->prefix ."be_popia_compliant_logs";
-    
-        // $be_popia_compliant_query_logs="
-        // CREATE TABLE $be_popia_compliant_tb_logs(
-        //     id int(12) NOT NULL AUTO_INCREMENT,
-        //     userID int(12) DEFAULT '',
-        //     action varchar(1500) DEFAULT '',
-        //     PRIMARY KEY (id))";
-        // dbDelta($be_popia_compliant_query_logs);
-    
+        dbDelta($be_popia_compliant_query_checklist); 
     
         $be_popia_compliant_tb_admin= $wpdb->prefix ."be_popia_compliant_admin";
         $be_popia_compliant_query_admin="
@@ -348,6 +349,265 @@ function be_popia_compliant_create() {
         }
     }
 }
+
+
+/* Create styling to control users column widths. */
+add_action('admin_head', 'role_width');
+
+function role_width() {
+    echo '<style type="text/css">';
+    echo '.fixed .column-role { text-align: center; width:90px !important; overflow:hidden }';
+    echo '</style>';
+}
+
+add_action('admin_head', 'id_width');
+
+function id_width() {
+    echo '<style type="text/css">';
+    echo '.fixed .column-user_id { text-align: center; width:20px !important; overflow:hidden }';
+    echo '</style>';
+}
+
+add_action('admin_head', 'date_width');
+
+function date_width() {
+    echo '<style type="text/css">';
+    echo '.fixed .column-consent_date, .fixed .column-registration_date, .fixed { text-align: center; width:96px !important; overflow:hidden }';
+    echo '</style>';
+}
+
+add_action('admin_head', 'name_width');
+
+function name_width() {
+    echo '<style type="text/css">';
+    echo '.fixed .column-username, .fixed .column-name { text-align: left; width:130px !important; overflow:hidden }';
+    echo '</style>';
+}
+
+add_action('admin_head', 'email_width');
+
+function email_width() {
+    echo '<style type="text/css">';
+    echo '.fixed .column-email { text-align: left !important; width:200px !important; overflow:hidden }';
+    echo '</style>';
+}
+
+add_action('admin_head', 'comms_and_marketing_width');
+
+function comms_and_marketing_width() {
+    echo '<style type="text/css">';
+    echo '.column-comms_phone, .column-comms_sms, .column-comms_whatsapp, .column-comms_messenger, .column-comms_telegram, .column-comms_email, .column-market_phone, .column-market_sms, .column-market_whatsapp, .column-market_messenger, .column-market_telegram, .column-market_email { text-align: center !important; width:78px !important; overflow:hidden }';
+    echo '</style>';
+}
+
+/* Create new columns, and remove posts column */
+add_filter( 'manage_users_columns', 'be_popia_compliant_modify_user_table' );
+
+function be_popia_compliant_modify_user_table( $columns ) {
+    unset( $columns['posts'] );
+    $columns['user_id'] = 'ID';
+    $columns['consent_date'] = 'Consent Date';
+    $columns['comms_phone'] = 'Comms Phone';
+    $columns['comms_sms'] = 'Comms SMS';
+    $columns['comms_whatsapp'] = 'Comms WhatsApp';
+    $columns['comms_messenger'] = 'Comms Messenger';
+    $columns['comms_telegram'] = 'Comms Telegram';
+    $columns['comms_email'] = 'Comms Email';
+    $columns['market_phone'] = 'Marketing Phone';
+    $columns['market_sms'] = 'Marketing SMS';
+    $columns['market_whatsapp'] = 'Marketing WhatsApp';
+    $columns['market_messenger'] = 'Marketing Messenger';
+    $columns['market_telegram'] = 'Marketing Telegram';
+    $columns['market_email'] = 'Marketing Email';
+    return $columns;
+}
+
+/* Fill our new column with the registration dates of the users */
+add_filter( 'manage_users_custom_column', 'be_popia_compliant_modify_user_table_row', 10, 3 );
+
+function be_popia_compliant_modify_user_table_row( $row_output, $column_id_attr, $user ) {
+    
+    $date_format = 'j M, Y H:i';
+
+    switch ( $column_id_attr ) {
+        case 'user_id' :
+            return get_the_author_meta( 'ID', $user );
+            break;
+        // case 'registration_date' :
+        //     return date( $date_format, strtotime( get_the_author_meta( 'registered', $user ) ) );
+        //     break;
+            case 'consent_date' :
+            $timestamp = get_the_author_meta( 'bpc_consent_date', $user );
+            $consent_url = get_the_author_meta( 'bpc_consent_url', $user );
+            $friendly_date = date( $date_format, $timestamp );
+                if(isset($consent_url) && ($consent_url != '')) {
+                    $friendly_date = '<a href="' . $consent_url . '" target="_blank">' . $friendly_date . '</a>';
+                } else {
+                    $friendly_date = $friendly_date;
+                }
+                
+                if($timestamp > 1643632160){
+                return $friendly_date;
+                } else {
+                return null;
+                }
+            break;
+            case 'comms_phone' :
+                $check_comms_phone = (get_the_author_meta( 'bpc_comms_phone', $user ) );
+                if(isset($check_comms_phone) && ($check_comms_phone == 1)){
+                    $comms_phone= '<input type="checkbox" class="bpc_down" name="bpc_comms_phone" checked="checked" onclick="save_comms_market_val(\'comms_phone\', ' . $user . ', 0)"' . $_SESSION['disable'] . ' />';
+                } else {
+                    $comms_phone= '<input type="checkbox" class="bpc_down" name="bpc_comms_phone" onclick="save_comms_market_val(\'comms_phone\', ' . $user . ', 1)"' . $_SESSION['disable'] . ' />';
+                }
+                return $comms_phone;
+            break;
+            case 'comms_sms' :
+                $check_comms_sms = (get_the_author_meta( 'bpc_comms_sms', $user ) );
+                if(isset($check_comms_sms) && ($check_comms_sms == 1)){
+                    $comms_sms= '<input type="checkbox" class="bpc_down" name="bpc_comms_sms" checked="checked" onclick="save_comms_market_val(\'comms_sms\', ' . $user . ', 0)"' . $_SESSION['disable'] . ' />';
+                } else {
+                    $comms_sms= '<input type="checkbox" class="bpc_down" name="bpc_comms_sms" onclick="save_comms_market_val(\'comms_sms\', ' . $user . ', 1)"' . $_SESSION['disable'] . ' />';
+                }
+                return $comms_sms;
+            break;
+            case 'comms_whatsapp' :
+                $check_comms_whatsapp = (get_the_author_meta( 'bpc_comms_whatsapp', $user ) );
+                if(isset($check_comms_whatsapp) && ($check_comms_whatsapp == 1)){
+                    $comms_whatsapp= '<input type="checkbox" class="bpc_down" name="bpc_comms_whatsapp" checked="checked" onclick="save_comms_market_val(\'comms_whatsapp\', ' . $user . ', 0)"' . $_SESSION['disable'] . ' />';
+                } else {
+                    $comms_whatsapp= '<input type="checkbox" class="bpc_down" name="bpc_comms_whatsapp" onclick="save_comms_market_val(\'comms_whatsapp\', ' . $user . ', 1)"' . $_SESSION['disable'] . ' />';
+                }
+                return $comms_whatsapp;
+            break;
+        default:
+    }
+        /* Function that saves market and comms data for each user*/
+        if(!isset($check_comms_phone) || ($check_comms_phone == "") || ($check_comms_phone == 0)){
+            echo '<script>                                                    
+                    function save_comms_market_val(comms_market, user , val){
+
+                        jQuery.ajax({
+                            type: "post",
+                            cache: false,
+                            dataType: "json",
+                            url: ajaxurl,
+                            data: {
+                                "action":"be_popia_compliant_save_comms_market_val",
+                                "comms_market" : comms_market,
+                                "user" : user,
+                                "val" : val
+                            },
+                            success:function(data) {
+                                // window.location.reload();
+                                // console.log(comms_market);
+                                // console.log(user);
+                                // console.log(val);
+                            },
+                            error: function(errorThrown){
+                                console.log(errorThrown);
+                            }
+                        });
+                    }
+            </script>';
+        }
+
+    return $row_output;
+}
+
+/* Store onclick events when comms or marketing consent is clicked */
+function be_popia_compliant_save_comms_market_val() {
+    $meta_key = 'bpc_' . sanitize_text_field($_REQUEST['comms_market']);
+    $user_id = sanitize_text_field($_REQUEST['user']);
+    $meta_value = sanitize_text_field($_REQUEST['val']);
+
+    update_user_meta( $user_id, $meta_key, $meta_value );
+}
+
+add_action( 'wp_ajax_be_popia_compliant_save_comms_market_val', 'be_popia_compliant_save_comms_market_val' ); 
+
+
+
+/* Consent date filter */
+ add_filter( 'manage_users_sortable_columns', 'be_popia_compliant_make_consent_date_column_sortable' );
+
+function be_popia_compliant_make_consent_date_column_sortable( $columns ) {
+	return wp_parse_args( array( 'consent_date' => 'consent_date' ), $columns );
+}
+
+/* Communication related filters */
+add_filter( 'manage_users_sortable_columns', 'be_popia_compliant_make_comms_phone_column_sortable' );
+
+function be_popia_compliant_make_comms_phone_column_sortable( $columns ) {
+	return wp_parse_args( array( 'comms_phone' => 'comms_phone' ), $columns );
+}
+
+add_filter( 'manage_users_sortable_columns', 'be_popia_compliant_make_comms_sms_column_sortable' );
+
+function be_popia_compliant_make_comms_sms_column_sortable( $columns ) {
+	return wp_parse_args( array( 'comms_sms' => 'comms_sms' ), $columns );
+}
+
+add_filter( 'manage_users_sortable_columns', 'be_popia_compliant_make_comms_whatsapp_column_sortable' );
+
+function be_popia_compliant_make_comms_whatsapp_column_sortable( $columns ) {
+	return wp_parse_args( array( 'comms_whatsapp' => 'comms_whatsapp' ), $columns );
+}
+
+add_filter( 'manage_users_sortable_columns', 'be_popia_compliant_make_comms_messenger_column_sortable' );
+
+function be_popia_compliant_make_comms_messenger_column_sortable( $columns ) {
+	return wp_parse_args( array( 'comms_messenger' => 'comms_messenger' ), $columns );
+}
+
+add_filter( 'manage_users_sortable_columns', 'be_popia_compliant_make_comms_telegram_column_sortable' );
+
+function be_popia_compliant_make_comms_telegram_column_sortable( $columns ) {
+	return wp_parse_args( array( 'comms_telegram' => 'comms_telegram' ), $columns );
+}
+
+add_filter( 'manage_users_sortable_columns', 'be_popia_compliant_make_comms_email_column_sortable' );
+
+function be_popia_compliant_make_comms_email_column_sortable( $columns ) {
+	return wp_parse_args( array( 'comms_email' => 'comms_email' ), $columns );
+}
+
+/* Marketing related filters */
+add_filter( 'manage_users_sortable_columns', 'be_popia_compliant_make_market_phone_column_sortable' );
+
+function be_popia_compliant_make_market_phone_column_sortable( $columns ) {
+	return wp_parse_args( array( 'market_phone' => 'market_phone' ), $columns );
+}
+
+add_filter( 'manage_users_sortable_columns', 'be_popia_compliant_make_market_sms_column_sortable' );
+
+function be_popia_compliant_make_market_sms_column_sortable( $columns ) {
+	return wp_parse_args( array( 'market_sms' => 'market_sms' ), $columns );
+}
+
+add_filter( 'manage_users_sortable_columns', 'be_popia_compliant_make_market_whatsapp_column_sortable' );
+
+function be_popia_compliant_make_market_whatsapp_column_sortable( $columns ) {
+	return wp_parse_args( array( 'market_whatsapp' => 'market_whatsapp' ), $columns );
+}
+
+add_filter( 'manage_users_sortable_columns', 'be_popia_compliant_make_market_messenger_column_sortable' );
+
+function be_popia_compliant_make_market_messenger_column_sortable( $columns ) {
+	return wp_parse_args( array( 'market_messenger' => 'market_messenger' ), $columns );
+}
+
+add_filter( 'manage_users_sortable_columns', 'be_popia_compliant_make_market_telegram_column_sortable' );
+
+function be_popia_compliant_make_market_telegram_column_sortable( $columns ) {
+	return wp_parse_args( array( 'market_telegram' => 'market_telegram' ), $columns );
+}
+
+add_filter( 'manage_users_sortable_columns', 'be_popia_compliant_make_market_email_column_sortable' );
+
+function be_popia_compliant_make_market_email_column_sortable( $columns ) {
+	return wp_parse_args( array( 'market_email' => 'market_email' ), $columns );
+}
+
 
 function be_popia_compliant_insert_data() {
     global $wpdb;
@@ -678,7 +938,6 @@ function be_popia_compliant_dashboard(){
                 $result_suspended = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 3");
                 $result_complete = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 4");
 
-
                 if((isset($result_api->value) && $result_api->value !='') && (isset($result_company->value) && $result_company->value != '') && $result_suspended->value != 1 && $result_complete->value == 1){
                     echo'
                     <div class="be_popia_compliant_p_version">
@@ -886,20 +1145,7 @@ function be_popia_compliant_notice(){
 
         foreach ( $data as $datapoint ) {
             $server_message = $datapoint->value;
-
-            $word1 = 'LIVE';
-            $word2 = 'notdefined';
-
-            if($_SESSION['beta'] == 1) $word2 = 'BETA';
-            if(strpos($server_message, $word2) !== false)
-            {$_SESSION['beta'] = 1; } else {$_SESSION['beta'] = 0;}
-
-            if(strpos($server_message, $word1) !== false)
-            {$_SESSION['live'] = 1; } else {$_SESSION['live'] = 0;}
         }
-        // echo "server_message:
-
-        // " . $server_message;
     }    
 
     if(isset($server_message) && ($server_message != 'null')) {
