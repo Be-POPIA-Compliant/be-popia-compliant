@@ -426,3 +426,9 @@ input.bpc_down {
     align-items: center !important;
     text-align: center !important;
 }
+
+
+#adminmenuback {
+    top: 0;
+    z-index: 1;
+}
