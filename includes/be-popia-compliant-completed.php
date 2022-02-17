@@ -170,13 +170,14 @@ function be_popia_compliant_active_check() {
                         $rowcount2;
                     }
                 
-                    $_SESSION['rowcount'] = $rowcount;
-                    $_SESSION['rowcount2'] = $rowcount2;
+                    update_option('bpc_rowcount', $rowcount);
+                    update_option('bpc_rowcount2', $rowcount2);
+
                     $rowcount = ($rowcount / $rowcount2) * 100;
 
 
-                    $rowcount = sanitize_text_field( $_SESSION['rowcount'] );
-                    $rowcount2 = sanitize_text_field( $_SESSION['rowcount2'] );
+                    $rowcount = sanitize_text_field( get_option('bpc_rowcount') );
+                    $rowcount2 = sanitize_text_field( get_option('bpc_rowcount2') );
 
                     $rowcount = ($rowcount / $rowcount2) * 100;
 
@@ -408,7 +409,6 @@ function be_popia_compliant_active_check() {
                                 }
                             }       
                         }
-
                     }
                 }
             }

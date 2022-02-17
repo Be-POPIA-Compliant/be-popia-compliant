@@ -45,173 +45,24 @@
  ------------------------------------------------------------------------------------------------------------------- */
 
 
-if(!defined('ABSPATH')){
+if(!defined('ABSPATH')) {
     exit;
 }
 
-session_start();
+update_option( 'bpc_v' , '1.0.17' );
 
-
-add_option( 'bpc_v' , '1.0.17' );
-
-
-global $wpdb;
-
-$table_name = $wpdb->prefix . 'be_popia_compliant_admin';
-$result_api = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 1");
-
-if((isset($result_api->value) && $result_api->value !='')){
-    $_SESSION['hasPro'] = 1;
-    // $_SESSION['disable'] = "disabled";
-    $_SESSION['disable'] = "";
-} else {
-    $_SESSION['disable'] = "";
+/* Enqueue scripts*/
+function be_popia_compliant_user_scripts() {
+    $plugin_url = wp_http_validate_url(plugin_dir_url( __FILE__ ));
+    wp_enqueue_style( 'style',  $plugin_url . "styles.css");
 }
 
-/* Trigger when new user account is created*/
-add_action('user_register','be_popia_compliant_add_user_details_to_py');
+add_action( 'admin_print_styles', 'be_popia_compliant_user_scripts' );
 
-function be_popia_compliant_add_user_details_to_py($user_id){
-    $new_user = get_userdata($user_id);
-    $user_email = $new_user -> user_email;
-    $domain = $_SERVER['SERVER_NAME'];
-    $first_name = '';
-    $surname = '';
-
-    $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/getuserid/" . $user_email);
-
-    $args = array(
-        'headers' => array(
-            'Content-Type' => 'application/json',
-        ),
-        'body'    => array(),
-    );
-
-    $response = wp_remote_get( wp_http_validate_url($url), $args );
-
-    $response_code = wp_remote_retrieve_response_code( $response );
-    $body         = wp_remote_retrieve_body( $response );
-
-    if ( 401 === $response_code ) {
-        echo "Unauthorized access";
-    }
-
-    // if ( 200 !== $response_code ) {
-        // echo "Error in pinging API Code:601" . esc_html( $response_code );
-    // }
-
-    if ( 200 === $response_code ) {
-        $body = json_decode( $body );   
-        if(empty($body)){
-
-        } else {
-            foreach ( $body as $data ) {
-                $py_user_id = $data->id;
-            }     
-        }
-    }
-
-    if(isset($py_user_id)){
-        $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/getwpname/" . $py_user_id);
-
-        $args = array(
-            'headers' => array(
-                'Content-Type' => 'application/json',
-            ),
-            'body'    => array(),
-        );
-
-        $response = wp_remote_get( wp_http_validate_url($url), $args );
-
-        $response_code = wp_remote_retrieve_response_code( $response );
-        $body         = wp_remote_retrieve_body( $response );
-
-        if ( 401 === $response_code ) {
-            echo "Unauthorized access";
-        }
-
-        // if ( 200 !== $response_code ) {
-            // echo "Error in pinging API Code:602" . esc_html( $response_code );
-        // }
-
-        if ( 200 === $response_code ) {
-            $body = json_decode( $body );   
-
-            foreach ( $body as $data ) {
-                $first_name = $data->data_officer_first_name;
-                $surname = $data->data_officer_surname;
-            }     
-        }
-    }
-
-    if( ! $new_user ){
-        error_log( 'Unable to get userdata!' );
-        return;
-    }
-
-    $url  = wp_http_validate_url('https://py.bepopiacompliant.co.za/api/newusercreated/');
-    $body = array(
-        'domain' => $domain,
-        'email' => $user_email,
-        'user_id' => $user_id,
-        'first_name' => $first_name,
-        'surname' => $surname,
-        'py_user_id' => $py_user_id
-    );
-
-    $args = array(
-        'method'      => 'POST',
-        'timeout'     => 45,
-        'sslverify'   => false,
-        'headers'     => array(
-            'Content-Type'  => 'application/json',
-        ),
-        'body'        => json_encode($body),
-    );
-
-    $request = wp_remote_post( wp_http_validate_url(wp_http_validate_url($url)), $args );
-
-    if ( is_wp_error( $request ) || wp_remote_retrieve_response_code( $request ) != 200 ) {
-        error_log( print_r( $request, true ) );
-    }
-
-    $response = wp_remote_retrieve_body( $request );
-    if(!isset($py_user_id)){
-        $characters = '23456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ';
-        $charactersLength = strlen($characters);
-        $randomString = '';
-        for ($i = 0; $i < 8; $i++) {
-            $randomString .= $characters[rand(0, $charactersLength - 1)];
-        }
-        $url  = wp_http_validate_url('https://py.bepopiacompliant.co.za/api/users/');
-        $body = array(
-            'username' => $user_email,
-            'password' => $randomString
-        );
-
-        $args = array(
-            'method'      => 'POST',
-            'timeout'     => 45,
-            'sslverify'   => false,
-            'headers'     => array(
-                'Content-Type'  => 'application/json',
-            ),
-            'body'        => json_encode($body),
-        );
-
-        $request = wp_remote_post( wp_http_validate_url(wp_http_validate_url($url)), $args );
-
-        if ( is_wp_error( $request ) || wp_remote_retrieve_response_code( $request ) != 200 ) {
-            error_log( print_r( $request, true ) );
-        }
-
-        $response = wp_remote_retrieve_body( $request );
-    }
-}
 
 /* Adds new links to plugin in plugins.php */
 function add_action_links ( $actions ) {
-    if(isset($_SESSION['hasPro']) && ($_SESSION['hasPro'] == 1)) {
+    if(get_option('bpc_hasPro') == 1) {
         $mylinks = array(
             '<a href="' . admin_url( 'admin.php?page=privacy-policy' ) . '"><b>Cookie Banner</b></a>',
             '<a href="' . admin_url( 'admin.php?page=be_popia_compliant_checklist' ) . '"><b>POPIA Checklist</b></a>',
@@ -230,15 +81,6 @@ function add_action_links ( $actions ) {
 }
 
 add_filter( 'plugin_action_links_' . plugin_basename(__FILE__), 'add_action_links' );
-
-
-/* Enqueue scripts*/
-function be_popia_compliant_user_scripts() {
-    $plugin_url = wp_http_validate_url(plugin_dir_url( __FILE__ ));
-    wp_enqueue_style( 'style',  $plugin_url . "styles.css");
-}
-
-add_action( 'admin_print_styles', 'be_popia_compliant_user_scripts' );
 
 //------------------------------------------------//
 //* Create Database Table for Be POPIA Compliant *//
@@ -301,7 +143,7 @@ function be_popia_compliant_create() {
         if ( 200 === $response_code ) {
             $body = json_decode( $body );
     
-            if($body != []){
+            if($body != []) {
                 foreach ( $body as $data ) {
                     $id = $data->id;
                 }
@@ -348,555 +190,6 @@ function be_popia_compliant_create() {
     }
 }
 
-
-/* Create styling to control users column widths. */
-add_action('admin_head', 'role_width');
-
-function role_width() {
-    echo '<style type="text/css">';
-    echo '.fixed .column-role { text-align: center; width:90px !important; overflow:hidden }';
-    echo '</style>';
-}
-
-add_action('admin_head', 'id_width');
-
-function id_width() {
-    echo '<style type="text/css">';
-    echo '.fixed .column-user_id { text-align: center; width:20px !important; overflow:hidden }';
-    echo '</style>';
-}
-
-add_action('admin_head', 'date_width');
-
-function date_width() {
-    echo '<style type="text/css">';
-    echo '.fixed .column-consent_date, .fixed .column-registration_date, .fixed { text-align: center; width:96px !important; overflow:hidden }';
-    echo '</style>';
-}
-
-add_action('admin_head', 'user_name_width');
-
-function user_name_width() {
-    echo '<style type="text/css">';
-    echo '.fixed .column-username { text-align: left; width:300px !important; overflow:hidden }';
-    echo '</style>';
-}
-
-add_action('admin_head', 'name_width');
-
-function name_width() {
-    echo '<style type="text/css">';
-    echo '.fixed .column-name { text-align: left; width:130px !important; overflow:hidden }';
-    echo '</style>';
-}
-
-add_action('admin_head', 'email_width');
-
-function email_width() {
-    echo '<style type="text/css">';
-    echo '.fixed .column-email { text-align: left !important; width:200px !important; overflow:hidden }';
-    echo '</style>';
-}
-
-add_action('admin_head', 'comms_and_marketing_width');
-
-function comms_and_marketing_width() {
-    echo '<style type="text/css">';
-    echo '.column-comms_phone, .column-comms_sms, .column-comms_whatsapp, .column-comms_messenger, .column-comms_telegram, .column-comms_email, .column-market_phone, .column-market_sms, .column-market_whatsapp, .column-market_messenger, .column-market_telegram, .column-market_email { text-align: center !important; width:78px !important; overflow:hidden }';
-    echo '</style>';
-}
-
-add_action('admin_head', 'comms_and_marketing_custom_width');
-
-function comms_and_marketing_custom_width() {
-    echo '<style type="text/css">';
-    echo '.column-comms_custom1, .column-comms_custom2, .column-comms_custom3, .column-market_custom1, .column-market_custom2, .column-market_custom3 { text-align: center !important; width:78px !important; overflow:hidden}';
-    echo '</style>';
-}
-
-/* Create new columns, and remove posts column */
-add_filter( 'manage_users_columns', 'be_popia_compliant_modify_user_table' );
-
-function be_popia_compliant_modify_user_table( $columns ) {
-    unset( $columns['posts'] ); 
-    $columns['user_id'] = 'ID';
-    $columns['consent_date'] = 'Consent Date';
-    $columns['comms_phone'] = 'Comms Phone';
-    $columns['comms_sms'] = 'Comms SMS';
-    $columns['comms_whatsapp'] = 'Comms WhatsApp';
-    $columns['comms_messenger'] = 'Comms Messenger';
-    $columns['comms_telegram'] = 'Comms Telegram';
-    $columns['comms_email'] = 'Comms Email';
-    $columns['comms_custom1'] = 'Comms Custom 1';
-    $columns['comms_custom2'] = 'Comms Custom 2';
-    $columns['comms_custom3'] = 'Comms Custom 3';
-
-    $columns['market_phone'] = 'Marketing Phone';
-    $columns['market_sms'] = 'Marketing SMS';
-    $columns['market_whatsapp'] = 'Marketing WhatsApp';
-    $columns['market_messenger'] = 'Marketing Messenger';
-    $columns['market_telegram'] = 'Marketing Telegram';
-    $columns['market_email'] = 'Marketing Email';
-    $columns['market_custom1'] = 'Marketing Custom 1';
-    $columns['market_custom2'] = 'Marketing Custom 2';
-    $columns['market_custom3'] = 'Marketing Custom 3';
-    return $columns;
-}
-
-/* Fill our new column with the registration dates of the users */
-add_filter( 'manage_users_custom_column', 'be_popia_compliant_modify_user_table_row', 10, 3 );
-    
-
-function be_popia_compliant_modify_user_table_row( $row_output, $column_id_attr, $user ) {
-
-    /* Function that saves market and comms data for each user*/
-    if(!isset($check_comms_phone) || ($check_comms_phone == "") || ($check_comms_phone == 0)){
-        echo '<script>                                                    
-                function save_comms_market_val(comms_market, user , val, timestamp, consent_link, cp, cs, cw, cm, ct, ce, cc1, cc2, cc3, mp, ms, mw, mm, mt, me, mc1, mc2, mc3){
-                            
-                    // console.log(comms_market);
-                            // console.log(user);
-                            // console.log(val);
-                            // console.log(timestamp);
-                            // console.log(consent_link);
-
-                            // console.log(cp);
-                            // console.log(cs);
-                            // console.log(cw);
-                            // console.log(cm);
-                            // console.log(ct);
-                            // console.log(ce);
-                            // console.log(cc1);
-                            // console.log(cc2);
-                            // console.log(cc3);
-
-                            // console.log(mp);
-                            // console.log(ms);
-                            // console.log(mw);
-                            // console.log(mm);
-                            // console.log(mt);
-                            // console.log(me);
-                            // console.log(mc1);
-                            // console.log(mc2);
-                            // console.log(mc3);
-
-                    jQuery.ajax({
-                        type: "post",
-                        cache: false,
-                        dataType: "json",
-                        url: ajaxurl,
-                        data: {
-                            "action":"be_popia_compliant_save_comms_market_val",
-                            "comms_market" : comms_market,
-                            "user" : user,
-                            "val" : val,
-
-                            "timestamp" : timestamp,
-                            "consent_link" : consent_link,
-
-                            "cp" :cp,
-                            "cs" :cs,
-                            "cw" :cw,
-                            "cm" :cm,
-                            "ct" :ct,
-                            "ce" :ce,
-                            "cc1" :cc1,
-                            "cc2" :cc2,
-                            "cc3" :cc3,
-
-                            "mp" :mp,
-                            "ms" :ms,
-                            "mw" :mw,
-                            "mm" :mm,
-                            "mt" :mt,
-                            "me" :me,
-                            "mc1" :mc1,
-                            "mc2" :mc2,
-                            "mc3" :mc3,
-                        },
-                        success:function(data) {
-                            alert(\'Please wait for page to refresh after each click, otherwise informationwill be owerwritten incorrectly!\');
-                            window.location.reload();
-
-                            console.log(comms_market);
-                            console.log(user);
-                            console.log(val);
-                            console.log(timestamp);
-                            console.log(consent_link);
-
-                            console.log(cp);
-                            console.log(cs);
-                            console.log(cw);
-                            console.log(cm);
-                            console.log(ct);
-                            console.log(ce);
-                            console.log(cc1);
-                            console.log(cc2);
-                            console.log(cc3);
-
-                            console.log(mp);
-                            console.log(ms);
-                            console.log(mw);
-                            console.log(mm);
-                            console.log(mt);
-                            console.log(me);
-                            console.log(mc1);
-                            console.log(mc2);
-                            console.log(mc3);
-                        },
-                        error: function(errorThrown){
-                            window.location.reload();
-                            console.log(errorThrown);
-                        }
-                    });
-                }
-        </script>';
-    }
-    
-    $date_format = 'j M, Y H:i';
-    $user_output =  get_user_meta($user, 'bpc_comms_market', true);
-       
-    switch ( $column_id_attr ) {
-        case 'user_id' :
-            return get_the_author_meta( 'ID', $user );
-            break;
-            case 'consent_date' :
-            
-            $timestamp = $user_output[0];
-            $consent_url = $user_output[1];
-                    
-            if(isset($user_output[2]) && ($user_output[2] == 1)) {$_SESSION['cp'] = $user_output[2];} else {$_SESSION['cp'] = 0;}
-            if(isset($user_output[3]) && ($user_output[3] == 1)) {$_SESSION['cs'] = $user_output[3];} else {$_SESSION['cs'] = 0;}
-            if(isset($user_output[4]) && ($user_output[4] == 1)) {$_SESSION['cw'] = $user_output[4];} else {$_SESSION['cw'] = 0;}
-            if(isset($user_output[5]) && ($user_output[5] == 1)) {$_SESSION['cm'] = $user_output[5];} else {$_SESSION['cm'] = 0;}
-            if(isset($user_output[6]) && ($user_output[6] == 1)) {$_SESSION['ct'] = $user_output[6];} else {$_SESSION['ct'] = 0;}
-            if(isset($user_output[8]) && ($user_output[8] == 1)) {$_SESSION['ce'] = $user_output[8];} else {$_SESSION['ce'] = 0;}
-            if(isset($user_output[9]) && ($user_output[9] == 1)) {$_SESSION['cc1'] = $user_output[9];} else {$_SESSION['cc1'] = 0;}
-            if(isset($user_output[10]) && ($user_output[10] == 1)) {$_SESSION['cc2'] = $user_output[10];} else {$_SESSION['cc2'] = 0;}
-            if(isset($user_output[11]) && ($user_output[11] == 1)) {$_SESSION['cc3'] = $user_output[11];} else {$_SESSION['cc3'] = 0;}
-
-            if(isset($user_output[12]) && ($user_output[12] == 1)) {$_SESSION['mp'] = $user_output[12];} else {$_SESSION['mp'] = 0;}
-            if(isset($user_output[13]) && ($user_output[13] == 1)) {$_SESSION['ms'] = $user_output[13];} else {$_SESSION['ms'] = 0;}
-            if(isset($user_output[14]) && ($user_output[14] == 1)) {$_SESSION['mw'] = $user_output[14];} else {$_SESSION['mw'] = 0;}
-            if(isset($user_output[15]) && ($user_output[15] == 1)) {$_SESSION['mm'] = $user_output[15];} else {$_SESSION['mm'] = 0;}
-            if(isset($user_output[16]) && ($user_output[16] == 1)) {$_SESSION['mt'] = $user_output[16];} else {$_SESSION['mt'] = 0;}
-            if(isset($user_output[17]) && ($user_output[17] == 1)) {$_SESSION['me'] = $user_output[17];} else {$_SESSION['me'] = 0;}
-            if(isset($user_output[18]) && ($user_output[18] == 1)) {$_SESSION['mc1'] = $user_output[18];} else {$_SESSION['mc1'] = 0;}
-            if(isset($user_output[19]) && ($user_output[19] == 1)) {$_SESSION['mc2'] = $user_output[19];} else {$_SESSION['mc2'] = 0;}
-            if(isset($user_output[20]) && ($user_output[20] == 1)) {$_SESSION['mc3'] = $user_output[20];} else {$_SESSION['mc3'] = 0;}
-
-            // if(isset($user_output[21]) && ($user_output[21] !== '')) {$_SESSION['ccn1'] = $user_output[20];} else {$_SESSION['ccn1'] = 'Comms Custom 1';}
-            // if(isset($user_output[22]) && ($user_output[22] !== '')) {$_SESSION['ccn2'] = $user_output[20];} else {$_SESSION['ccn2'] = 'Comms Custom 2';}
-            // if(isset($user_output[23]) && ($user_output[23] !== '')) {$_SESSION['ccn3'] = $user_output[20];} else {$_SESSION['ccn3'] = 'Comms Custom 3';}
-
-            // if(isset($user_output[24]) && ($user_output[24] !== '')) {$_SESSION['cmn1'] = $user_output[20];} else {$_SESSION['cmn1'] = 'Marketing Custom 1';}
-            // if(isset($user_output[25]) && ($user_output[25] !== '')) {$_SESSION['cmn2'] = $user_output[20];} else {$_SESSION['cmn2'] = 'Marketing Custom 1';}
-            // if(isset($user_output[26]) && ($user_output[26] !== '')) {$_SESSION['cmn3'] = $user_output[20];} else {$_SESSION['cmn3'] = 'Marketing Custom 1';}
-
-            if(isset($timestamp) & $timestamp > 1643632160) {$friendly_date = date( $date_format, $timestamp );} else {$friendly_date = null;}
-                if(isset($consent_url) && ($consent_url != '')) {
-                    $friendly_date = '<a href="' . $consent_url . '" target="_blank">' . $friendly_date . '</a>';
-                } else {
-                    $friendly_date = $friendly_date;
-                }
-                
-                if($timestamp > 1643632160){
-                    $_SESSION['timestamp'] = $timestamp;
-                    $_SESSION['consent_url'] = $consent_url;
-                return $friendly_date;
-                } else {
-                return "-";
-                }
-            break;
-            case 'comms_phone' :
-                $check_comms_phone = $user_output[2];
-                if(isset($check_comms_phone) && ($check_comms_phone == 1)){                                                                        
-                    $comms_phone= '<input type="checkbox" class="bpc_down" name="bpc_comms_phone" checked="checked" onclick="save_comms_market_val(\'comms_phone\', ' . $user . ', 0, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                } else {
-                    $comms_phone= '<input type="checkbox" class="bpc_down" name="bpc_comms_phone" onclick="save_comms_market_val(\'comms_phone\', ' . $user . ', 1, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                }
-                return $comms_phone;
-            break;
-            case 'comms_sms' :
-                $check_comms_sms = $user_output[3];
-                if(isset($check_comms_sms) && ($check_comms_sms == 1)){
-                    $comms_sms= '<input type="checkbox" class="bpc_down" name="bpc_comms_sms" checked="checked" onclick="save_comms_market_val(\'comms_sms\', ' . $user . ', 0, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                } else {
-                    $comms_sms= '<input type="checkbox" class="bpc_down" name="bpc_comms_sms" onclick="save_comms_market_val(\'comms_sms\', ' . $user . ', 1, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                }
-                return $comms_sms;
-            break;
-            case 'comms_whatsapp' :
-                $check_comms_whatsapp = $user_output[4];
-                if(isset($check_comms_whatsapp) && ($check_comms_whatsapp == 1)){
-                    $comms_whatsapp= '<input type="checkbox" class="bpc_down" name="bpc_comms_whatsapp" checked="checked" onclick="save_comms_market_val(\'comms_whatsapp\', ' . $user . ', 0, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                } else {
-                    $comms_whatsapp= '<input type="checkbox" class="bpc_down" name="bpc_comms_whatsapp" onclick="save_comms_market_val(\'comms_whatsapp\', ' . $user . ', 1, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                }
-                return $comms_whatsapp;
-            break;
-            case 'comms_messenger' :
-                $check_comms_messenger = $user_output[5];
-                if(isset($check_comms_messenger) && ($check_comms_messenger == 1)){
-                    $comms_messenger= '<input type="checkbox" class="bpc_down" name="bpc_comms_messenger" checked="checked" onclick="save_comms_market_val(\'comms_messenger\', ' . $user . ', 0, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                } else {
-                    $comms_messenger= '<input type="checkbox" class="bpc_down" name="bpc_comms_messenger" onclick="save_comms_market_val(\'comms_messenger\', ' . $user . ', 1, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                }
-                return $comms_messenger;
-            break;
-            case 'comms_telegram' :
-                $check_comms_telegram = $user_output[6];
-                if(isset($check_comms_telegram) && ($check_comms_telegram == 1)){
-                    $comms_telegram= '<input type="checkbox" class="bpc_down" name="bpc_comms_telegram" checked="checked" onclick="save_comms_market_val(\'comms_telegram\', ' . $user . ', 0, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                } else {
-                    $comms_telegram= '<input type="checkbox" class="bpc_down" name="bpc_comms_telegram" onclick="save_comms_market_val(\'comms_telegram\', ' . $user . ', 1, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                }
-                return $comms_telegram;
-            break;
-            case 'comms_email' :
-                $check_comms_email = $user_output[7];
-                if(isset($check_comms_email) && ($check_comms_email == 1)){
-                    $comms_email= '<input type="checkbox" class="bpc_down" name="bpc_comms_email" checked="checked" onclick="save_comms_market_val(\'comms_email\', ' . $user . ', 0, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                } else {
-                    $comms_email= '<input type="checkbox" class="bpc_down" name="bpc_comms_email" onclick="save_comms_market_val(\'comms_email\', ' . $user . ', 1, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                }
-                return $comms_email;
-            break;
-            case 'comms_email' :
-                $check_comms_email = $user_output[8];
-                if(isset($check_comms_email) && ($check_comms_email == 1)){
-                    $comms_email= '<input type="checkbox" class="bpc_down" name="bpc_comms_email" checked="checked" onclick="save_comms_market_val(\'comms_email\', ' . $user . ', 0, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                } else {
-                    $comms_email= '<input type="checkbox" class="bpc_down" name="bpc_comms_email" onclick="save_comms_market_val(\'comms_email\', ' . $user . ', 1, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                }
-                return $comms_email;
-            break;
-            case 'comms_custom1' :
-                $check_comms_custom1 = $user_output[9];
-                if(isset($check_comms_custom1) && ($check_comms_custom1 == 1)){
-                    $comms_custom1= '<input type="checkbox" class="bpc_down" name="bpc_comms_custom1" checked="checked" onclick="save_comms_market_val(\'comms_custom1\', ' . $user . ', 0, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                } else {
-                    $comms_custom1= '<input type="checkbox" class="bpc_down" name="bpc_comms_custom1" onclick="save_comms_market_val(\'comms_custom1\', ' . $user . ', 1, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                }
-                return $comms_custom1;
-            break;
-            case 'comms_custom2' :
-                $check_comms_custom2 = $user_output[10];
-                if(isset($check_comms_custom2) && ($check_comms_custom2 == 1)){
-                    $comms_custom2= '<input type="checkbox" class="bpc_down" name="bpc_comms_custom2" checked="checked" onclick="save_comms_market_val(\'comms_custom2\', ' . $user . ', 0, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                } else {
-                    $comms_custom2= '<input type="checkbox" class="bpc_down" name="bpc_comms_custom2" onclick="save_comms_market_val(\'comms_custom2\', ' . $user . ', 1, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                }
-                return $comms_custom2;
-            break;
-            case 'comms_custom3' :
-                $check_comms_custom3 = $user_output[11];
-                if(isset($check_comms_custom3) && ($check_comms_custom3 == 1)){
-                    $comms_custom3= '<input type="checkbox" class="bpc_down" name="bpc_comms_custom3" checked="checked" onclick="save_comms_market_val(\'comms_custom3\', ' . $user . ', 0, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                } else {
-                    $comms_custom3= '<input type="checkbox" class="bpc_down" name="bpc_comms_custom3" onclick="save_comms_market_val(\'comms_custom3\', ' . $user . ', 1, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                }
-                return $comms_custom3;
-            break;
-
-            case 'market_phone' :
-                $check_market_phone = $user_output[12];
-                if(isset($check_market_phone) && ($check_market_phone == 1)){
-                    $market_phone= '<input type="checkbox" class="bpc_down" name="bpc_market_phone" checked="checked" onclick="save_comms_market_val(\'market_phone\', ' . $user . ', 0, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                } else {
-                    $market_phone= '<input type="checkbox" class="bpc_down" name="bpc_market_phone" onclick="save_comms_market_val(\'market_phone\', ' . $user . ', 1, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                }
-                return $market_phone;
-            break;
-            case 'market_sms' :
-                $check_market_sms = $user_output[13];
-                if(isset($check_market_sms) && ($check_market_sms == 1)){
-                    $market_sms= '<input type="checkbox" class="bpc_down" name="bpc_market_sms" checked="checked" onclick="save_comms_market_val(\'market_sms\', ' . $user . ', 0, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                } else {
-                    $market_sms= '<input type="checkbox" class="bpc_down" name="bpc_market_sms" onclick="save_comms_market_val(\'market_sms\', ' . $user . ', 1, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                }
-                return $market_sms;
-            break;
-            case 'market_whatsapp' :
-                $check_market_whatsapp = $user_output[14];
-                if(isset($check_market_whatsapp) && ($check_market_whatsapp == 1)){
-                    $market_whatsapp= '<input type="checkbox" class="bpc_down" name="bpc_market_whatsapp" checked="checked" onclick="save_comms_market_val(\'market_whatsapp\', ' . $user . ', 0, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                } else {
-                    $market_whatsapp= '<input type="checkbox" class="bpc_down" name="bpc_market_whatsapp" onclick="save_comms_market_val(\'market_whatsapp\', ' . $user . ', 1, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                }
-                return $market_whatsapp;
-            break;
-            case 'market_messenger' :
-                $check_market_messenger = $user_output[15];
-                if(isset($check_market_messenger) && ($check_market_messenger == 1)){
-                    $market_messenger= '<input type="checkbox" class="bpc_down" name="bpc_market_messenger" checked="checked" onclick="save_comms_market_val(\'market_messenger\', ' . $user . ', 0, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                } else {
-                    $market_messenger= '<input type="checkbox" class="bpc_down" name="bpc_market_messenger" onclick="save_comms_market_val(\'market_messenger\', ' . $user . ', 1, ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ')"' . $_SESSION['disable'] . ' />';
-                }
-                return $market_messenger;
-            break;
-            case 'market_telegram' :
-                $check_market_telegram = $user_output[16];
-                if(isset($check_market_telegram) && ($check_market_telegram == 1)){
-                    $market_telegram= '<input type="checkbox" class="bpc_down" name="bpc_market_telegram" checked="checked" onclick="save_comms_market_val(\'market_telegram\', ' . $user . ', 0, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                } else {
-                    $market_telegram= '<input type="checkbox" class="bpc_down" name="bpc_market_telegram" onclick="save_comms_market_val(\'market_telegram\', ' . $user . ', 1, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                }
-                return $market_telegram;
-            break;
-            case 'market_email' :
-                $check_market_email = $user_output[17];
-                if(isset($check_market_email) && ($check_market_email == 1)){
-                    $market_email= '<input type="checkbox" class="bpc_down" name="bpc_market_email" checked="checked" onclick="save_comms_market_val(\'market_email\', ' . $user . ', 0, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                } else {
-                    $market_email= '<input type="checkbox" class="bpc_down" name="bpc_market_email" onclick="save_comms_market_val(\'market_email\', ' . $user . ', 1, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                }
-                return $market_email;
-            break;
-            case 'market_custom1' :
-                $check_market_custom1 = $user_output[18];
-                if(isset($check_market_custom1) && ($check_market_custom1 == 1)){
-                    $market_custom1= '<input type="checkbox" class="bpc_down" name="bpc_market_custom1" checked="checked" onclick="save_comms_market_val(\'market_custom1\', ' . $user . ', 0, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                } else {
-                    $market_custom1= '<input type="checkbox" class="bpc_down" name="bpc_market_custom1" onclick="save_comms_market_val(\'market_custom1\', ' . $user . ', 1, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                }
-                return $market_custom1;
-            break;
-            case 'market_custom2' :
-                $check_market_custom2 = $user_output[19];
-                if(isset($check_market_custom2) && ($check_market_custom2 == 1)){
-                    $market_custom2= '<input type="checkbox" class="bpc_down" name="bpc_market_custom2" checked="checked" onclick="save_comms_market_val(\'market_custom2\', ' . $user . ', 0, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                } else {
-                    $market_custom2= '<input type="checkbox" class="bpc_down" name="bpc_market_custom2" onclick="save_comms_market_val(\'market_custom2\', ' . $user . ', 1, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                }
-                return $market_custom2;
-            break;
-            case 'market_custom3' :
-                $check_market_custom3 = $user_output[20];
-                if(isset($check_market_custom3) && ($check_market_custom3 == 1)){
-                    $market_custom3= '<input type="checkbox" class="bpc_down" name="bpc_market_custom3" checked="checked" onclick="save_comms_market_val(\'market_custom3\', ' . $user . ', 0, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                } else {
-                    $market_custom3= '<input type="checkbox" class="bpc_down" name="bpc_market_custom3" onclick="save_comms_market_val(\'market_custom3\', ' . $user . ', 1, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\', ' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  ')"' . $_SESSION['disable'] . ' />';
-                }
-                return $market_custom3;
-            break;
-            default:
-                echo '';
-            break;
-        
-    }
-
-    return $row_output;
-
-}
-
-/* Store onclick events when comms or marketing consent is clicked */
-function be_popia_compliant_save_comms_market_val() {
-    $meta_key = 'bpc_' . sanitize_text_field($_REQUEST['comms_market']);
-    $user_id = sanitize_text_field($_REQUEST['user']);
-    $meta_value = sanitize_text_field($_REQUEST['val']);
-
-    $meta_value = sanitize_text_field($_REQUEST['val']);
-
-    $timestamp = sanitize_text_field($_REQUEST['timestamp']);
-    $consent_link = sanitize_text_field($_REQUEST['consent_link']);
-    
-    $cp=sanitize_text_field($_REQUEST['cp']); $cs=sanitize_text_field($_REQUEST['cs']); $cw=sanitize_text_field($_REQUEST['cw']); $cm=sanitize_text_field($_REQUEST['cm']); $ct=sanitize_text_field($_REQUEST['ct']); $ce=sanitize_text_field($_REQUEST['ce']); $cc1=sanitize_text_field($_REQUEST['cc1']); $cc2=sanitize_text_field($_REQUEST['cc2']); $cc3=sanitize_text_field($_REQUEST['cc3']); $mp=sanitize_text_field($_REQUEST['mp']); $ms=sanitize_text_field($_REQUEST['ms']); $mw=sanitize_text_field($_REQUEST['mw']); $mm=sanitize_text_field($_REQUEST['mm']); $mt=sanitize_text_field($_REQUEST['mt']); $me=sanitize_text_field($_REQUEST['me']); $mc1=sanitize_text_field($_REQUEST['mc1']); $mc2=sanitize_text_field($_REQUEST['mc2']); $mc3=sanitize_text_field($_REQUEST['mc3']);
-
-    if($meta_key=='comms_phone') {$cp=$meta_value;} if($meta_key=='comms_sms') {$cs=$meta_value;} if($meta_key=='comms_whatsapp') {$cw=$meta_value;} if($meta_key=='comms_messenger') {$cm=$meta_value;} if($meta_key=='comms_telegram') {$ct=$meta_value;} if($meta_key=='comms_email') {$ce=$meta_value;} if($meta_key=='comms_custom1') {$cc1=$meta_value;} if($meta_key=='comms_custom2') {$cc2=$meta_value;} if($meta_key=='comms_custom3') {$cc3=$meta_value;} if($meta_key=='market_phone') {$mp=$meta_value;} if($meta_key=='market_sms') {$ms=$meta_value;} if($meta_key=='market_whatsapp') {$mw=$meta_value;} if($meta_key=='market_messenger') {$mm=$meta_value;} if($meta_key=='market_telegram') {$mt=$meta_value;}  if($meta_key=='market_email') {$me=$meta_value;} if($meta_key=='market_custom1') {$mc1=$meta_value;} if($meta_key=='market_custom2') {$mc2=$meta_value;} if($meta_key=='market_custom3') {$mc3=$meta_value;}
-
-    $value = array($timestamp, $consent_link, $cp, $cs, $cw, $cm, $ct, $ce, $cc1, $cc2, $cc3, $mp, $ms, $mw, $mm, $mt, $me, $mc1, $mc2, $mc3);
-  
-    update_user_meta($user_id, 'bpc_comms_market', $value);
-    echo ('<script>' . $value . '</script>');
-}
-
-add_action( 'wp_ajax_be_popia_compliant_save_comms_market_val', 'be_popia_compliant_save_comms_market_val' ); 
-
-
-
-/* Consent date filter */
-//  add_filter( 'manage_users_sortable_columns', 'be_popia_compliant_make_consent_date_column_sortable' );
-
-// function be_popia_compliant_make_consent_date_column_sortable( $columns ) {
-// 	return wp_parse_args( array( 'consent_date' => 'consent_date' ), $columns );
-// }
-
-/* Communication related filters */
-// add_filter( 'manage_users_sortable_columns', 'be_popia_compliant_make_comms_phone_column_sortable' );
-
-// function be_popia_compliant_make_comms_phone_column_sortable( $columns ) {
-// 	return wp_parse_args( array( 'comms_phone' => 'comms_phone' ), $columns );
-// }
-
-// add_filter( 'manage_users_sortable_columns', 'be_popia_compliant_make_comms_sms_column_sortable' );
-
-// function be_popia_compliant_make_comms_sms_column_sortable( $columns ) {
-// 	return wp_parse_args( array( 'comms_sms' => 'comms_sms' ), $columns );
-// }
-
-// add_filter( 'manage_users_sortable_columns', 'be_popia_compliant_make_comms_whatsapp_column_sortable' );
-
-// function be_popia_compliant_make_comms_whatsapp_column_sortable( $columns ) {
-// 	return wp_parse_args( array( 'comms_whatsapp' => 'comms_whatsapp' ), $columns );
-// }
-
-// add_filter( 'manage_users_sortable_columns', 'be_popia_compliant_make_comms_messenger_column_sortable' );
-
-// function be_popia_compliant_make_comms_messenger_column_sortable( $columns ) {
-// 	return wp_parse_args( array( 'comms_messenger' => 'comms_messenger' ), $columns );
-// }
-
-// add_filter( 'manage_users_sortable_columns', 'be_popia_compliant_make_comms_telegram_column_sortable' );
-
-// function be_popia_compliant_make_comms_telegram_column_sortable( $columns ) {
-// 	return wp_parse_args( array( 'comms_telegram' => 'comms_telegram' ), $columns );
-// }
-
-// add_filter( 'manage_users_sortable_columns', 'be_popia_compliant_make_comms_email_column_sortable' );
-
-// function be_popia_compliant_make_comms_email_column_sortable( $columns ) {
-// 	return wp_parse_args( array( 'comms_email' => 'comms_email' ), $columns );
-// }
-
-/* Marketing related filters */
-// add_filter( 'manage_users_sortable_columns', 'be_popia_compliant_make_market_phone_column_sortable' );
-
-// function be_popia_compliant_make_market_phone_column_sortable( $columns ) {
-// 	return wp_parse_args( array( 'market_phone' => 'market_phone' ), $columns );
-// }
-
-// add_filter( 'manage_users_sortable_columns', 'be_popia_compliant_make_market_sms_column_sortable' );
-
-// function be_popia_compliant_make_market_sms_column_sortable( $columns ) {
-// 	return wp_parse_args( array( 'market_sms' => 'market_sms' ), $columns );
-// }
-
-// add_filter( 'manage_users_sortable_columns', 'be_popia_compliant_make_market_whatsapp_column_sortable' );
-
-// function be_popia_compliant_make_market_whatsapp_column_sortable( $columns ) {
-// 	return wp_parse_args( array( 'market_whatsapp' => 'market_whatsapp' ), $columns );
-// }
-
-// add_filter( 'manage_users_sortable_columns', 'be_popia_compliant_make_market_messenger_column_sortable' );
-
-// function be_popia_compliant_make_market_messenger_column_sortable( $columns ) {
-// 	return wp_parse_args( array( 'market_messenger' => 'market_messenger' ), $columns );
-// }
-
-// add_filter( 'manage_users_sortable_columns', 'be_popia_compliant_make_market_telegram_column_sortable' );
-
-// function be_popia_compliant_make_market_telegram_column_sortable( $columns ) {
-// 	return wp_parse_args( array( 'market_telegram' => 'market_telegram' ), $columns );
-// }
-
-// add_filter( 'manage_users_sortable_columns', 'be_popia_compliant_make_market_email_column_sortable' );
-
-// function be_popia_compliant_make_market_email_column_sortable( $columns ) {
-// 	return wp_parse_args( array( 'market_email' => 'market_email' ), $columns );
-// }
-
-
 function be_popia_compliant_insert_data() {
     global $wpdb;
 
@@ -904,7 +197,7 @@ function be_popia_compliant_insert_data() {
 
     $result = $wpdb->get_results("SELECT ID from $table_name");
 
-    if(count($result) > 0){
+    if(count($result) > 0) {
 
     } else {
 
@@ -996,7 +289,7 @@ function be_popia_compliant_insert_data() {
             array( 'title' => 'What to do when data gets breached?', 'description' => '<span class="pro"><span class="withpro">With Pro: </span>We allow you to answer a few questions and we will do the rest.</span><br><br>In the event that your website has been compromised or it becomes evident that any of your employees collected or distributed any of your clients data, or any other event happened where data got lost you should send out a notice to all affected parties. If you are not sure who was affected you should send a notice to your entire database notifying them that their data might have been compromised.', 'type' => 7 ),
         );
 
-        foreach($all_items as $item){
+        foreach($all_items as $item) {
             $wpdb->insert( 
                 $table_name, 
                 $item
@@ -1005,8 +298,6 @@ function be_popia_compliant_insert_data() {
     }
 }
 
-
-
 function be_popia_compliant_insert_p_data() {
     global $wpdb;
 
@@ -1014,7 +305,7 @@ function be_popia_compliant_insert_p_data() {
 
     $result = $wpdb->get_results("SELECT ID from $table_name");
 
-    if(count($result) > 0){
+    if(count($result) > 0) {
 
     }else{
 
@@ -1026,7 +317,7 @@ function be_popia_compliant_insert_p_data() {
             // array( 'title' => 'flag_IR_Problem', 'value' => '(They have been experiancing technical issues with the Portal, which results in not being accessible)<br> - If this is still the case, they provided a <a href=https://www.justice.gov.za/inforeg/docs/forms/InfoRegSA-eForm-InformationOfficersRegistration-2021.pdf target="_blank">PDF Registration</a> as an alternative, that can be filled out in the browser. You\'d still have to print it out in order to sign the document. Thereafter you can send it via email to: <a href=mailto:registration.IR@justice.gov.za>registration.IR@justice.gov.za</a>'),
         );
 
-        foreach($all_items as $item){
+        foreach($all_items as $item) {
             $wpdb->insert( 
                 $table_name, 
                 $item
@@ -1036,14 +327,992 @@ function be_popia_compliant_insert_p_data() {
     }
 }
 
-
 register_activation_hook( __FILE__, 'be_popia_compliant_create' );
 register_activation_hook( __FILE__, 'be_popia_compliant_insert_data' );
-
 register_activation_hook( __FILE__, 'be_popia_compliant_insert_p_data' );
 
+/* Front end registration */
+add_action( 'register_form', 'be_popiaCompliant_registration_form' );
+function be_popiaCompliant_registration_form() {
 
-function be_popia_compliant_deactivate_plugin(){
+	$identificationNumber = ! empty( $_POST['user_identification_number'] ) ? ( $_POST['user_identification_number'] ) : '';
+    $otherIdNumber = ! empty( $_POST['other_identification_number'] ) ? ( $_POST['other_identification_number'] ) : '';
+    $otherIdType = ! empty( $_POST['other_identification_type'] ) ? ( $_POST['other_identification_type'] ) : '';
+    $otherIdIssue = ! empty( $_POST['other_identification_issue'] ) ? ( $_POST['other_identification_issue'] ) : '';
+
+	?>
+	<p>
+        <center><span><b>For POPIA Purposes</b><br>(Powered by <a href="https://bepopiacompliant.co.za" target="_blank">Be POPIA Compliant</a>)<br><br></span></center>
+		<label for="user_identification_number"><?php esc_html_e( 'South African Identity Number', 'be_popiaCompliant' ) ?><br/>
+			<input type="text"
+			       id="user_identification_number"
+			       name="user_identification_number"
+			       value="<?php echo esc_attr( $identificationNumber ); ?>"
+			       class="input"
+			/>
+		</label>
+	</p><br>
+    <center><span><b>OR</b><br>(If not South African)<br><br></span></center>
+    <p>
+        <label for="other_identification_number"><?php esc_html_e( 'Passport, Social Security or other Identification Number', 'be_popiaCompliant' ) ?><br/>
+            <input type="text"
+                id="other_identification_number"
+                name="other_identification_number"
+                value="<?php echo esc_attr( $otherIdNumber ); ?>"
+                class="input"
+            />
+        </label>
+    </p>
+    <p>
+        <label for="other_identification_type"><?php esc_html_e( 'What type of Identification Number is this?', 'be_popiaCompliant' ) ?><br/>
+            <input type="text"
+                id="other_identification_type"
+                name="other_identification_type"
+                value="<?php echo esc_attr( $otherIdType ); ?>"
+                class="input"
+            />
+        </label>
+    </p>
+    <p>
+        <label for="other_identification_issue"><?php esc_html_e( 'What Country issued this Identification Number?', 'be_popiaCompliant' ) ?><br/>
+            <input type="text"
+                id="other_identification_issue"
+                name="other_identification_issue"
+                value="<?php echo esc_attr( $otherIdIssue ); ?>"
+                class="input"
+            />
+        </label>
+        <br><br>
+    </p>
+<?php
+}
+
+add_filter( 'registration_errors', 'be_popiaCompliant_registration_errors', 10, 3 );
+function be_popiaCompliant_registration_errors( $errors, $sanitized_user_login, $user_email ) {
+
+	if ( empty( $_POST['user_identification_number'] ) && empty( $_POST['other_identification_number'] ))  {
+		$errors->add( 'user_identification_number', __( '<strong>We require some form of Identificatin for POPIA (Without an authentication identifier, you will never be able to <a href="https://www.manageconsent.co.za" target="blank">Manage Your Consent</a></strong>:<br>Please enter your South African ID Number (if South African) <br><br>OR<br><br>Passport, Social Security or other Identification Number (if Foreign).<br><br>', 'be_popiaCompliant' ) );
+	}
+
+    if ( ! empty( $_POST['user_identification_number'] ) && empty( ! $_POST['other_identification_number'] ))  {
+		$errors->add( 'user_identification_number', __( '<strong>Provide only one (1) Identification Number</strong>:<br>If you are a South African Citizen, please only enter your South African Identification Number.<br><br>If you are a foreign citizen, please leave "South African Identity Number" blank and provide:<br> - Your Local Identification number or Passport number.<br>- The type of Identification number you are using.<br>- The country that issued the Identification number.<br><br>', 'be_popiaCompliant' ) );
+	} 
+
+    if ( ! empty( $_POST['user_identification_number'] ) && (strlen( $_POST['user_identification_number'] ) != 13 ) ) {
+		$errors->add( 'user_identification_number', __( '<strong>South African ID Number</strong>:<br>Your South African Identity Number does not seem to be correct.<br>', 'be_popiaCompliant' ) );
+	}
+
+	if ( ! empty( $_POST['other_identification_number'] ) && ( empty( $_POST['other_identification_type'] )) && ( empty( $_POST['other_identification_issue'] ))) {
+		$errors->add( 'other_identification_type', __( '<strong>When using Passport, Social Security or other Identification Number</strong>:<br>Please also provide your Identification Type and Country of Issue.<br>', 'be_popiaCompliant' ) );
+	}
+
+    if ( ! empty( $_POST['other_identification_number'] ) && ( empty( $_POST['other_identification_type'] )) && ( ! empty( $_POST['other_identification_issue'] ))) {
+		$errors->add( 'other_identification_type', __( '<strong>When using Passport, Social Security or other Identification Number</strong>:<br>Please also provide the Type of Identification Number you are using.<br>', 'be_popiaCompliant' ) );
+	}
+    
+    if ( ! empty( $_POST['other_identification_number'] ) && ( ! empty( $_POST['other_identification_type'] )) && ( empty( $_POST['other_identification_issue'] ))) {
+		$errors->add( 'other_identification_issue', __( '<strong>When using Passport, Social Security or other Identification Number</strong>:<br>Please also provide the Country of Issue for the Identification number you are using.<br>', 'be_popiaCompliant' ) );
+	}
+
+    if ( ! empty( $_POST['other_identification_number'] ) && ( strlen( $_POST['other_identification_number'] ) < 7) ) {
+		$errors->add( 'other_identification_number', __( '<strong>Other Identificatin number</strong>:<br>Please provide a number that we will be able to confirm your Identity with, when providing a fake number, you will never be able to <a href="https://www.manageconsent.co.za" target="blank">Manage Your Consent</a>.<br>', 'be_popiaCompliant' ) );
+	}
+
+    if ( ! empty( $_POST['other_identification_number'] ) && ( strlen( $_POST['other_identification_type'] ) < 4) && ( ! empty( $_POST['other_identification_type'] )) ) {
+		$errors->add( 'other_identification_issue', __( '<strong>Other Identificatin Type</strong>:<br>Please write out the name of the Identification Type, do not use the abbreviation.<br>', 'be_popiaCompliant' ) );
+	}
+
+    if ( ! empty( $_POST['other_identification_number'] ) && ( strlen( $_POST['other_identification_issue'] ) < 4) && ( ! empty( $_POST['other_identification_issue'] )) ) {
+		$errors->add( 'other_identification_issue', __( '<strong>Country of Issue</strong>:<br>Ensure your Country of Issue is correct and fully written out.<br>', 'be_popiaCompliant' ) );
+	}
+
+	return $errors;
+}
+
+add_action( 'user_register', 'be_popiaCompliant_user_register' );
+function be_popiaCompliant_user_register( $user_id ) {
+	if ( ! empty( $_POST['user_identification_number'] )) {
+        if(strlen($_POST['user_identification_number']) == 13 ) {
+		    update_user_meta( $user_id, 'user_identification_number', $_POST['user_identification_number'] );
+        }
+	}
+
+    if ( ! empty( $_POST['other_identification_number'] ) ) {
+		update_user_meta( $user_id, 'other_identification_number', $_POST['other_identification_number'] );
+	}
+
+    if ( ! empty( $_POST['other_identification_type'] ) ) {
+		update_user_meta( $user_id, 'other_identification_type', $_POST['other_identification_type'] );
+	}
+
+    if ( ! empty( $_POST['other_identification_issue'] ) ) {
+		update_user_meta( $user_id, 'other_identification_issue', $_POST['other_identification_issue'] );
+	}
+}
+
+/* Trigger when new user account is created*/
+add_action('user_register','be_popia_compliant_add_user_details_to_py');
+
+function be_popia_compliant_add_user_details_to_py($user_id) {
+    $new_user = get_userdata($user_id);
+    $user_email = $new_user -> user_email;
+    $domain = $_SERVER['SERVER_NAME'];
+    $first_name = '';
+    $surname = '';
+
+    $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/getuserid/" . $user_email);
+
+    $args = array(
+        'headers' => array(
+            'Content-Type' => 'application/json',
+        ),
+        'body'    => array(),
+    );
+
+    $response = wp_remote_get( wp_http_validate_url($url), $args );
+
+    $response_code = wp_remote_retrieve_response_code( $response );
+    $body         = wp_remote_retrieve_body( $response );
+
+    if ( 401 === $response_code ) {
+        echo "Unauthorized access";
+    }
+
+    // if ( 200 !== $response_code ) {
+        // echo "Error in pinging API Code:601" . esc_html( $response_code );
+    // }
+
+    if ( 200 === $response_code ) {
+        $body = json_decode( $body );   
+        if(empty($body)) {
+
+        } else {
+            foreach ( $body as $data ) {
+                $py_user_id = $data->id;
+            }     
+        }
+    }
+
+    if(isset($py_user_id)) {
+        $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/getwpname/" . $py_user_id);
+
+        $args = array(
+            'headers' => array(
+                'Content-Type' => 'application/json',
+            ),
+            'body'    => array(),
+        );
+
+        $response = wp_remote_get( wp_http_validate_url($url), $args );
+
+        $response_code = wp_remote_retrieve_response_code( $response );
+        $body         = wp_remote_retrieve_body( $response );
+
+        if ( 401 === $response_code ) {
+            echo "Unauthorized access";
+        }
+
+        // if ( 200 !== $response_code ) {
+            // echo "Error in pinging API Code:602" . esc_html( $response_code );
+        // }
+
+        if ( 200 === $response_code ) {
+            $body = json_decode( $body );   
+
+            foreach ( $body as $data ) {
+                $first_name = $data->data_officer_first_name;
+                $surname = $data->data_officer_surname;
+            }     
+        }
+    }
+
+    if( ! $new_user ) {
+        error_log( 'Unable to get userdata!' );
+        return;
+    }
+
+    $url  = wp_http_validate_url('https://py.bepopiacompliant.co.za/api/newusercreated/');
+    $body = array(
+        'domain' => $domain,
+        'email' => $user_email,
+        'user_id' => $user_id,
+        'first_name' => $first_name,
+        'surname' => $surname,
+        'py_user_id' => $py_user_id
+    );
+
+    $args = array(
+        'method'      => 'POST',
+        'timeout'     => 45,
+        'sslverify'   => false,
+        'headers'     => array(
+            'Content-Type'  => 'application/json',
+        ),
+        'body'        => json_encode($body),
+    );
+
+    $request = wp_remote_post( wp_http_validate_url(wp_http_validate_url($url)), $args );
+
+    if ( is_wp_error( $request ) || wp_remote_retrieve_response_code( $request ) != 200 ) {
+        error_log( print_r( $request, true ) );
+    }
+
+    $response = wp_remote_retrieve_body( $request );
+    if(!isset($py_user_id)) {
+        $characters = '23456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ';
+        $charactersLength = strlen($characters);
+        $randomString = '';
+        for ($i = 0; $i < 8; $i++) {
+            $randomString .= $characters[rand(0, $charactersLength - 1)];
+        }
+        $url  = wp_http_validate_url('https://py.bepopiacompliant.co.za/api/users/');
+        $body = array(
+            'username' => $user_email,
+            'password' => $randomString
+        );
+
+        $args = array(
+            'method'      => 'POST',
+            'timeout'     => 45,
+            'sslverify'   => false,
+            'headers'     => array(
+                'Content-Type'  => 'application/json',
+            ),
+            'body'        => json_encode($body),
+        );
+
+        $request = wp_remote_post( wp_http_validate_url(wp_http_validate_url($url)), $args );
+
+        if ( is_wp_error( $request ) || wp_remote_retrieve_response_code( $request ) != 200 ) {
+            error_log( print_r( $request, true ) );
+        }
+
+        $response = wp_remote_retrieve_body( $request );
+    }
+}
+
+global $wpdb;
+
+$table_name = $wpdb->prefix . 'be_popia_compliant_admin';
+$result_api = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 1");
+
+if((isset($result_api->value) && $result_api->value !='')) {
+    update_option( 'bpc_hasPro' , 1 );
+    update_option( 'bpc_disable' , 'disabled' );
+    // update_option( 'bpc_disable' , '' );
+} else {
+    update_option( 'bpc_disable' , '' );
+}
+
+/* Back end registration */
+add_action( 'user_new_form', 'be_popiaCompliant_admin_registration_form' );
+function be_popiaCompliant_admin_registration_form( $operation ) {
+	if ( 'add-new-user' !== $operation ) {
+		return;
+	}
+
+	$user_identification_number = ! empty( $_POST['user_identification_number'] ) ? ( $_POST['user_identification_number'] ) : 0;
+
+	?>
+	<h3><?php esc_html_e( 'Personal Information for POPIA Purposes', 'be_popiaCompliant' ); ?></h3>
+
+	<table class="form-table">
+		<tr>
+			<th><label for="user_identification_number"><?php esc_html_e( 'South African Identification Number', 'be_popiaCompliant' ); ?></label> <span class="description"></span></th>
+			<td>
+				<input type="text"
+			       id="user_identification_number" name="user_identification_number" value="<?php echo esc_attr( $user_identification_number ); ?>" class="regular-text" />
+			</td>
+		</tr>
+	</table><br>OR<br>
+    <?php
+	$other_identification_number = ! empty( $_POST['other_identification_number'] ) ? ( $_POST['other_identification_number'] ) : '';
+
+	?>
+	<table class="form-table">
+		<tr>
+			<th><label for="other_identification_number"><?php esc_html_e( 'Other Identification Number', 'be_popiaCompliant' ); ?></label> <span class="description"></span></th>
+			<td>
+				<input type="text"
+			       id="other_identification_number"
+			       name="other_identification_number"
+			       value="<?php echo esc_attr( $other_identification_number ); ?>"
+			       class="regular-text"
+				/>
+			</td>
+		</tr>
+	</table>
+	<?php
+
+    $other_identification_type = ! empty( $_POST['other_identification_type'] ) ? ( $_POST['other_identification_type'] ) : '';
+
+    ?>
+    <table class="form-table">
+        <tr>
+            <th><label for="other_identification_type"><?php esc_html_e( 'Identification Type', 'be_popiaCompliant' ); ?></label> <span class="description"></span></th>
+            <td>
+                <input type="text"
+                id="other_identification_type"
+                name="other_identification_type"
+                value="<?php echo esc_attr( $other_identification_type ); ?>"
+                class="regular-text"
+                />
+            </td>
+        </tr>
+    </table>
+    <?php
+
+    $other_identification_issue = ! empty( $_POST['other_identification_issue'] ) ? ( $_POST['other_identification_issue'] ) : '';
+
+    ?>
+    <table class="form-table">
+        <tr>
+            <th><label for="other_identification_issue"><?php esc_html_e( 'Country of Issue', 'be_popiaCompliant' ); ?></label> <span class="description"></span></th>
+            <td>
+                <input type="text"
+                id="other_identification_issue"
+                name="other_identification_issue"
+                value="<?php echo esc_attr( $other_identification_issue ); ?>"
+                class="regular-text"
+                />
+            </td>
+        </tr>
+    </table>
+
+    <?php
+
+    $bpc_consent_url = ! empty( $_POST['bpc_consent_url'] ) ? ( $_POST['bpc_consent_url'] ) : '';
+
+    ?>
+    <table class="form-table">
+        <tr>
+            <th><label for="bpc_consent_url"><?php esc_html_e( 'Consent Form Link', 'be_popiaCompliant' ); ?></label> <span class="description"></span></th>
+            <td>
+                <input type="text"
+                id="bpc_consent_url"
+                name="bpc_consent_url"
+                value="<?php echo esc_attr( $bpc_consent_url ); ?>"
+                class="regular-text"
+                />
+            </td>
+        </tr>
+    </table>
+    
+    <?php
+}
+
+function be_popiaCompliant_user_profile_update_errors( $errors, $update, $user ) {
+	if ( $update ) {
+		return;
+	}
+
+	if ( empty( $_POST['user_identification_number'] ) && empty( $_POST['other_identification_number'] ))  {
+		$errors->add( 'user_identification_number', __( '<strong>We require some form of Identificatin for POPIA (Without an authentication identifier, this user will never be able to <a href="https://www.manageconsent.co.za" target="blank">Manage Their Consent</a></strong>:<br>Please enter their South African ID Number (if South African) <br><br>OR<br><br>Passport, Social Security or other Identification Number (if Foreign).<br><br>', 'be_popiaCompliant' ) );
+	}
+
+    if ( ! empty( $_POST['user_identification_number'] ) && empty( ! $_POST['other_identification_number'] ))  {
+		$errors->add( 'user_identification_number', __( '<strong>Provide only one (1) Identification Number</strong>:<br>If you they are a South African Citizen, please only enter their South African Identification Number.<br><br>If they are a foreign citizen, please leave "South African Identity Number" blank and provide:<br> - Their Local Identification number or Passport number.<br>- The type of Identification number they are using.<br>- The country that issued the Identification number.<br><br>', 'be_popiaCompliant' ) );
+	} 
+
+    if ( ! empty( $_POST['user_identification_number'] ) && (strlen( $_POST['user_identification_number'] ) != 13 ) ) {
+		$errors->add( 'user_identification_number', __( '<strong>South African ID Number</strong>:<br>Their South African Identity Number does not seem to be correct.<br>', 'be_popiaCompliant' ) );
+	}
+
+    
+
+	if ( ! empty( $_POST['other_identification_number'] ) && ( empty( $_POST['other_identification_type'] )) && ( empty( $_POST['other_identification_issue'] ))) {
+		$errors->add( 'other_identification_type', __( '<strong>When using a Passport, Social Security or other Identification Number</strong>:<br>Please also provide their <b>Identification Type</b> and </b>Country of Issue</b>.<br>', 'be_popiaCompliant' ) );
+	}
+
+    if ( ! empty( $_POST['other_identification_number'] ) && ( empty( $_POST['other_identification_type'] )) && ( ! empty( $_POST['other_identification_issue'] ))) {
+		$errors->add( 'other_identification_type', __( '<strong>When using a Passport, Social Security or other Identification Number</strong>:<br>Please also provide the <b>Type of Identification</b> Number they are using.<br>', 'be_popiaCompliant' ) );
+	}
+    
+    if ( ! empty( $_POST['other_identification_number'] ) && ( ! empty( $_POST['other_identification_type'] )) && ( empty( $_POST['other_identification_issue'] ))) {
+		$errors->add( 'other_identification_issue', __( '<strong>When using a Passport, Social Security or other Identification Number</strong>:<br>Please also provide the <b>Country of Issue</b> for the Identification number they are using.<br>', 'be_popiaCompliant' ) );
+	}
+
+    if ( ! empty( $_POST['other_identification_number'] ) && ( strlen( $_POST['other_identification_number'] ) < 7) ) {
+		$errors->add( 'other_identification_number', __( '<strong>Other Identificatin number</strong>:<br>Please provide a number that we will be able to confirm their Identity with, when providing a fake number, they will never be able to <a href="https://www.manageconsent.co.za" target="blank">Manage Their Consent</a>.<br>', 'be_popiaCompliant' ) );
+	}
+
+    if ( ! empty( $_POST['other_identification_number'] ) && ( strlen( $_POST['other_identification_type'] ) < 4) && ( ! empty( $_POST['other_identification_type'] )) ) {
+		$errors->add( 'other_identification_issue', __( '<strong>Other Identificatin Type</strong>:<br>Please write out the name of the <b>Identification Type</b>, do not use the abbreviation.<br>', 'be_popiaCompliant' ) );
+	}
+
+    if ( ! empty( $_POST['other_identification_number'] ) && ( strlen( $_POST['other_identification_issue'] ) < 4) && ( ! empty( $_POST['other_identification_issue'] )) ) {
+		$errors->add( 'other_identification_issue', __( '<strong>Country of Issue</strong>:<br>Ensure their <b>Country of Issue</b> is correct and fully written out.<br>', 'be_popiaCompliant' ) );
+	}
+}
+
+// add_action( 'edit_user_created_user', 'be_popiaCompliant_user_register' );
+add_action( 'user_profile_update_errors', 'be_popiaCompliant_user_profile_update_errors', 10, 3 );
+add_action( 'show_user_profile', 'be_popiaCompliant_show_extra_profile_fields' );
+add_action( 'edit_user_profile', 'be_popiaCompliant_show_extra_profile_input_fields' );
+
+function be_popiaCompliant_show_extra_profile_fields( $user ) {
+	?>
+	<h3><?php esc_html_e( 'Personal Information for POPIA Purposes', 'be_popiaCompliant' ); ?></h3>
+
+	<table class="form-table">
+        <?php
+        if (esc_html( get_the_author_meta( 'user_identification_number', $user->ID ) )) {
+        ?>
+            <tr>
+                <th><label for="user_identification_number"><?php esc_html_e( 'South African Identity Number', 'be_popiaCompliant' ); ?></label></th>
+                <td><?php echo esc_html( get_the_author_meta( 'user_identification_number', $user->ID ) ); ?></td>
+            </tr>
+
+    <?php
+        } elseif (esc_html( get_the_author_meta( 'other_identification_number', $user->ID ) )) {
+    ?>
+            <tr>
+                <th><label for="other_identification_number"><?php esc_html_e( 'Other Identification Number', 'be_popiaCompliant' ); ?></label></th>
+                <td><?php echo esc_html( get_the_author_meta( 'other_identification_number', $user->ID ) ); ?></td>
+            </tr>
+
+            <tr>
+                <th><label for="other_identification_type"><?php esc_html_e( 'Identification Type', 'be_popiaCompliant' ); ?></label></th>
+                <td><?php echo esc_html( get_the_author_meta( 'other_identification_type', $user->ID ) ); ?></td>
+            </tr>
+
+            <tr>
+                <th><label for="other_identification_issue"><?php esc_html_e( 'Country of Issue', 'be_popiaCompliant' ); ?></label></th>
+                <td><?php echo esc_html( get_the_author_meta( 'other_identification_issue', $user->ID ) ); ?></td>
+            </tr>
+        <?php
+        }
+        ?>
+	</table>
+    
+	<?php
+}
+
+function be_popiaCompliant_show_extra_profile_input_fields( $user ) {
+	?>
+	<h3><?php esc_html_e( 'Personal Information for POPIA Purposes', 'be_popiaCompliant' ); ?></h3>
+
+	<table class="form-table">
+        <?php
+            if ( esc_html( get_the_author_meta( 'user_identification_number', $user->ID ) ) || ( esc_html( get_the_author_meta( 'other_identification_number', $user->ID )))) {
+                if (esc_html( get_the_author_meta( 'user_identification_number', $user->ID ) )) {
+        ?>
+                    <tr>
+                        <th><label for="user_identification_number1"><?php esc_html_e( 'South African Identity Number', 'be_popiaCompliant' ); ?></label></th><br>
+                        <td><?php echo esc_html( get_the_author_meta( 'user_identification_number', $user->ID ) ); ?></td>
+                    </tr>
+
+            <?php
+                } elseif (esc_html( get_the_author_meta( 'other_identification_number', $user->ID ) )) {
+            ?>
+                    <tr>
+                        <th><label for="other_identification_number1"><?php esc_html_e( 'Other Identification Number', 'be_popiaCompliant' ); ?></label></th>
+                        <td><?php echo esc_html( get_the_author_meta( 'other_identification_number', $user->ID ) ); ?></td>
+                    </tr>
+
+                    <tr>
+                        <th><label for="other_identification_type1"><?php esc_html_e( 'Identification Type', 'be_popiaCompliant' ); ?></label></th>
+                        <td><?php echo esc_html( get_the_author_meta( 'other_identification_type', $user->ID ) ); ?></td>
+                    </tr>
+
+                    <tr>
+                        <th><label for="other_identification_issue1"><?php esc_html_e( 'Country of Issue', 'be_popiaCompliant' ); ?></label></th>
+                        <td><?php echo esc_html( get_the_author_meta( 'other_identification_issue', $user->ID ) ); ?></td>
+                    </tr>
+            <?php
+                }
+            } else {
+                if(get_option('bpc_hasPro') != 1) {
+            ?>
+                    <label class="user_identification_number" for="user_identification_number"><b>South African Identity Number (If South African)</b></label><br>
+                    <input class="input" type="text" size="40" id="user_identification_number" name="user_identification_number" value="<?php echo esc_html( get_the_author_meta( 'user_identification_number', $user->ID ) ); ?>">
+
+                    <br><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;------------- OR ------------- <br><br>
+
+                    <label class="other_identification_number" for="other_identification_number"><b>Other Identification Number (If Foreign)</b></label><br>
+                    <input class="input" type="text" size="40" id="other_identification_number" name="other_identification_number" value="<?php echo esc_html( get_the_author_meta( 'other_identification_number', $user->ID ) ); ?>">
+
+    
+                    <label class="other_identification_type" for="other_identification_type"><br><br><b>Identification Type (If Foreign)</b></label><br>
+                    <input class="input" type="text" size="40" id="other_identification_type" name="other_identification_type" value="<?php echo esc_html( get_the_author_meta( 'other_identification_type', $user->ID ) ); ?>">
+                        
+                    <label class="other_identification_issue" for="other_identification_issue"><br><br><b>Country of Issue (If Foreign)</b></label><br>
+                    <input class="input" type="text" size="40" id="other_identification_issue" name="other_identification_issue" value="<?php echo esc_html( get_the_author_meta( 'other_identification_issue', $user->ID ) ); ?>"><br><br>
+            <?php
+                } 
+            }
+                    $users_data = get_metadata( 'user', $user->ID, 'bpc_comms_market', true );
+                    $consent_date = $users_data[0]; $consent_link = $users_data[1]; $a = $users_data[2]; $b = $users_data[3]; $c = $users_data[4]; $d = $users_data[5]; $e = $users_data[6]; $f = $users_data[7]; $g = $users_data[8]; $h = $users_data[9]; $i = $users_data[10]; $j = $users_data[11]; $k = $users_data[12]; $l = $users_data[13]; $m = $users_data[14]; $n = $users_data[15]; $o = $users_data[16]; $p = $users_data[17]; $q = $users_data[18]; $r = $users_data[19];
+                        if(isset($consent_date)) {
+                            if(strlen($consent_date)==10) {$date = date('d/m/Y', $consent_date);}
+                        }
+                        // echo $consent_date;
+                            if(isset($consent_date)){
+                                $last_updated = 'Upload the consent form for this user then Copy & Paste the URL here: (Last updated on: ' . $date . ')';
+                                    } else {
+                                $last_updated = 'Upload the consent form for this user then Copy & Paste the URL here:';
+                                }
+
+                    if(get_option('bpc_hasPro') != 1) {
+            ?>
+                    <label for="user_consent_URL"><?php esc_html_e( $last_updated, 'be_popiaCompliant' ); ?></label><br>
+                    <input class="input" type="text" size="120" id="user_consent_URL" name="user_consent_URL" value="<?php if(isset($consent_link)) echo $consent_link;?>"> <br><br>
+                    
+                    <label for="user_consent_date"><?php esc_html_e( 'Consent Date' , 'be_popiaCompliant' ); ?></label><br>
+                    <input class="input" type="date" id="user_consent_date" name="user_consent_date" value=""> <br><br>
+                    
+            <?php    }?>
+
+	</table>
+    
+<?php
+}
+// '<script>' . var_dump($users_data) . '</script>';
+
+add_action( 'personal_options_update', 'save_extra_user_profile_fields' );
+add_action( 'edit_user_profile_update', 'save_extra_user_profile_fields' );
+
+function save_extra_user_profile_fields( $user_id ) {
+    if ( empty( $_POST['_wpnonce'] ) || ! wp_verify_nonce( $_POST['_wpnonce'], 'update-user_' . $user_id ) ) {
+        return;
+    }
+    
+    if ( !current_user_can( 'edit_user', $user_id ) ) { 
+        return false; 
+    }
+
+    if (isset($_POST['user_identification_number']) && (strlen($_POST['user_identification_number']) == 13)) {
+       if(( !isset($_POST['other_identification_number'])) || ( $_POST['other_identification_number'] == '')) {    
+        update_user_meta( $user_id, 'user_identification_number', $_POST['user_identification_number'] );
+       }
+    } else {
+            if (isset($_POST['user_identification_number']) && (strlen($_POST['user_identification_number']) != '')) {
+                function throw_error_fields($errors, $update, $user) {
+                    $errors->add('demo_error',__('The <b>South African ID Number</b> provided does not seem to be correct.</b> '));
+                add_action('user_profile_update_errors', 'throw_error_fields', 10, 3);
+            }
+        }
+        
+    }
+
+    if(isset($_POST['user_identification_number']) && ($_POST['user_identification_number']) != '' && (isset($_POST['other_identification_number']) && ($_POST['other_identification_number']) != '') ) {
+        function check_two_fields($errors, $update, $user) {
+            $errors->add('demo_error',__('Only provide one (1) Identity number.'));
+        }
+        add_action('user_profile_update_errors', 'check_two_fields', 10, 3);
+    }
+
+    if(isset($_POST['other_identification_number']) && strlen($_POST['other_identification_number']) > 6) {
+        if(isset($_POST['other_identification_type']) && isset($_POST['other_identification_issue']) && ($_POST['other_identification_type'] != '') && ($_POST['other_identification_issue'] != '') ) {
+            update_user_meta( $user_id, 'other_identification_number', $_POST['other_identification_number'] );
+            update_user_meta( $user_id, 'other_identification_type', $_POST['other_identification_type'] );
+            update_user_meta( $user_id, 'other_identification_issue', $_POST['other_identification_issue'] );
+        } else {
+            function check_fields($errors, $update, $user) {
+                $errors->add('demo_error',__('When using "Other Identification Number" The <b>Type</b> and <b>Country of Issue is also required.</b> '));
+            }
+            add_action('user_profile_update_errors', 'check_fields', 10, 3);
+        }
+    }
+
+    $users_data = get_metadata( 'user', $user->ID, 'bpc_comms_market', true );
+    $consent_date = $users_data[0]; $consent_link = $users_data[1]; $a = $users_data[2]; $b = $users_data[3]; $c = $users_data[4]; $d = $users_data[5]; $e = $users_data[6]; $f = $users_data[7]; $g = $users_data[8]; $h = $users_data[9]; $i = $users_data[10]; $j = $users_data[11]; $k = $users_data[12]; $l = $users_data[13]; $m = $users_data[14]; $n = $users_data[15]; $o = $users_data[16]; $p = $users_data[17]; $q = $users_data[18]; $r = $users_data[19];
+    
+    
+    if(isset($_POST['user_consent_URL']) && ($_POST['user_consent_URL'] != '') && (isset($_POST['user_consent_date']) && ($_POST['user_consent_date'] != '') )) {
+        
+    
+        if(isset($_POST['user_consent_date'])) {   
+            $providedDate = $_POST['user_consent_date'];
+            $srtingDate = strtotime($providedDate);
+            $newDate = $srtingDate;
+
+            update_user_meta($user_id, 'the_value_is', $providedDate);
+
+            $value = array($newDate, $_POST['user_consent_URL'], $a, $b, $c, $d, $e, $f, $g, $h, $i, $j, $k, $l, $m, $n, $o, $p, $q, $r);
+            update_user_meta($user_id, 'bpc_comms_market', $value);
+
+
+        }
+       
+        // if(isset($_POST['user_consent_date']) && strlen($_POST['user_consent_date']) == 10) {
+        //     $evaluateThis = $_POST['user_consent_date'];
+        //     $evaluateThis1 = $evaluateThis[0]; $evaluateThis2 = $evaluateThis[1];
+        //     $evaluateThis3 = $evaluateThis1 . $evaluateThis2;
+
+        //         if($evaluateThis3 == 20) {
+        //             $new_consent_date = $evaluateThis;
+        //             $new_consent_date = DateTime::createFromFormat('Y-m-d', $new_consent_date);
+        //         } else {
+        //             $new_consent_date = $consent_date;
+        //         }
+
+        // $value = array($new_consent_date, $_POST['user_consent_URL'], $a, $b, $c, $d, $e, $f, $g, $h, $i, $j, $k, $l, $m, $n, $o, $p, $q, $r);
+        // // update_user_meta($user_id, 'bpc_comms_market', $value);
+        // update_user_meta($user_id, 'the_value_is', $new_consent_date);
+        // }
+    }
+}
+
+/* Create styling to control users column widths. */
+add_action('admin_head', 'role_width');
+
+function role_width() {
+    echo '<style type="text/css">';
+    echo '.fixed .column-role { text-align: center; width:90px !important; overflow:hidden }';
+    echo '</style>';
+}
+
+add_action('admin_head', 'id_width');
+
+function id_width() {
+    echo '<style type="text/css">';
+    echo '.fixed .column-user_id { text-align: center; width:20px !important; overflow:hidden }';
+    echo '</style>';
+}
+
+add_action('admin_head', 'date_width');
+
+function date_width() {
+    echo '<style type="text/css">';
+    echo '.fixed .column-consent_date, .fixed .column-registration_date, .fixed { text-align: center; width:96px !important; overflow:hidden }';
+    echo '</style>';
+}
+
+add_action('admin_head', 'user_name_width');
+
+function user_name_width() {
+    echo '<style type="text/css">';
+    echo '.fixed .column-username { text-align: left; width:300px !important; overflow:hidden }';
+    echo '</style>';
+}
+
+add_action('admin_head', 'name_width');
+
+function name_width() {
+    echo '<style type="text/css">';
+    echo '.fixed .column-name { text-align: left; width:130px !important; overflow:hidden }';
+    echo '</style>';
+}
+
+add_action('admin_head', 'email_width');
+
+function email_width() {
+    echo '<style type="text/css">';
+    echo '.fixed .column-email { text-align: left !important; width:200px !important; overflow:hidden }';
+    echo '</style>';
+}
+
+add_action('admin_head', 'comms_and_marketing_width');
+
+function comms_and_marketing_width() {
+    echo '<style type="text/css">';
+    echo '.column-user_identification_number, .column-comms_phone, .column-comms_sms, .column-comms_whatsapp, .column-comms_messenger, .column-comms_telegram, .column-comms_email, .column-market_phone, .column-market_sms, .column-market_whatsapp, .column-market_messenger, .column-market_telegram, .column-market_email { text-align: center !important; width:78px !important; overflow:hidden }';
+    echo '</style>';
+}
+
+add_action('admin_head', 'identity_idType_width');
+
+function identity_idType_width() {
+    echo '<style type="text/css">';
+    echo '.column-user_identification_number, .column-user_identification_type { text-align: center !important; width:110px !important; overflow:hidden }';
+    echo '</style>';
+}
+
+add_action('admin_head', 'comms_and_marketing_custom_width');
+
+function comms_and_marketing_custom_width() {
+    echo '<style type="text/css">';
+    echo '.column-comms_customa, .column-comms_customb, .column-comms_customc, .column-market_customa, .column-market_customb, .column-market_customc { text-align: center !important; width:78px !important; overflow:hidden}';
+    echo '</style>';
+}
+
+/* Create new columns, and remove posts column */
+add_filter( 'manage_users_columns', 'be_popia_compliant_modify_user_table' );
+
+function be_popia_compliant_modify_user_table( $columns ) {
+    unset($columns['posts']); $columns['user_id'] = 'ID'; $columns['user_identification_number'] = 'Identification Number'; $columns['user_identification_type'] = 'Identification Type'; $columns['consent_date'] = 'Consent Date'; $columns['comms_phone'] = 'Comms Phone'; $columns['comms_sms'] = 'Comms SMS'; $columns['comms_whatsapp'] = 'Comms WhatsApp'; $columns['comms_messenger'] = 'Comms Messenger'; $columns['comms_telegram'] = 'Comms Telegram'; $columns['comms_email'] = 'Comms Email'; $columns['comms_customa'] = 'Comms Custom 1'; $columns['comms_customb'] = 'Comms Custom 2'; $columns['comms_customc'] = 'Comms Custom 3'; $columns['market_phone'] = 'Marketing Phone'; $columns['market_sms'] = 'Marketing SMS'; $columns['market_whatsapp'] = 'Marketing WhatsApp'; $columns['market_messenger'] = 'Marketing Messenger'; $columns['market_telegram'] = 'Marketing Telegram'; $columns['market_email'] = 'Marketing Email'; $columns['market_customa'] = 'Marketing Custom 1'; $columns['market_customb'] = 'Marketing Custom 2'; $columns['market_customc'] = 'Marketing Custom 3';
+    return $columns;
+}
+
+/* Fill our new columns with the consent date, link to form and permissions granted for each user */
+add_filter( 'manage_users_custom_column', 'be_popia_compliant_modify_user_table_row', 10, 3 );
+    
+function be_popia_compliant_modify_user_table_row( $row_output, $column_id_attr, $user ) {
+
+    /* Function that saves market and comms data for each user*/
+    if(!isset($check_comms_phone) || ($check_comms_phone == "") || ($check_comms_phone == 0)) {
+        echo '<script>                                                    
+                function save_comms_market_val(comms_market, user , cons_val, timestamp, consent_link, cp, cs, cw, cm, ct, ce, cca, ccb, ccc, mp, ms, mw, mm, mt, me, mca, mcb, mcc) {     
+                    // console.log(comms_market); console.log(user); console.log(cons_val); console.log(timestamp); console.log(consent_link); console.log(cp); console.log(cs); console.log(cw); console.log(cm); console.log(ct); console.log(ce); console.log(cca); console.log(ccb); console.log(ccc);        console.log(mp); console.log(ms); console.log(mw); console.log(mm); onsole.log(mt); console.log(me); console.log(mca); console.log(mcb); console.log(mcc);
+                    jQuery.ajax({
+                        type: "post",
+                        cache: false,
+                        dataType: "json",
+                        url: ajaxurl,
+                        data: {
+                            "action":"be_popia_compliant_save_comms_market_val",
+                            "comms_market" : comms_market,
+                            "user" : user,
+                            "cons_val" : cons_val,
+
+                            "timestamp" : timestamp,
+                            "consent_link" : consent_link,
+                            "cp" :cp, "cs" :cs, "cw" :cw, "cm" :cm, "ct" :ct, "ce" :ce, "cca" :cca, "ccb" :ccb, "ccc" :ccc,      "mp" :mp, "ms" :ms, "mw" :mw, "mm" :mm, "mt" :mt, "me" :me, "mca" :mca, "mcb" :mcb, "mcc" :mcc,
+                        },
+                        success:function(data) {
+                            alert(\'Click "OK" or hit "Esc". \n\n Then please wait for page to refresh before selecting another option.\n\n  If not, previous clicks will not be saved!\');
+                            window.location.reload();
+                            // console.log(comms_market); console.log(user); console.log(cons_val); console.log(timestamp); console.log(consent_link);                 console.log(cp); console.log(cs); console.log(cw); console.log(cm); console.log(ct); console.log(ce); console.log(cca); console.log(ccb); console.log(ccc);            console.log(mp); console.log(ms); console.log(mw); console.log(mm); console.log(mt); console.log(me); console.log(mca); console.log(mcb); console.log(mcc);
+                        },
+                        error: function(errorThrown) {
+                        }
+                    });
+                }
+        </script>';
+    }
+    
+    $date_format = 'j M, Y H:i';
+    
+    $user_output =  get_user_meta($user, 'bpc_comms_market', true);
+       
+    switch ( $column_id_attr ) {
+        case 'user_id' :
+            return get_the_author_meta( 'ID', $user );
+            break;
+            case 'consent_date' :
+                $timestamp = $user_output[0];
+                $consent_url = $user_output[1];
+                                        
+                if(isset($user_output[2]) && ($user_output[2] == 1)) {update_option('bpc_cp', $user_output[2]);} else {update_option('bpc_cp', 0);} if(isset($user_output[3]) && ($user_output[3] == 1)) {update_option('bpc_cs', $user_output[3]);} else {update_option('bpc_cs', 0);} if(isset($user_output[4]) && ($user_output[4] == 1)) {update_option('bpc_cw', $user_output[4]);} else {update_option('bpc_cw', 0);} if(isset($user_output[5]) && ($user_output[5] == 1)) {update_option('bpc_cm', $user_output[5]);} else {update_option('bpc_cm', 0);} if(isset($user_output[6]) && ($user_output[6] == 1)) {update_option('bpc_ct', $user_output[6]);} else {update_option('bpc_ct', 0);} if(isset($user_output[7]) && ($user_output[7] == 1)) {update_option('bpc_ce', $user_output[7]);} else {update_option('bpc_ce', 0);} if(isset($user_output[8]) && ($user_output[8] == 1)) {update_option('bpc_cca', $user_output[8]);} else {update_option('bpc_cca', 0);} if(isset($user_output[9]) && ($user_output[9] == 1)) {update_option('bpc_ccb', $user_output[9]);} else {update_option('bpc_ccb', 0);} if(isset($user_output[10]) && ($user_output[10] == 1)) {update_option('bpc_ccc', $user_output[10]);} else {update_option('bpc_ccc', 0);}    if(isset($user_output[11]) && ($user_output[11] == 1)) {update_option('bpc_mp', $user_output[11]);} else {update_option('bpc_mp', 0);} if(isset($user_output[12]) && ($user_output[12] == 1)) {update_option('bpc_ms', $user_output[12]);} else {update_option('bpc_ms', 0);} if(isset($user_output[13]) && ($user_output[13] == 1)) {update_option('bpc_mw', $user_output[13]);} else {update_option('bpc_mw', 0);} if(isset($user_output[14]) && ($user_output[14] == 1)) {update_option('bpc_mm', $user_output[14]);} else {update_option('bpc_mm', 0);} if(isset($user_output[15]) && ($user_output[15] == 1)) {update_option('bpc_mt', $user_output[15]);} else {update_option('bpc_mt', 0);} if(isset($user_output[16]) && ($user_output[16] == 1)) {update_option('bpc_me', $user_output[16]);} else {update_option('bpc_me', 0);} if(isset($user_output[17]) && ($user_output[17] == 1)) {update_option('bpc_mca', $user_output[17]);} else {update_option('bpc_mca', 0);} if(isset($user_output[18]) && ($user_output[18] == 1)) {update_option('bpc_mcb', $user_output[18]);} else {update_option('bpc_mcb', 0);} if(isset($user_output[19]) && ($user_output[19] == 1)) {update_option('bpc_mcc', $user_output[19]);} else {update_option('bpc_mcc', 0);} /* if(isset($user_output[20]) && ($user_output[20] !== '')) {update_option('bpc_ccn1', $user_output[20]);} else {update_option('bpc_ccn1, 'Comms Custom 1');} if(isset($user_output[21]) && ($user_output[21] !== '')) {update_option('bpc_ccn2', $user_output[21]);} else {update_option('bpc_ccn2', 'Comms Custom 2');} if(isset($user_output[22]) && ($user_output[22] !== '')) {update_option('bpc_ccn3'], $user_output[22]);} else {update_option('bpc_ccn3', 'Comms Custom 3');} if(isset($user_output[23]) && ($user_output[23] !== '')) {update_option('bpc_cmn1', $user_output[23]);} else {update_option('bpc_cmn1', 'Marketing Custom 1');} if(isset($user_output[24]) && ($user_output[24] !== '')) {update_option('bpc_cmn2', $user_output[24]);} else {update_option('bpc_cmn2', 'Marketing Custom 2');} if(isset($user_output[25]) && ($user_output[25] !== '')) {update_option('bpc_cmn3', $user_output[25]);} else {update_option('bpc_cmn3', 'Marketing Custom 3');} */ if(isset($timestamp) & $timestamp > 1356998400) {$friendly_date = date( $date_format, $timestamp );} else {$friendly_date = null;}
+                
+                if(isset($consent_url) && ($consent_url != '')) {
+                        $friendly_date = '<a href="' . $consent_url . '" target="_blank">' . $friendly_date . '</a>';
+                    } else {
+                        $friendly_date = $friendly_date;
+                    }
+                    
+                    if($timestamp > 162361216) {
+                        update_option( 'bpc_timestamp', $timestamp );
+                        update_option( 'bpc_consent_url', $consent_url );
+                    return $friendly_date;
+                } else {
+                    return "-";
+                }
+            break;
+            case 'user_identification_number' :
+                    $user_SAID =  get_user_meta($user, 'user_identification_number', true);
+                    $user_OtherID =  get_user_meta($user, 'other_identification_number', true);
+                if(isset($user_SAID) && ($user_SAID !== '')) {                                                                        
+                    return $user_SAID;
+                } else if(isset($user_OtherID) && ($user_OtherID !== '')) { 
+                    return $user_OtherID;
+                } else {
+                    return '';
+                }
+            break;
+            case 'user_identification_type' :
+                $user_SAID =  get_user_meta($user, 'user_identification_number', true);
+                $user_OIDT =  get_user_meta($user, 'other_identification_type', true);
+                $user_OIDI =  get_user_meta($user, 'other_identification_issue', true);
+                if(isset($user_OIDT) && ($user_OIDT !== '')) {                                                                        
+                    return $user_OIDT . ' (' . $user_OIDI . ')' ;
+                } else if(isset($user_SAID) && ($user_SAID !== '')) {
+                    return 'South African ID';
+                } else {
+                    return '';
+                }
+            break;
+            case 'comms_phone' :
+                $check_comms_phone = $user_output[2];
+                if(isset($check_comms_phone) && ($check_comms_phone == 1)) {                                                                        
+                    $comms_phone= '<input type="checkbox" class="bpc_down" name="bpc_comms_phone" checked="checked" onclick="save_comms_market_val(\'comms_phone\', ' . $user . ', 0 , ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                } else {
+                    $comms_phone= '<input type="checkbox" class="bpc_down" name="bpc_comms_phone" onclick="save_comms_market_val(\'comms_phone\', ' . $user . ', 1, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                }
+                return $comms_phone;
+            break;
+            case 'comms_sms' :
+                $check_comms_sms = $user_output[3];
+                if(isset($check_comms_sms) && ($check_comms_sms == 1)) {
+                    $comms_sms= '<input type="checkbox" class="bpc_down" name="bpc_comms_sms" checked="checked" onclick="save_comms_market_val(\'comms_sms\', ' . $user . ', 0, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                } else {
+                    $comms_sms= '<input type="checkbox" class="bpc_down" name="bpc_comms_sms" onclick="save_comms_market_val(\'comms_sms\', ' . $user . ', 1, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                }
+                return $comms_sms;
+            break;
+            case 'comms_whatsapp' :
+                $check_comms_whatsapp = $user_output[4];
+                if(isset($check_comms_whatsapp) && ($check_comms_whatsapp == 1)) {
+                    $comms_whatsapp= '<input type="checkbox" class="bpc_down" name="bpc_comms_whatsapp" checked="checked" onclick="save_comms_market_val(\'comms_whatsapp\', ' . $user . ', 0, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                } else {
+                    $comms_whatsapp= '<input type="checkbox" class="bpc_down" name="bpc_comms_whatsapp" onclick="save_comms_market_val(\'comms_whatsapp\', ' . $user . ', 1, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                }
+                return $comms_whatsapp;
+            break;
+            case 'comms_messenger' :
+                $check_comms_messenger = $user_output[5];
+                if(isset($check_comms_messenger) && ($check_comms_messenger == 1)) {
+                    $comms_messenger= '<input type="checkbox" class="bpc_down" name="bpc_comms_messenger" checked="checked" onclick="save_comms_market_val(\'comms_messenger\', ' . $user . ', 0, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                } else {
+                    $comms_messenger= '<input type="checkbox" class="bpc_down" name="bpc_comms_messenger" onclick="save_comms_market_val(\'comms_messenger\', ' . $user . ', 1, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                }
+                return $comms_messenger;
+            break;
+            case 'comms_telegram' :
+                $check_comms_telegram = $user_output[6];
+                if(isset($check_comms_telegram) && ($check_comms_telegram == 1)) {
+                    $comms_telegram= '<input type="checkbox" class="bpc_down" name="bpc_comms_telegram" checked="checked" onclick="save_comms_market_val(\'comms_telegram\', ' . $user . ', 0, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                } else {
+                    $comms_telegram= '<input type="checkbox" class="bpc_down" name="bpc_comms_telegram" onclick="save_comms_market_val(\'comms_telegram\', ' . $user . ', 1, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                }
+                return $comms_telegram;
+            break;
+            case 'comms_email' :
+                $check_comms_email = $user_output[7];
+                if(isset($check_comms_email) && ($check_comms_email == 1)) {
+                    $comms_email= '<input type="checkbox" class="bpc_down" name="bpc_comms_email" checked="checked" onclick="save_comms_market_val(\'comms_email\', ' . $user . ', 0, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                } else {
+                    $comms_email= '<input type="checkbox" class="bpc_down" name="bpc_comms_email" onclick="save_comms_market_val(\'comms_email\', ' . $user . ', 1, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                }
+                return $comms_email;
+            break;
+            case 'comms_customa' :
+                $check_comms_customa = $user_output[8];
+                if(isset($check_comms_customa) && ($check_comms_customa == 1)) {
+                    $comms_customa= '<input type="checkbox" class="bpc_down" name="bpc_comms_customa" checked="checked" onclick="save_comms_market_val(\'comms_customa\', ' . $user . ', 0, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                } else {
+                    $comms_customa= '<input type="checkbox" class="bpc_down" name="bpc_comms_customa" onclick="save_comms_market_val(\'comms_customa\', ' . $user . ', 1, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                }
+                return $comms_customa;
+            break;
+            case 'comms_customb' :
+                $check_comms_customb = $user_output[9];
+                if(isset($check_comms_customb) && ($check_comms_customb == 1)) {
+                    $comms_customb= '<input type="checkbox" class="bpc_down" name="bpc_comms_customb" checked="checked" onclick="save_comms_market_val(\'comms_customb\', ' . $user . ', 0, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                } else {
+                    $comms_customb= '<input type="checkbox" class="bpc_down" name="bpc_comms_customb" onclick="save_comms_market_val(\'comms_customb\', ' . $user . ', 1, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                }
+                return $comms_customb;
+            break;
+            case 'comms_customc' :
+                $check_comms_customc = $user_output[10];
+                if(isset($check_comms_customc) && ($check_comms_customc == 1)) {
+                    $comms_customc= '<input type="checkbox" class="bpc_down" name="bpc_comms_customc" checked="checked" onclick="save_comms_market_val(\'comms_customc\', ' . $user . ', 0, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                } else {
+                    $comms_customc= '<input type="checkbox" class="bpc_down" name="bpc_comms_customc" onclick="save_comms_market_val(\'comms_customc\', ' . $user . ', 1, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                }
+                return $comms_customc;
+            break;
+            case 'market_phone' :
+                $check_market_phone = $user_output[11];
+                if(isset($check_market_phone) && ($check_market_phone == 1)) {
+                    $market_phone= '<input type="checkbox" class="bpc_down" name="bpc_market_phone" checked="checked" onclick="save_comms_market_val(\'market_phone\', ' . $user . ', 0, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                } else {
+                    $market_phone= '<input type="checkbox" class="bpc_down" name="bpc_market_phone" onclick="save_comms_market_val(\'market_phone\', ' . $user . ', 1, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                }
+                return $market_phone;
+            break;
+            case 'market_sms' :
+                $check_market_sms = $user_output[12];
+                if(isset($check_market_sms) && ($check_market_sms == 1)) {
+                    $market_sms= '<input type="checkbox" class="bpc_down" name="bpc_market_sms" checked="checked" onclick="save_comms_market_val(\'market_sms\', ' . $user . ', 0, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                } else {
+                    $market_sms= '<input type="checkbox" class="bpc_down" name="bpc_market_sms" onclick="save_comms_market_val(\'market_sms\', ' . $user . ', 1, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                }
+                return $market_sms;
+            break;
+            case 'market_whatsapp' :
+                $check_market_whatsapp = $user_output[13];
+                if(isset($check_market_whatsapp) && ($check_market_whatsapp == 1)) {
+                    $market_whatsapp= '<input type="checkbox" class="bpc_down" name="bpc_market_whatsapp" checked="checked" onclick="save_comms_market_val(\'market_whatsapp\', ' . $user . ', 0, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                } else {
+                    $market_whatsapp= '<input type="checkbox" class="bpc_down" name="bpc_market_whatsapp" onclick="save_comms_market_val(\'market_whatsapp\', ' . $user . ', 1, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                }
+                return $market_whatsapp;
+            break;
+            case 'market_messenger' :
+                $check_market_messenger = $user_output[14];
+                if(isset($check_market_messenger) && ($check_market_messenger == 1)) {
+                    $market_messenger= '<input type="checkbox" class="bpc_down" name="bpc_market_messenger" checked="checked" onclick="save_comms_market_val(\'market_messenger\', ' . $user . ', 0, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                } else {
+                    $market_messenger= '<input type="checkbox" class="bpc_down" name="bpc_market_messenger" onclick="save_comms_market_val(\'market_messenger\', ' . $user . ', 1, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                }
+                return $market_messenger;
+            break;
+            case 'market_telegram' :
+                $check_market_telegram = $user_output[15];
+                if(isset($check_market_telegram) && ($check_market_telegram == 1)) {
+                    $market_telegram= '<input type="checkbox" class="bpc_down" name="bpc_market_telegram" checked="checked" onclick="save_comms_market_val(\'market_telegram\', ' . $user . ', 0, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                } else {
+                    $market_telegram= '<input type="checkbox" class="bpc_down" name="bpc_market_telegram" onclick="save_comms_market_val(\'market_telegram\', ' . $user . ', 1, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                }
+                return $market_telegram;
+            break;
+            case 'market_email' :
+                $check_market_email = $user_output[16];
+                if(isset($check_market_email) && ($check_market_email == 1)) {
+                    $market_email= '<input type="checkbox" class="bpc_down" name="bpc_market_email" checked="checked" onclick="save_comms_market_val(\'market_email\', ' . $user . ', 0, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                } else {
+                    $market_email= '<input type="checkbox" class="bpc_down" name="bpc_market_email" onclick="save_comms_market_val(\'market_email\', ' . $user . ', 1, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                }
+                return $market_email;
+            break;
+            case 'market_customa' :
+                $check_market_customa = $user_output[17];
+                if(isset($check_market_customa) && ($check_market_customa == 1)) {
+                    $market_customa= '<input type="checkbox" class="bpc_down" name="bpc_market_customa" checked="checked" onclick="save_comms_market_val(\'market_customa\', ' . $user . ', 0, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                } else {
+                    $market_customa= '<input type="checkbox" class="bpc_down" name="bpc_market_customa" onclick="save_comms_market_val(\'market_customa\', ' . $user . ', 1, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                }
+                return $market_customa;
+            break;
+            case 'market_customb' :
+                $check_market_customb = $user_output[18];
+                if(isset($check_market_customb) && ($check_market_customb == 1)) {
+                    $market_customb= '<input type="checkbox" class="bpc_down" name="bpc_market_customb" checked="checked" onclick="save_comms_market_val(\'market_customb\', ' . $user . ', 0, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                } else {
+                    $market_customb= '<input type="checkbox" class="bpc_down" name="bpc_market_customb" onclick="save_comms_market_val(\'market_customb\', ' . $user . ', 1, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                }
+                return $market_customb;
+            break;
+            case 'market_customc' :
+                $check_market_customc = $user_output[19];
+                if(isset($check_market_customc) && ($check_market_customc == 1)) {
+                    $market_customc= '<input type="checkbox" class="bpc_down" name="bpc_market_customc" checked="checked" onclick="save_comms_market_val(\'market_customc\', ' . $user . ', 0, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                } else {
+                    $market_customc= '<input type="checkbox" class="bpc_down" name="bpc_market_customc" onclick="save_comms_market_val(\'market_customc\', ' . $user . ', 1, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' />';
+                }
+                return $market_customc;
+            break;
+            default:
+                echo '';
+            break;
+    }
+    return $row_output;
+}
+
+/* Store onclick events when comms or marketing consent is clicked */
+function be_popia_compliant_save_comms_market_val() {
+    $meta_key = 'bpc_' . sanitize_text_field($_REQUEST['comms_market']);
+    $user_id = sanitize_text_field($_REQUEST['user']);
+    $meta_value = sanitize_text_field($_REQUEST['cons_val']);
+
+    $timestamp = sanitize_text_field($_REQUEST['timestamp']);
+    $consent_link = sanitize_text_field($_REQUEST['consent_link']);
+    
+    $cp=sanitize_text_field($_REQUEST['cp']); $cs=sanitize_text_field($_REQUEST['cs']); $cw=sanitize_text_field($_REQUEST['cw']); $cm=sanitize_text_field($_REQUEST['cm']); $ct=sanitize_text_field($_REQUEST['ct']); $ce=sanitize_text_field($_REQUEST['ce']); $cca=sanitize_text_field($_REQUEST['cca']); $ccb=sanitize_text_field($_REQUEST['ccb']); $ccc=sanitize_text_field($_REQUEST['ccc']); $mp=sanitize_text_field($_REQUEST['mp']); $ms=sanitize_text_field($_REQUEST['ms']); $mw=sanitize_text_field($_REQUEST['mw']); $mm=sanitize_text_field($_REQUEST['mm']); $mt=sanitize_text_field($_REQUEST['mt']); $me=sanitize_text_field($_REQUEST['me']); $mca=sanitize_text_field($_REQUEST['mca']); $mcb=sanitize_text_field($_REQUEST['mcb']); $mcc=sanitize_text_field($_REQUEST['mcc']);
+
+    if($meta_key=='bpc_comms_phone') {$cp=$meta_value;} if($meta_key=='bpc_comms_sms') {$cs=$meta_value;} if($meta_key=='bpc_comms_whatsapp') {$cw=$meta_value;} if($meta_key=='bpc_comms_messenger') {$cm=$meta_value;} if($meta_key=='bpc_comms_telegram') {$ct=$meta_value;} if($meta_key=='bpc_comms_email') {$ce=$meta_value;} if($meta_key=='bpc_comms_customa') {$cca=$meta_value;} if($meta_key=='bpc_comms_customb') {$ccb=$meta_value;} if($meta_key=='bpc_comms_customc') {$ccc=$meta_value;} if($meta_key=='bpc_market_phone') {$mp=$meta_value;} if($meta_key=='bpc_market_sms') {$ms=$meta_value;} if($meta_key=='bpc_market_whatsapp') {$mw=$meta_value;} if($meta_key=='bpc_market_messenger') {$mm=$meta_value;} if($meta_key=='bpc_market_telegram') {$mt=$meta_value;}  if($meta_key=='bpc_market_email') {$me=$meta_value;} if($meta_key=='bpc_market_customa') {$mca=$meta_value;} if($meta_key=='bpc_market_customb') {$mcb=$meta_value;} if($meta_key=='bpc_market_customc') {$mcc=$meta_value;}
+
+    $value = array($timestamp, $consent_link, $cp, $cs, $cw, $cm, $ct, $ce, $cca, $ccb, $ccc, $mp, $ms, $mw, $mm, $mt, $me, $mca, $mcb, $mcc);
+  
+    update_user_meta($user_id, 'bpc_comms_market', $value);
+}
+
+add_action( 'wp_ajax_be_popia_compliant_save_comms_market_val', 'be_popia_compliant_save_comms_market_val' ); 
+
+function be_popia_compliant_deactivate_plugin() {
 
     $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME']);
 
@@ -1070,7 +1339,7 @@ function be_popia_compliant_deactivate_plugin(){
     if ( 200 === $response_code ) {
         $body = json_decode( $body );
 
-        if($body != []){
+        if($body != []) {
             foreach ( $body as $data ) {
                 $id = $data->id;
             }
@@ -1095,12 +1364,11 @@ function be_popia_compliant_deactivate_plugin(){
     }
 }
 
-
 register_deactivation_hook( __FILE__, 'be_popia_compliant_deactivate_plugin' );
 
 
 
-function be_popia_compliant_delete_plugin(){
+function be_popia_compliant_delete_plugin() {
 
     $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME']);
 
@@ -1127,7 +1395,7 @@ function be_popia_compliant_delete_plugin(){
     if ( 200 === $response_code ) {
         $body = json_decode( $body );
 
-        if($body != []){
+        if($body != []) {
             foreach ( $body as $data ) {
                 $id = $data->id;
             }
@@ -1152,24 +1420,21 @@ function be_popia_compliant_delete_plugin(){
     }
 }
 
-
 register_uninstall_hook( __FILE__, 'be_popia_compliant_delete_plugin' );
 
 
-function be_popia_compliant_dashboard_go_pro(){
+function be_popia_compliant_dashboard_go_pro() {
     $output = '
         <div class="be_popia_compliant_wrap">
             <h2>POPIA GO PRO</h2>
             <p>CONTENT NEEDED</p>
             
-        </div>
-    ';
+        </div>';
 
     echo esc_html( $output );
 }
 
-
-function be_popia_compliant_dashboard(){
+function be_popia_compliant_dashboard() {
     $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/domaincompletecheck/" . $_SERVER['SERVER_NAME']);
 
     $args = array(
@@ -1204,15 +1469,13 @@ function be_popia_compliant_dashboard(){
             global $wpdb;
             $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
 
-            if($domain_form_complete == 1 && $consent_form_complete == 1 && $other_parties != null){
+            if($domain_form_complete == 1 && $consent_form_complete == 1 && $other_parties != null) {
                 $wpdb->update( $table_name, array( 'value' => 1),array('id'=> 4)); 
             } else {
                 $wpdb->update( $table_name, array( 'value' => 0),array('id'=> 4)); 
             }
         }
     }
-
-
 
     echo '
         <div class="be_popia_compliant_wrap_dashboard">
@@ -1226,7 +1489,7 @@ function be_popia_compliant_dashboard(){
                 $result_suspended = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 3");
                 $result_complete = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 4");
 
-                if((isset($result_api->value) && $result_api->value !='') && (isset($result_company->value) && $result_company->value != '') && $result_suspended->value != 1 && $result_complete->value == 1){
+                if((isset($result_api->value) && $result_api->value !='') && (isset($result_company->value) && $result_company->value != '') && $result_suspended->value != 1 && $result_complete->value == 1) {
                     echo'
                     <div class="be_popia_compliant_p_version">
                         You are using a pro version of BPC
@@ -1240,7 +1503,7 @@ function be_popia_compliant_dashboard(){
                         </div>
                     </div>
                     ';
-                } elseif((isset($result_api->value) && $result_api->value !='') && (isset($result_company->value) && $result_company->value != '') && $result_suspended->value != 1 && $result_complete->value != 1){
+                } elseif((isset($result_api->value) && $result_api->value !='') && (isset($result_company->value) && $result_company->value != '') && $result_suspended->value != 1 && $result_complete->value != 1) {
                     echo'
                     <div class="be_popia_compliant_p_version">
                         You are connected to Pro, but action on your account is required and the free version is still in effect. <a href="https://bepopiacompliant.co.za" style="color:#B7191A"; target="_blank"><span style="line-height: 45px; margin: 30px important;"> Fix it now!</span></a>
@@ -1274,7 +1537,6 @@ function be_popia_compliant_dashboard(){
                     ';
                 }
 
-
                 echo'
                 <div class="be_popia_compliant_dashboard_main_about">
                     Be Popia Compliant (BPC) - avoid fines and imprisonment by becoming POPIA Compliant.
@@ -1297,7 +1559,7 @@ function be_popia_compliant_dashboard(){
 
                     $result_suspended = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 3");
 
-                    if($result_suspended->value == 1){
+                    if($result_suspended->value == 1) {
                         echo '
                             <h2 style="text-align:center;color:#B61F21;">Your account has been suspended due to non payment</h2>
                             <h4 style="text-align:center;color:#B61F21;">Please visit bepopiacompliant.co.za to reactivate your account</h4>
@@ -1317,7 +1579,7 @@ function be_popia_compliant_dashboard(){
                     <button id="url_button" onclick="save_keys(); location.reload();">Save</button>                       
                                                     
                     <script>                                                    
-                        function save_keys(){      
+                        function save_keys() {      
                             var api_key = document.getElementById("be_popia_compliant_api_key_input").value;
                             var company_key = document.getElementById("be_popia_compliant_company_key_input").value;
                             jQuery.ajax({
@@ -1334,7 +1596,7 @@ function be_popia_compliant_dashboard(){
                                 success:function(data) {
                                     window.location.reload();
                                 },  
-                                error: function(errorThrown){
+                                error: function(errorThrown) {
                                 }
                             });
                         }
@@ -1374,12 +1636,12 @@ function be_popia_compliant_dashboard(){
         </div>
         <script>
             window.onload = check_db;
-            function checkStatus(){
-                setInterval(function(){
+            function checkStatus() {
+                setInterval(function() {
                     check_db() 
                 }, 10000);
             }
-            function check_db(){
+            function check_db() {
                 
                 jQuery.ajax({
                     type: "GET",
@@ -1390,7 +1652,7 @@ function be_popia_compliant_dashboard(){
                     success:function(data) {
                         document.getElementById("be_popia_compliant_completeness").innerHTML = Math.floor(data);
                     },  
-                    error: function(errorThrown){
+                    error: function(errorThrown) {
                     }
                 });
             }
@@ -1399,12 +1661,10 @@ function be_popia_compliant_dashboard(){
     ';
 }
 
-
-
-function be_popia_compliant_notice(){
+// Inject a customised message for the user to their admin panel
+function be_popia_compliant_notice() {
     global $pagenow;
     $admin_pages = [ 'index.php', 'edit.php', 'plugins.php' ];
-
 
     $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/getmessage/");
 
@@ -1416,7 +1676,6 @@ function be_popia_compliant_notice(){
     );
 
     $response = wp_remote_get( wp_http_validate_url($url), $args );
-
     $response_code = wp_remote_retrieve_response_code( $response );
     $data = wp_remote_retrieve_body( $response );
 
@@ -1437,8 +1696,6 @@ function be_popia_compliant_notice(){
     }    
 
     if(isset($server_message) && ($server_message != 'null')) {
-
-
         if ( in_array( $pagenow, $admin_pages ) ) {
             if(isset($server_message)) {
                 ?>
@@ -1448,7 +1705,6 @@ function be_popia_compliant_notice(){
                     ?>
                 </p></div>
                 <?
-
             }
         }
     }
@@ -1474,7 +1730,7 @@ function be_popia_compliant_notice(){
     if ( 200 === $response_code ) {
         $body = json_decode( $body );
 
-        if($body != []){
+        if($body != []) {
             foreach ( $body as $data ) {
                 $disapproved_reason = $data->disapproved_reason;
                 $is_approved = $data->is_approved;
@@ -1501,9 +1757,7 @@ function be_popia_compliant_notice(){
 
 add_action( 'admin_notices', 'be_popia_compliant_notice' );
 
-
-
-function be_popia_compliant_p_key_save(){
+function be_popia_compliant_p_key_save() {
     if ( isset($_REQUEST) ) {
         global $wpdb;
         $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
@@ -1536,8 +1790,8 @@ function be_popia_compliant_p_key_save(){
         // }
 
         if ( 200 === $response_code ) {
-            if((isset($body)) && (!empty($body)) && ($body != '') && ($body != "[]")){
-                if($api_key != ''){
+            if((isset($body)) && (!empty($body)) && ($body != '') && ($body != "[]")) {
+                if($api_key != '') {
                     $wpdb->update( $table_name, array( 'value' => $api_key ),array('id'=>1));
                 } 
                 if($company_key != '') {
@@ -1551,16 +1805,11 @@ function be_popia_compliant_p_key_save(){
             }
         }
     }
-
    die();
 }
-
 add_action( 'wp_ajax_be_popia_compliant_p_key_save', 'be_popia_compliant_p_key_save' ); 
 
-
-
-
-function be_popia_compliant_dashboard_checklist(){
+function be_popia_compliant_dashboard_checklist() {
 
 	global $wpdb;
 
@@ -1594,12 +1843,12 @@ function be_popia_compliant_dashboard_checklist(){
             </div>
             <script>
                 window.onload = check_db;
-                function checkStatus(){
-                    setInterval(function(){
+                function checkStatus() {
+                    setInterval(function() {
                         check_db() 
                     }, 10000);
                 }
-                function check_db(){
+                function check_db() {
                     
                     jQuery.ajax({
                         type: "GET",
@@ -1608,7 +1857,7 @@ function be_popia_compliant_dashboard_checklist(){
                             "action":"be_popia_compliant_checklist_update_compliance",
                         },
                         success:function(data) {
-                            if(data == 100){
+                            if(data == 100) {
                                 document.getElementById("completed_consent").style.display = "block";
                                 document.getElementById("not_completed_consent").style.display = "none";
                             } else {
@@ -1618,7 +1867,7 @@ function be_popia_compliant_dashboard_checklist(){
                             document.getElementById("progress-percent").innerHTML = Math.floor(data);
                             document.getElementById("progress").value = Math.floor(data);
                         },  
-                        error: function(errorThrown){
+                        error: function(errorThrown) {
                         }
                     });
                     
@@ -1630,7 +1879,7 @@ function be_popia_compliant_dashboard_checklist(){
             <div class="be_popia_compliant_row">
                 <div class="be_popia_compliant_col">
                     <div class="be_popia_compliant_tabs">';
-                        foreach($results as $result){
+                        foreach($results as $result) {
                             $marketing = 38;
                             if($result->id == 3) {
                                 if($result->does_comply == 1) {
@@ -1640,7 +1889,7 @@ function be_popia_compliant_dashboard_checklist(){
                                 } 
                             }
 
-                            if($result->type == -1){
+                            if($result->type == -1) {
                                 echo '
                                 </div>
                                 <br><br>
@@ -1649,13 +1898,13 @@ function be_popia_compliant_dashboard_checklist(){
                                     <span class="be_popia_compliant_tab-main-section-label_completed" for="rd' . esc_attr( $result->id ) . '">' . esc_attr( $result->title );
                                 if($result->description != '') { echo '<a href="#" title="' . esc_attr( $result->description ) . '" class="tooltip">?</a></span>' ;}
                                 echo '</div>';
-                            } elseif($result->type == 0){
+                            } elseif($result->type == 0) {
                                 echo '
                                 <div class="be_popia_compliant_tab">
                                     <input class="be_popia_compliant_input"  type="radio" id="rd' . esc_attr( $result->id ) . '" name="rd">
                                     <label class="be_popia_compliant_tab-section-label_completed" for="rd' . esc_attr( $result->id ). '">' . esc_attr( $result->title ) . '</label>
                                     ';
-                                    if($result->description != ""){
+                                    if($result->description != "") {
 
                                     echo'
                                         <div class="be_popia_compliant_tab-section-content">
@@ -1664,41 +1913,41 @@ function be_popia_compliant_dashboard_checklist(){
                                     }
                                 echo'
                                 </div>';
-                            }  elseif($result->type == 3){
+                            }  elseif($result->type == 3) {
                                 global $wpdb;
 
                                 $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
 
 
                                 $checks = $wpdb->get_results("SELECT does_comply FROM $table_name WHERE id = 2");
-                                foreach($checks as $check){
-                                    if($check->does_comply == 1){
+                                foreach($checks as $check) {
+                                    if($check->does_comply == 1) {
                                         echo '
                                         <div class="be_popia_compliant_tab">
                                             <input class="be_popia_compliant_input"  type="radio" id="rd' . esc_attr( $result->id ) . '" name="rd">
-                                            <label '; if($result->does_comply == 0){echo 'class="be_popia_compliant_tab-label"';} else {echo'class="be_popia_compliant_tab-label_completed"';} echo ' for="rd' . esc_attr( $result->id ) . '">' . esc_attr( $result->title ) . '</label>
+                                            <label '; if($result->does_comply == 0) {echo 'class="be_popia_compliant_tab-label"';} else {echo'class="be_popia_compliant_tab-label_completed"';} echo ' for="rd' . esc_attr( $result->id ) . '">' . esc_attr( $result->title ) . '</label>
                                             ';
-                                            if($result->description != ""){
+                                            if($result->description != "") {
 
                                                 echo'
                                                 <div class="be_popia_compliant_tab-content">
                                                     ' . esc_attr( $result->description ) . '
                                                     <input type="hidden" id="be_popia_compliant_id" name="be_popia_compliant_id" value="' . esc_attr( $result->id ) . '">
-                                                    <input type="checkbox" '; if($result->does_comply == 1){echo 'checked';} echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(be_popia_compliant_checkbox,' . esc_attr( $result->id ) . ')">';
+                                                    <input type="checkbox" '; if($result->does_comply == 1) {echo 'checked';} echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(be_popia_compliant_checkbox,' . esc_attr( $result->id ) . ')">';
                                             }
                                             echo'
                                             </div>
                                         </div>';
                                     }
                                 }
-                            } elseif($result->type == 4){
+                            } elseif($result->type == 4) {
                                 global $wpdb;
 
                                 $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
 
                                 $checks = $wpdb->get_results("SELECT * FROM $table_name WHERE id = 3");
-                                foreach($checks as $check){
-                                    if($check->does_comply == 1){
+                                foreach($checks as $check) {
+                                    if($check->does_comply == 1) {
 
 
                                         global $wpdb;
@@ -1713,15 +1962,15 @@ function be_popia_compliant_dashboard_checklist(){
                                             echo '
                                             <div class="be_popia_compliant_tab">
                                                 <input class="be_popia_compliant_input"  type="radio" id="rd' . esc_attr( $result->id ) . '" name="rd">
-                                                <label '; if($result->does_comply == 0){echo 'class="be_popia_compliant_tab-label"';} else {echo'class="be_popia_compliant_tab-label_completed"';} echo ' for="rd' . esc_attr( $result->id ) . '">14. MARKETING COMMUNICATION:</label>
+                                                <label '; if($result->does_comply == 0) {echo 'class="be_popia_compliant_tab-label"';} else {echo'class="be_popia_compliant_tab-label_completed"';} echo ' for="rd' . esc_attr( $result->id ) . '">14. MARKETING COMMUNICATION:</label>
                                                 ';
-                                                if($result->description != ""){
+                                                if($result->description != "") {
 
                                                     echo'
                                                     <div class="be_popia_compliant_tab-content">
                                                         ' . esc_attr( $result->description ) . '
                                                         <input type="hidden" id="be_popia_compliant_id" name="be_popia_compliant_id" value="' . esc_attr( $result->id ) . '">
-                                                        <input type="checkbox" '; if($result->does_comply == 1){echo 'checked';} echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(be_popia_compliant_checkbox,' . esc_attr( $result->id ) . ')">';
+                                                        <input type="checkbox" '; if($result->does_comply == 1) {echo 'checked';} echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(be_popia_compliant_checkbox,' . esc_attr( $result->id ) . ')">';
                                                 }
                                                 echo'
                                                 </div>
@@ -1730,15 +1979,15 @@ function be_popia_compliant_dashboard_checklist(){
                                             echo '
                                             <div class="be_popia_compliant_tab">
                                                 <input class="be_popia_compliant_input"  type="radio" id="rd' . esc_attr( $result->id ) . '" name="rd">
-                                                <label '; if($result->does_comply == 0){echo 'class="be_popia_compliant_tab-label"';} else {echo'class="be_popia_compliant_tab-label_completed"';} echo ' for="rd' . esc_attr( $result->id ) . '">' . esc_attr( $result->title ) . '</label>
+                                                <label '; if($result->does_comply == 0) {echo 'class="be_popia_compliant_tab-label"';} else {echo'class="be_popia_compliant_tab-label_completed"';} echo ' for="rd' . esc_attr( $result->id ) . '">' . esc_attr( $result->title ) . '</label>
                                                 ';
-                                                if($result->description != ""){
+                                                if($result->description != "") {
 
                                                     echo'
                                                     <div class="be_popia_compliant_tab-content">
                                                         ' . esc_attr( $result->description ) . '
                                                         <input type="hidden" id="be_popia_compliant_id" name="be_popia_compliant_id" value="' . esc_attr( $result->id ) . '">
-                                                        <input type="checkbox" '; if($result->does_comply == 1){echo 'checked';} echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(be_popia_compliant_checkbox,' . esc_attr( $result->id ) . ')">';
+                                                        <input type="checkbox" '; if($result->does_comply == 1) {echo 'checked';} echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(be_popia_compliant_checkbox,' . esc_attr( $result->id ) . ')">';
                                                 }
                                                 echo'
                                                 </div>
@@ -1754,26 +2003,26 @@ function be_popia_compliant_dashboard_checklist(){
                                             echo '
                                             <div class="be_popia_compliant_tab">
                                                 <input class="be_popia_compliant_input"  type="radio" id="rd' . esc_attr( $result->id ) . '" name="rd">
-                                                <label '; if($result->does_comply == 0){echo 'class="be_popia_compliant_tab-label"';} else {echo'class="be_popia_compliant_tab-label_completed"';} echo ' for="rd' . esc_attr( $result->id ) . '" id="be_popia_compliant_tab-label' . esc_attr( $result->id ) . '">' . esc_attr( $result->title ) . '</label>
+                                                <label '; if($result->does_comply == 0) {echo 'class="be_popia_compliant_tab-label"';} else {echo'class="be_popia_compliant_tab-label_completed"';} echo ' for="rd' . esc_attr( $result->id ) . '" id="be_popia_compliant_tab-label' . esc_attr( $result->id ) . '">' . esc_attr( $result->title ) . '</label>
                                                 <div class="be_popia_compliant_tab-content"><br>
                                                     
                                                     ' . esc_html($result->description ) . '
                                                         ';
-                                                        if($result->type == 1 || $result->type == 5 || $result->type == 6 || $result->type == 7){
+                                                        if($result->type == 1 || $result->type == 5 || $result->type == 6 || $result->type == 7) {
 
                                                                 echo '
                                                                     <input type="hidden" id="be_popia_compliant_id" name="be_popia_compliant_id" value="' . esc_attr( $result->id ) . '">
-                                                                    <input type="checkbox" '; if($result->does_comply == 1){echo 'checked';} echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(be_popia_compliant_checkbox,' . esc_attr( $result->id ) . ')">';
+                                                                    <input type="checkbox" '; if($result->does_comply == 1) {echo 'checked';} echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(be_popia_compliant_checkbox,' . esc_attr( $result->id ) . ')">';
 
-                                                        } elseif($result->type == 2){
+                                                        } elseif($result->type == 2) {
                                                             echo '
                                                                 <input type="hidden" id="be_popia_compliant_id_url" name="be_popia_compliant_id_url" value="' . esc_attr( $result->id ) . '">
-                                                                <input type="text" id="input_field' . esc_attr( $result->id ) . '" name="input_field' . esc_attr( $result->id ) . '" placeholder="eg. https://' . $_SERVER['SERVER_NAME'] . '/?page_id=3" class="widefat"'; if($result->content != ''){ echo 'value="' . $result->content . '"';} echo'>
+                                                                <input type="text" id="input_field' . esc_attr( $result->id ) . '" name="input_field' . esc_attr( $result->id ) . '" placeholder="eg. https://' . $_SERVER['SERVER_NAME'] . '/?page_id=3" class="widefat"'; if($result->content != '') { echo 'value="' . $result->content . '"';} echo'>
                                                                 <button id="url_button" onclick="save_field(' . esc_attr( $result->id ) . ')">Save</button>
                                                                 
                                                                 
                                                                 <script>                                                    
-                                                                    function save_field(check_id){
+                                                                    function save_field(check_id) {
                                                                         alert("Saved");
                                                                         var result_id = "input_field" + check_id;
                                                                         var input = document.getElementById(result_id).value;
@@ -1791,7 +2040,7 @@ function be_popia_compliant_dashboard_checklist(){
                                                                             },
                                                                             success:function(data) {
                                                                             },  
-                                                                            error: function(errorThrown){
+                                                                            error: function(errorThrown) {
                                                                             }
                                                                         });
                                                                         
@@ -1816,7 +2065,7 @@ function be_popia_compliant_dashboard_checklist(){
                                                             success:function(data) {
                                                                 document.getElementById(label_id).style.background = "#B7191A";
                                                             },  
-                                                            error: function(errorThrown){
+                                                            error: function(errorThrown) {
                                                                 window.alert(errorThrown);
                                                             }
                                                         });
@@ -1830,7 +2079,7 @@ function be_popia_compliant_dashboard_checklist(){
                                                             success:function(data) {
                                                                 document.getElementById(label_id).style.background = "#1D2327";
                                                             },  
-                                                            error: function(errorThrown){
+                                                            error: function(errorThrown) {
                                                                 window.alert(errorThrown);
                                                             }
                                                         });
@@ -1838,30 +2087,30 @@ function be_popia_compliant_dashboard_checklist(){
                                                 }
                                             </script>';         
                                         }                           
-                                    } elseif ($marketing == 39){
+                                    } elseif ($marketing == 39) {
                                         if($result->type == 6) {
                                             echo '
                                 <div class="be_popia_compliant_tab">
                                     <input class="be_popia_compliant_input"  type="radio" id="rd' . esc_attr( $result->id ) . '" name="rd">
-                                    <label '; if($result->does_comply == 0){echo 'class="be_popia_compliant_tab-label"';} else {echo'class="be_popia_compliant_tab-label_completed"';} echo ' for="rd' . esc_attr( $result->id ) . '" id="be_popia_compliant_tab-label' . esc_attr( $result->id ) . '">' . esc_attr( $result->title ) . '</label>
+                                    <label '; if($result->does_comply == 0) {echo 'class="be_popia_compliant_tab-label"';} else {echo'class="be_popia_compliant_tab-label_completed"';} echo ' for="rd' . esc_attr( $result->id ) . '" id="be_popia_compliant_tab-label' . esc_attr( $result->id ) . '">' . esc_attr( $result->title ) . '</label>
                                     <div class="be_popia_compliant_tab-content"><br>
                                         
                                         ' . esc_html( $result->description ) . '
                                             ';
-                                            if($result->type == 1 || $result->type == 5 || $result->type == 6 || $result->type == 7){
+                                            if($result->type == 1 || $result->type == 5 || $result->type == 6 || $result->type == 7) {
 
                                                 echo '
                                                 <input type="hidden" id="be_popia_compliant_id" name="be_popia_compliant_id" value="' . esc_attr( $result->id ) . '">
-                                                <input type="checkbox" '; if($result->does_comply == 1){echo 'checked';} echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(be_popia_compliant_checkbox,' . esc_attr( $result->id ) . ')">';
+                                                <input type="checkbox" '; if($result->does_comply == 1) {echo 'checked';} echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(be_popia_compliant_checkbox,' . esc_attr( $result->id ) . ')">';
 
-                                            } elseif($result->type == 2){
+                                            } elseif($result->type == 2) {
                                                 echo '
                                                     <input type="hidden" id="be_popia_compliant_id_url" name="be_popia_compliant_id_url" value="' . esc_attr( $result->id ) . '">
-                                                    <input type="text" id="input_field' . esc_attr( $result->id ) . '" name="input_field' . esc_attr( $result->id ) . '" placeholder="eg. https://' . $_SERVER['SERVER_NAME'] . '/?page_id=3" class="widefat"'; if($result->content != ''){ echo 'value="' . $result->content . '"';} echo'>
+                                                    <input type="text" id="input_field' . esc_attr( $result->id ) . '" name="input_field' . esc_attr( $result->id ) . '" placeholder="eg. https://' . $_SERVER['SERVER_NAME'] . '/?page_id=3" class="widefat"'; if($result->content != '') { echo 'value="' . $result->content . '"';} echo'>
                                                     <button id="url_button" onclick="save_field(' . esc_attr( $result->id ) . ')">Save</button>
                                                     
                                                     <script>                                                    
-                                                        function save_field(check_id){
+                                                        function save_field(check_id) {
                                                             alert("Saved");
                                                             var result_id = "input_field" + check_id;
                                                             var input = document.getElementById(result_id).value;
@@ -1879,7 +2128,7 @@ function be_popia_compliant_dashboard_checklist(){
                                                                 },
                                                                 success:function(data) {
                                                                 },  
-                                                                error: function(errorThrown){
+                                                                error: function(errorThrown) {
                                                                 }
                                                             });
                                                             
@@ -1904,7 +2153,7 @@ function be_popia_compliant_dashboard_checklist(){
                                                 success:function(data) {
                                                     document.getElementById(label_id).style.background = "#B7191A";
                                                 },  
-                                                error: function(errorThrown){
+                                                error: function(errorThrown) {
                                                     window.alert(errorThrown);
                                                 }
                                             });
@@ -1918,7 +2167,7 @@ function be_popia_compliant_dashboard_checklist(){
                                                 success:function(data) {
                                                     document.getElementById(label_id).style.background = "#1D2327";
                                                 },  
-                                                error: function(errorThrown){
+                                                error: function(errorThrown) {
                                                     window.alert(errorThrown);
                                                 }
                                             });
@@ -1929,30 +2178,30 @@ function be_popia_compliant_dashboard_checklist(){
                                     }
 
 
-                                if($result->type != 5 && $result->type != 6){
+                                if($result->type != 5 && $result->type != 6) {
                                 echo '
                                 <div class="be_popia_compliant_tab">
                                     <input class="be_popia_compliant_input"  type="radio" id="rd' . esc_attr( $result->id ) . '" name="rd">
-                                    <label '; if($result->does_comply == 0){echo 'class="be_popia_compliant_tab-label"';} else {echo'class="be_popia_compliant_tab-label_completed"';} echo ' for="rd' . esc_attr( $result->id ) . '" id="be_popia_compliant_tab-label' . esc_attr( $result->id ) . '">' . esc_attr( $result->title ) . '</label>
+                                    <label '; if($result->does_comply == 0) {echo 'class="be_popia_compliant_tab-label"';} else {echo'class="be_popia_compliant_tab-label_completed"';} echo ' for="rd' . esc_attr( $result->id ) . '" id="be_popia_compliant_tab-label' . esc_attr( $result->id ) . '">' . esc_attr( $result->title ) . '</label>
                                     <div class="be_popia_compliant_tab-content"><br>
                                         
                                         ' . $result->description . '
                                             ';
-                                            if($result->type == 1 || $result->type == 5 || $result->type == 6 || $result->type == 7){
+                                            if($result->type == 1 || $result->type == 5 || $result->type == 6 || $result->type == 7) {
 
                                                     echo '
                                                         <input type="hidden" id="be_popia_compliant_id" name="be_popia_compliant_id" value="' . esc_attr( $result->id ) . '">
-                                                        <input type="checkbox" '; if($result->does_comply == 1){echo 'checked';} echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(be_popia_compliant_checkbox,' . esc_attr( $result->id ) . ')">';
+                                                        <input type="checkbox" '; if($result->does_comply == 1) {echo 'checked';} echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(be_popia_compliant_checkbox,' . esc_attr( $result->id ) . ')">';
 
-                                            } elseif($result->type == 2){
+                                            } elseif($result->type == 2) {
                                                 echo '
                                                     <input type="hidden" id="be_popia_compliant_id_url" name="be_popia_compliant_id_url" value="' . esc_attr( $result->id ) . '">
-                                                    <input type="text" id="input_field' . esc_attr( $result->id ) . '" name="input_field' . esc_attr( $result->id ) . '" placeholder="eg. https://' . $_SERVER['SERVER_NAME'] . '/?page_id=3" class="widefat"'; if($result->content != ''){ echo 'value="' . $result->content . '"';} echo'>
+                                                    <input type="text" id="input_field' . esc_attr( $result->id ) . '" name="input_field' . esc_attr( $result->id ) . '" placeholder="eg. https://' . $_SERVER['SERVER_NAME'] . '/?page_id=3" class="widefat"'; if($result->content != '') { echo 'value="' . $result->content . '"';} echo'>
                                                     <button id="url_button" onclick="save_field(' . esc_attr( $result->id ) . ')">Save</button>
                                                     
                                                     
                                                     <script>                                                    
-                                                        function save_field(check_id){
+                                                        function save_field(check_id) {
                                                             alert("Saved");
                                                             var result_id = "input_field" + check_id;
                                                             var input = document.getElementById(result_id).value;
@@ -1970,7 +2219,7 @@ function be_popia_compliant_dashboard_checklist(){
                                                                 },
                                                                 success:function(data) {
                                                                 },  
-                                                                error: function(errorThrown){
+                                                                error: function(errorThrown) {
                                                                 }
                                                             });
                                                             
@@ -1995,7 +2244,7 @@ function be_popia_compliant_dashboard_checklist(){
                                                 success:function(data) {
                                                     document.getElementById(label_id).style.background = "#B7191A";
                                                 },  
-                                                error: function(errorThrown){
+                                                error: function(errorThrown) {
                                                     window.alert(errorThrown);
                                                 }
                                             });
@@ -2009,7 +2258,7 @@ function be_popia_compliant_dashboard_checklist(){
                                                 success:function(data) {
                                                     document.getElementById(label_id).style.background = "#1D2327";
                                                 },  
-                                                error: function(errorThrown){
+                                                error: function(errorThrown) {
                                                     window.alert(errorThrown);
                                                 }
                                             });
@@ -2020,18 +2269,14 @@ function be_popia_compliant_dashboard_checklist(){
                                 }
 
                             }
-
                             echo'
                         </div>
                     </div>
                 </div>
-        </div>
-    ';
+        </div>';
 }
 
-
-
-function be_popia_compliant_checklist_update(){
+function be_popia_compliant_checklist_update() {
 
     if ( isset($_REQUEST) ) {
 
@@ -2041,8 +2286,8 @@ function be_popia_compliant_checklist_update(){
         $check_id = sanitize_text_field($_REQUEST["check_id"]);
 
         $results = $wpdb->get_results("SELECT * FROM $table_name WHERE id = $check_id");
-        foreach($results as $result){
-            if($result->does_comply == 0){
+        foreach($results as $result) {
+            if($result->does_comply == 0) {
                 $wpdb->update( $table_name, array( 'does_comply' => 1),array('id'=>$check_id)); 
             } else{
                 $wpdb->update( $table_name, array( 'does_comply' => 0),array('id'=>$check_id));  
@@ -2052,11 +2297,7 @@ function be_popia_compliant_checklist_update(){
 
    die();
 }
-
 add_action( 'wp_ajax_be_popia_compliant_checklist_update', 'be_popia_compliant_checklist_update' ); 
-
-
-
 
 function be_popia_compliant_checklist_update_url() {
 
@@ -2067,7 +2308,7 @@ function be_popia_compliant_checklist_update_url() {
         $check_id = sanitize_text_field($_REQUEST["check_id"]);
         $input = sanitize_text_field($_REQUEST["input"]);
 
-        if($input != ''){
+        if($input != '') {
             $wpdb->update( $table_name, array( 'content' => $input, 'does_comply' => 1),array('id'=>$check_id)); 
         } else {
             $wpdb->update( $table_name, array( 'content' => $input, 'does_comply' => 0),array('id'=>$check_id)); 
@@ -2076,12 +2317,9 @@ function be_popia_compliant_checklist_update_url() {
 
    die();
 }
-
 add_action( 'wp_ajax_be_popia_compliant_checklist_update_url', 'be_popia_compliant_checklist_update_url' ); 
 
-
-
-function be_popia_compliant_checklist_update_compliance(){
+function be_popia_compliant_checklist_update_compliance() {
 
     if ( isset($_REQUEST) ) {
         global $wpdb;
@@ -2129,13 +2367,9 @@ function be_popia_compliant_checklist_update_compliance(){
 
         echo esc_html( $rowcount );
     }
-
    die();
 }
-
 add_action( 'wp_ajax_be_popia_compliant_checklist_update_compliance', 'be_popia_compliant_checklist_update_compliance' ); 
-
-
 
 
 // adding styles and scripts
@@ -2151,9 +2385,7 @@ function be_popia_compliant_cookie_enqueue_scripts() {
         );
     }
 }
-
 add_action( 'wp_enqueue_scripts', 'be_popia_compliant_cookie_enqueue_scripts' );
-
 
 // setting cookie - this function must be called before html code is displayed
 function be_popia_compliant_cookie_set_cookie() {
@@ -2184,9 +2416,8 @@ function be_popia_compliant_cookie_set_cookie() {
 
 add_action('init', 'be_popia_compliant_cookie_set_cookie');
 
-
 // setting cookie - ajax version
-function be_popia_compliant_cookie_set_cookie_ajax(){
+function be_popia_compliant_cookie_set_cookie_ajax() {
     // make action when cookie accept button was clicked - without page reloading
     $domain = explode( 'https://', site_url() );
     if ( ! is_ssl() ) {
@@ -2203,8 +2434,6 @@ function be_popia_compliant_cookie_set_cookie_ajax(){
 add_action( 'wp_ajax_set_cookie_ajax', 'be_popia_compliant_cookie_set_cookie_ajax' );
 add_action( 'wp_ajax_nopriv_set_cookie_ajax', 'be_popia_compliant_cookie_set_cookie_ajax' );
 
-
-
 // display cookie notice if cookie info is not set
 function be_popia_compliant_cookie_display_cookie_notice() {
     if ( !isset( $_COOKIE['cookie-accepted'] ) ) {
@@ -2213,7 +2442,6 @@ function be_popia_compliant_cookie_display_cookie_notice() {
 }
 
 add_action( 'init', 'be_popia_compliant_cookie_display_cookie_notice');
-
 
 // allowed html code in plugin message
 function be_popia_compliant_cookie_allowed_html() {
@@ -2231,7 +2459,6 @@ function be_popia_compliant_cookie_allowed_html() {
         ),
     );
 }
-
 
 // displaying cookie info on page
 function be_popia_compliant_cookie_display_cookie_info() {
@@ -2260,7 +2487,6 @@ function be_popia_compliant_cookie_display_cookie_info() {
 <?php
 }
 
-
 function be_popia_compliant_admin_menus() {
     global $wpdb;
 
@@ -2279,7 +2505,7 @@ function be_popia_compliant_admin_menus() {
 
     add_submenu_page ( $top_menu_item, '', 'Cookie Settings', 'manage_options', 'privacy-policy', 'be_popia_compliant_cookie_page_html_content');
 
-    if(isset($_SESSION['hasPro']) && $_SESSION['hasPro'] == 1) {
+    if(get_option( 'bpc_hasPro') == 1) {
         add_submenu_page ( $top_menu_item, '', '<a href="https://bepopiacompliant.co.za" style="font-weight: normal;margin: -13px 0px 0px 0px;" target="_blank">Be POPIA Compliant Website</a>', 'manage_options', 'go-pro', 'be_popia_compliant_dashboard_go_pro');
     } else  {
         add_submenu_page ( $top_menu_item, '', '<a href="https://bepopiacompliant.co.za" style="font-weight: normal;margin: -13px 0px 0px 0px;" target="_blank">Go Pro</a>', 'manage_options', 'go-pro', 'be_popia_compliant_dashboard_go_pro');
@@ -2287,7 +2513,6 @@ function be_popia_compliant_admin_menus() {
 }
 
 add_action('admin_menu', 'be_popia_compliant_admin_menus');
-
 
 
 // adding settings and sections to page in admin menu
@@ -2360,8 +2585,6 @@ function be_popia_compliant_cookie_add_new_settings() {
 }
 
 add_action( 'admin_init', 'be_popia_compliant_cookie_add_new_settings' );
-
-
 
 // field 1 - cookie message
 function be_popia_compliant_cookie_field_1_callback() {
@@ -2472,7 +2695,6 @@ function be_popia_compliant_cookie_page_html_content() {
 }
 
 
-
 function be_popia_compliant_echo_footer() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
@@ -2517,8 +2739,9 @@ function be_popia_compliant_echo_footer() {
         $rowcount2;
     }
 
-    $_SESSION['rowcount'] = $rowcount;
-    $_SESSION['rowcount2'] = $rowcount2;
+    update_option('bpc_rowcount', $rowcount);
+    update_option('bpc_rowcount2', $rowcount2);
+
     $rowcount = ($rowcount / $rowcount2) * 100;
 
     $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
@@ -2528,7 +2751,7 @@ function be_popia_compliant_echo_footer() {
 
     
     
-    if (isset( $_COOKIE['cookie-accepted'])){
+    if (isset( $_COOKIE['cookie-accepted'])) {
         if(is_ssl()) {
             $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/domaincompletecheck/" . $_SERVER['SERVER_NAME']);
 
@@ -2563,14 +2786,14 @@ function be_popia_compliant_echo_footer() {
                     global $wpdb;
                     $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
 
-                    if($domain_form_complete == 1 && $consent_form_complete == 1 && $other_parties != null){
+                    if($domain_form_complete == 1 && $consent_form_complete == 1 && $other_parties != null) {
                         $wpdb->update( $table_name, array( 'value' => 1),array('id'=> 4)); 
                     } else {
                         $wpdb->update( $table_name, array( 'value' => 0),array('id'=> 4)); 
                     }
                 }
             }
-                    if(((isset($result_api->value) && $result_api->value != '') && ((isset($result_company->value)) && $result_company->value != ''))){
+                    if(((isset($result_api->value) && $result_api->value != '') && ((isset($result_company->value)) && $result_company->value != ''))) {
                         include_once(plugin_dir_path(__FILE__).'includes/be-popia-compliant-completed.php');
                     } elseif($rowcount == 100) {
                         $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME']);
@@ -2595,10 +2818,10 @@ function be_popia_compliant_echo_footer() {
                             // echo 'body' . $body;
                             $body = json_decode( $body );
 
-                            if($body != []){ 
+                            if($body != []) { 
                                 foreach ( $body as $data ) {
                                     $is_approved = $data->is_approved;
-                                    if($is_approved){
+                                    if($is_approved) {
                                 $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
                                 $privacy = $wpdb->get_var("SELECT content FROM $table_name WHERE id = 6");
                                 $data = $wpdb->get_var("SELECT content FROM $table_name WHERE id = 21");

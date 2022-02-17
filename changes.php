@@ -83,60 +83,78 @@ if ( false === $coffee_id ) {
 
 
 
-    1643632167', 'https://bepopiacompliant.co.za/#/view_consent/test.local/test@test.com/da5c751a21084f5c872811c58a730569', 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0
+    function be_popia_compliant_save_comms_market_val() {
+        $meta_key = 'bpc_' . sanitize_text_field($_REQUEST['comms_market']);
+        $user_id = sanitize_text_field($_REQUEST['user']);
+        $meta_value = sanitize_text_field($_REQUEST['val']);
+    
+        $meta_value = sanitize_text_field($_REQUEST['val']);
+    
+        $timestamp = sanitize_text_field($_REQUEST['timestamp']);
+        $consent_link = sanitize_text_field($_REQUEST['consent_link']);
+        
+        $cp=sanitize_text_field($_REQUEST['cp']); $cs=sanitize_text_field($_REQUEST['cs']); $cw=sanitize_text_field($_REQUEST['cw']); $cm=sanitize_text_field($_REQUEST['cm']); $ct=sanitize_text_field($_REQUEST['ct']); $ce=sanitize_text_field($_REQUEST['ce']); $cc1=sanitize_text_field($_REQUEST['cc1']); $cc2=sanitize_text_field($_REQUEST['cc2']); $cc3=sanitize_text_field($_REQUEST['cc3']); $mp=sanitize_text_field($_REQUEST['mp']); $ms=sanitize_text_field($_REQUEST['ms']); $mw=sanitize_text_field($_REQUEST['mw']); $mm=sanitize_text_field($_REQUEST['mm']); $mt=sanitize_text_field($_REQUEST['mt']); $me=sanitize_text_field($_REQUEST['me']); $mc1=sanitize_text_field($_REQUEST['mc1']); $mc2=sanitize_text_field($_REQUEST['mc2']); $mc3=sanitize_text_field($_REQUEST['mc3']);
+    
+        if($meta_key=='comms_phone') {$cp=$meta_value;} if($meta_key=='comms_sms') {$cs=$meta_value;} if($meta_key=='comms_whatsapp') {$cw=$meta_value;} if($meta_key=='comms_messenger') {$cm=$meta_value;} if($meta_key=='comms_telegram') {$ct=$meta_value;} if($meta_key=='comms_email') {$ce=$meta_value;} if($meta_key=='comms_custom1') {$cc1=$meta_value;} if($meta_key=='comms_custom2') {$cc2=$meta_value;} if($meta_key=='comms_custom3') {$cc3=$meta_value;} if($meta_key=='market_phone') {$mp=$meta_value;} if($meta_key=='market_sms') {$ms=$meta_value;} if($meta_key=='market_whatsapp') {$mw=$meta_value;} if($meta_key=='market_messenger') {$mm=$meta_value;} if($meta_key=='market_telegram') {$mt=$meta_value;}  if($meta_key=='market_email') {$me=$meta_value;} if($meta_key=='market_custom1') {$mc1=$meta_value;} if($meta_key=='market_custom2') {$mc2=$meta_value;} if($meta_key=='market_custom3') {$mc3=$meta_value;}
+    
+        $value = array($timestamp, $consent_link, $cp, $cs, $cw, $cm, $ct, $ce, $cc1, $cc2, $cc3, $mp, $ms, $mw, $mm, $mt, $me, $mc1, $mc2, $mc3);
+      
+        update_user_meta($user_id, 'bpc_comms_market', $value);
+        echo ('<script>' . $value . '</script>');
+    }
 
 
 
+    a:20:{
+        
+        i:0;s:10:"1643632167";
+        i:1;s:103:"https://bepopiacompliant.co.za/#/view_consent/test.local/test@test.com/da5c751a21084f5c872811c58a730569";
+        i:2;s:1:"1";
+        i:3;s:1:"1";
+        i:4;s:1:"1";
+        i:5;s:1:"1";
+        i:6;s:1:"1";
+        i:7;s:1:"1";
+        i:8;s:1:"1";
+        i:9;s:1:"1";
+        i:10;s:1:"1";
+        i:11;s:1:"1";
+        i:12;s:1:"1";
+        i:13;s:1:"1";
+        i:14;s:1:"1";
+        i:15;s:1:"1";
+        i:16;s:1:"1";
+        i:17;s:1:"1";
+        i:18;s:1:"1";
+        i:19;s:1:"1";
+    }
+
+    onclick="
+    save_comms_market_val(
+            \'comms_phone\', ' . 
+            $user . ', 
+            0, ' . 
 
 
+            get_option( 'bpc_timestamp' ) . ', \'' . 
+            get_option( 'bpc_consent_url' ) . '\', ' . 
+            get_option( 'bpc_cp') . ', ' . 
+            get_option( 'bpc_cs') . ', ' . 
+            get_option( 'bpc_cw') . ', ' . 
+            get_option( 'bpc_cm' ) . ', ' . 
+            get_option( 'bpc_ct' ) . ', ' . 
+            get_option( 'bpc_ce' ) . ', ' . 
+            get_option( 'bpc_cc1' ) . ', ' . 
+            get_option( 'bpc_cc2' ) . ', ' . 
+            get_option( 'bpc_cc3' ) . ', ' . 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <td class='comms_phone column-comms_phone' data-colname="Comms Phone"><input type="checkbox" class="bpc_down" name="bpc_comms_phone" checked="checked" onclick="save_comms_market_val('comms_phone', 1, 0, 1643632167, https://bepopiacompliant.co.za/#/view_consent/test.local/test@test.com/da5c751a21084f5c872811c58a730569,1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, )" /></td>
-    <td class='comms_sms column-comms_sms' data-colname="Comms SMS"><input type="checkbox" class="bpc_down" name="bpc_comms_sms" checked="checked" onclick="save_comms_market_val('comms_sms', 1, 0, 1643632167, https://bepopiacompliant.co.za/#/view_consent/test.local/test@test.com/da5c751a21084f5c872811c58a730569,1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, )" /></td>
-    <td class='comms_whatsapp column-comms_whatsapp' data-colname="Comms WhatsApp"><input type="checkbox" class="bpc_down" name="bpc_comms_whatsapp" checked="checked" onclick="save_comms_market_val('comms_whatsapp', 1, 0, 1643632167, https://bepopiacompliant.co.za/#/view_consent/test.local/test@test.com/da5c751a21084f5c872811c58a730569,1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, )" /></td>
-    <td class='comms_messenger column-comms_messenger' data-colname="Comms Messenger"><input type="checkbox" class="bpc_down" name="bpc_comms_messenger" checked="checked" onclick="save_comms_market_val('comms_messenger', 1, 0, 1643632167, https://bepopiacompliant.co.za/#/view_consent/test.local/test@test.com/da5c751a21084f5c872811c58a730569,1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, )" /></td>
-    <td class='comms_telegram column-comms_telegram' data-colname="Comms Telegram"><input type="checkbox" class="bpc_down" name="bpc_comms_telegram" checked="checked" onclick="save_comms_market_val('comms_telegram', 1, 0, 1643632167, https://bepopiacompliant.co.za/#/view_consent/test.local/test@test.com/da5c751a21084f5c872811c58a730569,1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, )" /></td>
-    <td class='comms_email column-comms_email' data-colname="Comms Email"><input type="checkbox" class="bpc_down" name="bpc_comms_email" checked="checked" onclick="save_comms_market_val('comms_email', 1, 0, 1643632167, https://bepopiacompliant.co.za/#/view_consent/test.local/test@test.com/da5c751a21084f5c872811c58a730569,1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, )" /></td>
-    <td class='comms_custom1 column-comms_custom1' data-colname="Comms Custom 1"><input type="checkbox" class="bpc_down" name="bpc_comms_custom1" checked="checked" onclick="save_comms_market_val('comms_custom1', 1, 0, 1643632167, https://bepopiacompliant.co.za/#/view_consent/test.local/test@test.com/da5c751a21084f5c872811c58a730569,1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, )" /></td>
-    <td class='comms_custom2 column-comms_custom2' data-colname="Comms Custom 2"><input type="checkbox" class="bpc_down" name="bpc_comms_custom2" checked="checked" onclick="save_comms_market_val('comms_custom2', 1, 0, 1643632167, https://bepopiacompliant.co.za/#/view_consent/test.local/test@test.com/da5c751a21084f5c872811c58a730569,1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, )" /></td>
-    <td class='comms_custom3 column-comms_custom3' data-colname="Comms Custom 3"><input type="checkbox" class="bpc_down" name="bpc_comms_custom3" checked="checked" onclick="save_comms_market_val('comms_custom3', 1, 0, 1643632167, https://bepopiacompliant.co.za/#/view_consent/test.local/test@test.com/da5c751a21084f5c872811c58a730569,1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, )" /></td>
-    <td class='market_phone column-market_phone' data-colname="Marketing Phone"><input type="checkbox" class="bpc_down" name="bpc_market_phone" checked="checked" onclick="save_comms_market_val('market_phone', 1, 0, 1643632167, https://bepopiacompliant.co.za/#/view_consent/test.local/test@test.com/da5c751a21084f5c872811c58a730569,1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, )" /></td>
-    <td class='market_sms column-market_sms' data-colname="Marketing SMS"><input type="checkbox" class="bpc_down" name="bpc_market_sms" checked="checked" onclick="save_comms_market_val('market_sms', 1, 0, 1643632167, https://bepopiacompliant.co.za/#/view_consent/test.local/test@test.com/da5c751a21084f5c872811c58a730569,1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, )" /></td>
-    <td class='market_whatsapp column-market_whatsapp' data-colname="Marketing WhatsApp"><input type="checkbox" class="bpc_down" name="bpc_market_whatsapp" onclick="save_comms_market_val('market_whatsapp', 1, 1, 1643632167, https://bepopiacompliant.co.za/#/view_consent/test.local/test@test.com/da5c751a21084f5c872811c58a730569,1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, )" /></td>
-    <td class='market_messenger column-market_messenger' data-colname="Marketing Messenger"><input type="checkbox" class="bpc_down" name="bpc_market_messenger" onclick="save_comms_market_val('market_messenger', 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0)" /></td>
-    <td class='market_telegram column-market_telegram' data-colname="Marketing Telegram"><input type="checkbox" class="bpc_down" name="bpc_market_telegram" onclick="save_comms_market_val('market_telegram', 1, 1, 1643632167, https://bepopiacompliant.co.za/#/view_consent/test.local/test@test.com/da5c751a21084f5c872811c58a730569,1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, )" /></td>
-    <td class='market_email column-market_email' data-colname="Marketing Email"><input type="checkbox" class="bpc_down" name="bpc_market_email" onclick="save_comms_market_val('market_email', 1, 1, 1643632167, https://bepopiacompliant.co.za/#/view_consent/test.local/test@test.com/da5c751a21084f5c872811c58a730569,1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, )" /></td>
-    <td class='market_custom1 column-market_custom1' data-colname="Marketing Custom 1"><input type="checkbox" class="bpc_down" name="bpc_market_custom1" onclick="save_comms_market_val('market_custom1', 1, 1, 1643632167, https://bepopiacompliant.co.za/#/view_consent/test.local/test@test.com/da5c751a21084f5c872811c58a730569,1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, )" /></td>
-    <td class='market_custom2 column-market_custom2' data-colname="Marketing Custom 2"><input type="checkbox" class="bpc_down" name="bpc_market_custom2" onclick="save_comms_market_val('market_custom2', 1, 1, 1643632167, https://bepopiacompliant.co.za/#/view_consent/test.local/test@test.com/da5c751a21084f5c872811c58a730569,1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, )" /></td>
-    <td class='market_custom3 column-market_custom3' data-colname="Marketing Custom 3"><input type="checkbox" class="bpc_down" name="bpc_market_custom3" onclick="save_comms_market_val('market_custom3', 1, 1, 1643632167, https://bepopiacompliant.co.za/#/view_consent/test.local/test@test.com/da5c751a21084f5c872811c58a730569,1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, )" /></td></tr><script>                                                    
-
-
-
-
-
-
-
-
-    save_comms_market_val(\'comms_phone\', ' . $user . ', 0, ' . $_SESSION['timestamp'] . ', \'' . $_SESSION['consent_url'] . '\' ,' . $_SESSION['cp'] . ', ' . $_SESSION['cs'] . ', ' . $_SESSION['cw'] . ', ' . $_SESSION['cm'] . ', ' . $_SESSION['ct'] . ', ' . $_SESSION['ce'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] . ', ' . $_SESSION['mp'] . ', ' . $_SESSION['ms'] . ', ' . $_SESSION['mw'] . ', ' . $_SESSION['mm'] . ', ' . $_SESSION['mt'] . ', ' . $_SESSION['me'] . ', ' . $_SESSION['cc1'] . ', ' . $_SESSION['cc2'] . ', ' . $_SESSION['cc3'] .  '
-
-    onclick="save_comms_market_val('comms_phone', 3, 0, 1643632167, 'https://bepopiacompliant.co.za/#/view_consent/test.local/test@test.com/da5c751a21084f5c872811c58a730569' ,1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1)"
-
-    onclick="save_comms_market_val('comms_phone', 2, 0, 1643632167, 'https://bepopiacompliant.co.za/#/view_consent/test.local/test@test.com/da5c751a21084f5c872811c58a730569' ,1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1)"
-
-                $value = array($timestamp, $consent_link, $cp, $cs, $cw, $cm, $ct, $ce, $cc1, $cc2, $cc3, $mp, $ms, $mw, $mm, $mt, $me, $mc1, $mc2, $mc3);
-
-                a:14:{i:0;s:10:"1643632167";i:1;s:103:"https://bepopiacompliant.co.za/#/view_consent/test.local/test@test.com/da5c751a21084f5c872811c58a730569";i:2;i:1;i:3;i:1;i:4;i:1;i:5;i:1;i:6;i:1;i:7;i:1;i:8;i:1;i:9;i:1;i:10;i:1;i:11;i:1;i:12;i:1;i:13;i:1;}
-
-                a:21:{i:0;s:1:"0";i:1;s:10:"1643632167";i:2;s:103:"https://bepopiacompliant.co.za/#/view_consent/test.local/test@test.com/da5c751a21084f5c872811c58a730569";i:3;s:1:"1";i:4;s:1:"1";i:5;s:1:"1";i:6;s:1:"1";i:7;s:1:"1";i:8;s:1:"1";i:9;s:1:"1";i:10;s:1:"1";i:11;s:1:"1";i:12;s:1:"1";i:13;s:1:"1";i:14;s:1:"1";i:15;s:1:"1";i:16;s:1:"1";i:17;s:1:"1";i:18;s:1:"1";i:19;s:1:"1";i:20;s:1:"1";}
+            get_option( 'bpc_mp' ) . ', ' . 
+            get_option( 'bpc_ms' ) . ', ' . 
+            get_option( 'bpc_mw' ) . ', ' . 
+            get_option( 'bpc_mm' ) . ', ' . 
+            get_option( 'bpc_mt' ) . ', ' . 
+            get_option( 'bpc_me' ) . ', ' . 
+            get_option( 'bpc_mc1' ) . ', ' . 
+            get_option( 'bpc_mc2' ) . ', ' . 
+            get_option( 'bpc_mc3' ) . 
+        ')
