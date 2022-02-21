@@ -4,13 +4,13 @@ Tags: POPI, POPIA, POPI Act, BePOPIACompliant, Be POPIA Compliant, Be POPI Compl
 Requires at least: 5.4
 Tested up to: 5.9
 Requires PHP: 7.3
-Stable tag: 1.0.17
+Stable tag: 1.1.0
 License: License: GPLv2 or later
 
-The only plugin that assists with POPIA Compliance for any site that operates in South Africa. https://bepopiacompliant.co.za/popia/act/index.php for the full legislation.
+The only plugin that handle POPIA Compliance, and that is NOT JUST a Cookie Banner, for any site that operates in South Africa.
 
 == Description ==
-The only plugin that assists with POPIA Compliance for any site that operates in South Africa. 
+The only plugin that handle POPIA Compliance, and that is NOT JUST a Cookie Banner, for any site that operates in South Africa.
 We provide a checklist with all the conditions as per the Protection of  Personal Information Act, Act 4 of 2013. If you'd rather read up by your self, please visit https://bepopiacompliant.co.za/popia/act/index.php for the full legislation.
 
 == 3rd Party and External Services ==
@@ -36,7 +36,7 @@ https://py.bepopiacompliant.co.za/api/plugindetails/
 - to indicate when our plugin is installed on your website.
 
 https://py.bepopiacompliant.co.za/api/domain/"server_name"
-- to get data from our database to indicate that you completed the pro steps and save it to your database.
+- to get data from our database to indicate that you completed the PRO steps and save it to your database.
 
 https://py.bepopiacompliant.co.za/api/getmessage/
 - to show you any notifications about POPIA updates in your admin panel, that we might need to share.
@@ -45,10 +45,10 @@ https://py.bepopiacompliant.co.za/api/plugindetailscheck/“server_name”
 - to show a message if we disapprove of the use of our plugin on your website, especially if we determine that you do not comply with POPIA using the free version, but claims that you are compliant.
 
 https://py.bepopiacompliant.co.za/api/domainapicheck/$company_key
-- to validate your entered key for using the pro version in our database to ensure you are registered with us as a pro member.
+- to validate your entered key for using the PRO Version of Be POPIA Compliant in our database to ensure you are registered with us as a Pro Member.
 
 https://py.bepopiacompliant.co.za/api/domain/check_expiry/"server_name"
-- to check whether your pro membership has expired on our database.
+- to check whether your PRO Membership has expired on our database.
 
 == Installation ==
 Install from WordPress Library
@@ -144,6 +144,20 @@ A20: If you have a website, that collects any data such as customer emails, tele
 3. Be POPIA Compliant (BPC) | Cookie Settings - Customize your Cookie Notice Banner to match your brand.
 
 == Changelog ==
+
+= 1.1.0 =
+* Added the following functionality:
+
+*   For free plugin users: 
+    *  To be able to add their user preferences to each user.
+    *  To upload consentforms and then save the generated link for each user in the user settings.
+    *  To also add the Identification Number.
+    *  Also the Type of Identification used and the Country of Issue if this is not a South African ID Number.
+
+*   For PRO Be POPIA Plugin users:
+    *  To display all the above details in the users table. (This is all managed automatically by the PRO Be POPIA Compliant Plugin)
+
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
 = 1.0.17 =
 * Fixed - Free banner disappears when registering on BPC Website without company info.

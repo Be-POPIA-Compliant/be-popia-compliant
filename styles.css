@@ -422,13 +422,13 @@ div#page-container {
 }
 
 input.bpc_down {
-    margin-top: 12px !important;
+    margin-top: 4px !important;
     align-items: center !important;
     text-align: center !important;
 }
-
 
 #adminmenuback {
     top: 0;
     z-index: 1;
 }
+
