@@ -2270,127 +2270,124 @@ function be_popia_compliant_checklist_update_compliance() {
 add_action( 'wp_ajax_be_popia_compliant_checklist_update_compliance', 'be_popia_compliant_checklist_update_compliance' ); 
 
 
+
+
 // Cron to ensure that PRO consent and data requests is honored
-add_filter( 'cron_schedules', 'be_popia_compliant_add_every_hour' );
-function be_popia_compliant_add_every_hour( $schedules ) {
-    $schedules['every_hour'] = array(
+add_filter( 'cron_schedules', 'be_popia_compliant_add_hourly' );
+function be_popia_compliant_add_hourly( $schedules ) {
+    $schedules['hourly'] = array(
             'interval'  => 60 * 60,
-            'display'   => __( 'Every Hour', 'be_popiaCompliant' )
+            'display'   => __( 'Once Hourly', 'be_popia_compliant' )
     );
     return $schedules;
 }
 
 // Schedule an action if it's not already scheduled
-if(get_option( 'bpc_hasPro') == 1) {
-    if ( ! wp_next_scheduled( 'be_popia_compliant_add_every_hour' ) ) {
-        wp_schedule_event( time(), 'every_hour', 'be_popia_compliant_add_every_hour' );
+if(get_option( 'bpc_hasPro' ) == 1) {
+    if ( ! wp_next_scheduled( 'be_popia_compliant_add_hourly' ) ) {
+        wp_schedule_event( time(), 'hourly', 'be_popia_compliant_add_hourly' );
     }
 }
 // Hook into that action that'll fire every hour
-
 if(get_option( 'bpc_hasPro') == 1) {
-    add_action( 'be_popia_compliant_add_every_hour', 'every_hour_event_func' );
-    function every_hour_event_func() {
+    add_action( 'be_popia_compliant_add_hourly', 'hourly_event_func' );
+    function hourly_event_func() {
         $t = time();
         update_option('cron_last_fired_at', $t);
-        add_action('init','add_update_meta_info');
-        function add_update_meta_info() {
-            if ( ! get_option( 'bpc_refference' ) ) {
-                // Function that will get the domain refference if not set.
-                $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/getconsentchangesexternally/" . $_SERVER['SERVER_NAME']);
-                $args = array(
-                    'headers' => array(
-                        'Content-Type' => 'application/json',
-                    ),
-                    'body'    => array(),
-                );
+               
+            // Function that will get the domain refference if not set.
+            $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/getconsentchangesexternally/" . $_SERVER['SERVER_NAME']);
+            $args = array(
+                'headers' => array(
+                    'Content-Type' => 'application/json',
+                ),
+                'body'    => array(),
+            );
+        
+            $response = wp_remote_get( wp_http_validate_url($url), $args );
+            $response_code = wp_remote_retrieve_response_code( $response );
+            $body = wp_remote_retrieve_body( $response );
+        
+            if ( 200 === $response_code ) {
+                $body = json_decode( $body );
+        
+                foreach ( $body as $data ) {
+                    $consent_to_update = $data->consentsChanged;
+                    $id = $data->id;
+                    if(isset($id)) {
+                        update_option( 'bpc_refference', $id );
+                    }
+                    if(isset($consent_to_update)) {
+                        if(strpos($consent_to_update, ',') !== false){
+                            $consent_to_update = explode(",", $consent_to_update);
+                            update_option( 'bpc_consent_to_update', $consent_to_update );
+                        } else {
+                            $consent_to_update = [$consent_to_update];
+                            update_option( 'bpc_consent_to_update', $consent_to_update );
+                        }       
+                    }
+                }
+            }
+    
+        // Ping url to ensure plugin is active
+        $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/pingwordpressplugin/". $id. "/");
             
+        $t = time();
+        $body = array(
+            'last_pinged' => $t
+        );
+        $args = array(
+            'headers' => array(
+            'Content-Type'   => 'application/json',
+            ),
+            'body'      => json_encode($body),
+            'method'    => 'PATCH'
+        );
+        $result =  wp_remote_request( wp_http_validate_url($url), $args );
+        
+        // Check if any changes occured.
+        $ids =  get_option( 'bpc_consent_to_update' );
+        if(isset($ids)){
+            foreach ( $ids as $id ) {
+                $id = str_replace(' ', '', $id);
+                
+                $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/getconsentchanges/".$id."/");
+                    $args = array(
+                        'headers' => array(
+                            'Content-Type' => 'application/json',
+                        ),
+                        'body'    => array(),
+                    );
                 $response = wp_remote_get( wp_http_validate_url($url), $args );
                 $response_code = wp_remote_retrieve_response_code( $response );
                 $body = wp_remote_retrieve_body( $response );
             
                 if ( 200 === $response_code ) {
                     $body = json_decode( $body );
-            
-                    foreach ( $body as $data ) {
-                        $consent_to_update = $data->consentsChanged;
-                        $id = $data->id;
-                        if(isset($id)) {
-                            update_option( 'bpc_refference', $id );
-                        }
-                        if(isset($consent_to_update)) {
-                            if(strpos($consent_to_update, ',') !== false){
-                                $consent_to_update = explode(",", $consent_to_update);
-                                update_option( 'bpc_consent_to_update', $consent_to_update );
-                            } else {
-                                $consent_to_update = [$consent_to_update];
-                                update_option( 'bpc_consent_to_update', $consent_to_update );
-                            }       
-                        }
-                    }
+                    $id = $body->consent_user_id; $date = $body->timestamp; $consent_url = $body->consent_url; $c_phone = $body->c_phone; $c_sms = $body->c_sms; $c_whatsapp = $body->c_whatsapp; $c_messenger = $body->c_messenger; $c_telegram = $body->c_telegram; $c_email = $body->c_email; $c_custom1 = $body->c_custom1; $c_custom2 = $body->c_custom2; $c_custom3 = $body->c_custom3; $m_phone = $body->m_phone; $m_sms = $body->m_sms; $m_whatsapp = $body->m_whatsapp; $m_messenger = $body->m_messenger; $m_telegram = $body->m_telegram; $m_email = $body->m_email; $m_custom1 = $body->m_custom1; $m_custom2 = $body->m_custom2; $m_custom3 = $body->m_custom3;
+                    $value = array($date, $consent_url, $c_phone, $c_sms, $c_whatsapp, $c_messenger, $c_telegram, $c_email, $c_custom1, $c_custom2, $c_custom3, $m_phone, $m_sms, $m_whatsapp, $m_messenger, $m_telegram, $m_email, $m_custom1, $m_custom2, $m_custom3);               
+                    update_user_meta( $id, 'bpc_comms_market', $value );              
                 }
             }
+            // Remove from changes on BPC
+            $removeId = get_option( 'bpc_refference' );
+            echo $removeId;
+            $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/updateconsentchangedarray/". $removeId . "/");
         
-            // Ping url to ensure plugin is active
-            $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/pingwordpressplugin/". $id. "/");
-                
-            $t = time();
+            $t = date("h:i:sa d-m-Y",time());
             $body = array(
-                'last_pinged' => $t
+                'consentsChanged' => null
             );
             $args = array(
                 'headers' => array(
                 'Content-Type'   => 'application/json',
                 ),
                 'body'      => json_encode($body),
-                'method'    => 'PATCH'
+                'method'    => 'PUT'
             );
             $result =  wp_remote_request( wp_http_validate_url($url), $args );
-        
-            // Check if any changes occured.
-            $ids =  get_option( 'bpc_consent_to_update' );
-            if(isset($ids)){
-                foreach ( $ids as $id ) {
-                    $id = str_replace(' ', '', $id);
-                    
-                    $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/getconsentchanges/".$id."/");
-                        $args = array(
-                            'headers' => array(
-                                'Content-Type' => 'application/json',
-                            ),
-                            'body'    => array(),
-                        );
-                    $response = wp_remote_get( wp_http_validate_url($url), $args );
-                    $response_code = wp_remote_retrieve_response_code( $response );
-                    $body = wp_remote_retrieve_body( $response );
-                
-                    if ( 200 === $response_code ) {
-                        $body = json_decode( $body );
-                        $id = $body->consent_user_id; $date = $body->timestamp; $consent_url = $body->consent_url; $c_phone = $body->c_phone; $c_sms = $body->c_sms; $c_whatsapp = $body->c_whatsapp; $c_messenger = $body->c_messenger; $c_telegram = $body->c_telegram; $c_email = $body->c_email; $c_custom1 = $body->c_custom1; $c_custom2 = $body->c_custom2; $c_custom3 = $body->c_custom3; $m_phone = $body->m_phone; $m_sms = $body->m_sms; $m_whatsapp = $body->m_whatsapp; $m_messenger = $body->m_messenger; $m_telegram = $body->m_telegram; $m_email = $body->m_email; $m_custom1 = $body->m_custom1; $m_custom2 = $body->m_custom2; $m_custom3 = $body->m_custom3;
-                        $value = array($date, $consent_url, $c_phone, $c_sms, $c_whatsapp, $c_messenger, $c_telegram, $c_email, $c_custom1, $c_custom2, $c_custom3, $m_phone, $m_sms, $m_whatsapp, $m_messenger, $m_telegram, $m_email, $m_custom1, $m_custom2, $m_custom3);               
-                        update_user_meta( $id, 'bpc_comms_market', $value );              
-                    }
-                }
-                // Remove from changes on BPC
-                $removeId = get_option( 'bpc_refference' );
-                echo $removeId;
-                $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/updateconsentchangedarray/". $removeId . "/");
-            
-                $t = date("h:i:sa d-m-Y",time());
-                $body = array(
-                    'consentsChanged' => null
-                );
-                $args = array(
-                    'headers' => array(
-                    'Content-Type'   => 'application/json',
-                    ),
-                    'body'      => json_encode($body),
-                    'method'    => 'PUT'
-                );
-                $result =  wp_remote_request( wp_http_validate_url($url), $args );
 
-                update_option( 'bpc_consent_to_update', null );
-            }
+            update_option( 'bpc_consent_to_update', null );
         }
     }  
 }
