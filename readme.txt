@@ -1,18 +1,21 @@
 === Be POPIA Compliant ===
 Contributors: bepopiacompliant
-Tags: POPI, POPIA, POPI Act, BePOPIACompliant, Be POPIA Compliant, Be POPI Compliant
+Tags: POPI, POPIA, POPI Act, BePOPIACompliant, Be POPIA Compliant, Be POPI Compliant, Manage, Consent, Manage Consent, Be, Be POPIA, Be POPI, POPIA Plugin, POPIA WordPress Plugin, POPIA WP Plugin, WP POPIA
 Requires at least: 5.4
-Tested up to: 5.9
+Tested up to: 5.9.1
 Requires PHP: 7.3
 Stable tag: 1.1.0
 License: License: GPLv2 or later
 
-The only plugin that handle POPIA Compliance, and that is NOT JUST a Cookie Banner, for any site that operates in South Africa.
+The only POPIA Compliance plugin, that is NOT JUST a Cookie Banner! For any site that operates in South Africa. *Get your site compliant in as little as 15 minutes (only by using PRO).
 
 == Description ==
-The only plugin that handle POPIA Compliance, and that is NOT JUST a Cookie Banner, for any site that operates in South Africa.
-We provide a checklist with all the conditions as per the Protection of  Personal Information Act, Act 4 of 2013. If you'd rather read up by your self, please visit https://bepopiacompliant.co.za/popia/act/index.php for the full legislation.
+The only POPIA Compliance plugin, that is NOT JUST a Cookie Banner! For any site that operates in South Africa. 
+Use Be POPIA COmpliant and ensure your website is 100% POPIA Compliant in as little as 15 minutes.
+We also provide a checklist with all the conditions as per the Protection of Personal Information Act, Act 4 of 2013. If you'd rather read up by your self, please visit https://bepopiacompliant.co.za/popia/act/index.php for the full legislation. Using our PRO Be POPIA Compliant Plugin, you will already be able to receive consent process data requests and data deletion requests without lifting a finger! 
+* Fun Fact: There is not a single mention about cookie banners in the POPIA Act.
 
+NOTE: INSTALLING THIS PLUGIN ALONE DOES NOT MAKE YOUR SITE POPIA COMPLIANT. COOKIES, IS REQUIRED BY GDPR, BUT NOT POPIA. YOU NEED TO ENSURE YOU HAVE COMPLETED EVERY STEP IN THE POPIA CHECKLIST. YES, WE KNOW... IT IS GOING TO TAKE SOME TIME TO GET ALL OF THAT IN ORDER. THAT IS EXACTLY WHY WE OFFER THE PRO VERSION SO THAT YOUR SITE IS COMPLETELY POPIA COMPLIANT IN AS LITTLE AS 15 MINUTES, WITH MINIMAL TO NO FURTHER ACTION FROM YOU IN FUTURE.
 == 3rd Party and External Services ==
 For our plugin to work on your site, we rely on our server to communicate with your plugin. This 3rd party service together with the circumstances under which we make calls are documented herein:
 
@@ -156,6 +159,8 @@ A20: If you have a website, that collects any data such as customer emails, tele
 
 *   For PRO Be POPIA Plugin users:
     *  To display all the above details in the users table. (This is all managed automatically by the PRO Be POPIA Compliant Plugin)
+    *  Programatically handle Data Requests and send data to authenticated users (with no action by you).
+    *  Programatically handle Data Deletions and redact all personal info for that authenticated user in your database (with no action by you).
 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 

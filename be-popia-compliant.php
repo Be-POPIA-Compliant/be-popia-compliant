@@ -3,9 +3,9 @@
 /*
     Plugin Name: Be POPIA Compliant
     Plugin URI: https://bepopiacompliant.co.za
-    Description: The only plugin that assists with POPIA Compliance for any site that operates in South Africa. <a href="https://bepopiacompliant.co.za/popia/act/index.php" target="_blank">https://bepopiacompliant.co.za/popia/act/index.php</a> for the full legislation.
+    Description: The only POPIA Compliance plugin, that is NOT JUST a Cookie Banner! For any site that operates in South Africa. Get your site compliant in as little as 15 minutes.
     Version: 1.1.0
-    Author: Web-X | For Everything Web (South Africa)
+    Author: Web-X | For Everything Web | South Africa
     Author URI: https://web-x.co.za/
     License: GPLv2 or later
     Text Domain: be_popia_compliant
@@ -43,8 +43,6 @@
                                                                     | |                                             
                                                                     |_|                                             
  ------------------------------------------------------------------------------------------------------------------- */
-
-
 if(!defined('ABSPATH')) {
     exit;
 }
@@ -57,7 +55,6 @@ function be_popia_compliant_user_scripts() {
     $plugin_url = wp_http_validate_url(plugin_dir_url( __FILE__ ));
     wp_enqueue_style( 'style',  $plugin_url . "styles.css");
 }
-
 add_action( 'admin_print_styles', 'be_popia_compliant_user_scripts' );
 
 /* Adds new links to plugin in plugins.php */
@@ -92,61 +89,57 @@ function be_popia_compliant_create() {
         $query = $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table_name ) );
 
         if ( ! $wpdb->get_var( $query ) == $table_name ) {
-            
-        $be_popia_compliant_tb_checklist= $wpdb->prefix ."be_popia_compliant_checklist";
+            $be_popia_compliant_tb_checklist= $wpdb->prefix ."be_popia_compliant_checklist";
+            require_once(ABSPATH ."wp-admin/includes/upgrade.php");
     
-        require_once(ABSPATH ."wp-admin/includes/upgrade.php");
+            $be_popia_compliant_query_checklist="
+            CREATE TABLE $be_popia_compliant_tb_checklist(
+                id int(12) NOT NULL AUTO_INCREMENT,
+                title varchar(100) DEFAULT '',
+                description varchar(1500) DEFAULT '',
+                content varchar(500) DEFAULT '',
+                type int(1) DEFAULT '0',
+                does_comply int(1) DEFAULT '0',
+                is_active int(1) DEFAULT'1',
+                PRIMARY KEY (id))";
+            dbDelta($be_popia_compliant_query_checklist); 
     
-        $be_popia_compliant_query_checklist="
-        CREATE TABLE $be_popia_compliant_tb_checklist(
-            id int(12) NOT NULL AUTO_INCREMENT,
-            title varchar(100) DEFAULT '',
-            description varchar(1500) DEFAULT '',
-            content varchar(500) DEFAULT '',
-            type int(1) DEFAULT '0',
-            does_comply int(1) DEFAULT '0',
-            is_active int(1) DEFAULT'1',
-            PRIMARY KEY (id))";
-        dbDelta($be_popia_compliant_query_checklist); 
+            $be_popia_compliant_tb_admin= $wpdb->prefix ."be_popia_compliant_admin";
+            $be_popia_compliant_query_admin="
+            CREATE TABLE $be_popia_compliant_tb_admin (
+                id int(12) NOT NULL AUTO_INCREMENT,
+                title varchar(100) DEFAULT '',
+                value varchar(1500) DEFAULT '',
+                PRIMARY KEY (id))";
+            dbDelta($be_popia_compliant_query_admin);
     
-        $be_popia_compliant_tb_admin= $wpdb->prefix ."be_popia_compliant_admin";
-        $be_popia_compliant_query_admin="
-        CREATE TABLE $be_popia_compliant_tb_admin (
-            id int(12) NOT NULL AUTO_INCREMENT,
-            title varchar(100) DEFAULT '',
-            value varchar(1500) DEFAULT '',
-            PRIMARY KEY (id))";
-        dbDelta($be_popia_compliant_query_admin);
+            $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME']);
+            $args = array(
+                'headers' => array(
+                    'Content-Type' => 'application/json',
+                ),
+                'body'    => array(),
+            );
     
-        $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME']);
+            $response = wp_remote_get( wp_http_validate_url($url), $args );
+            $response_code = wp_remote_retrieve_response_code( $response );
+            $body         = wp_remote_retrieve_body( $response );
+        
+            if ( 401 === $response_code ) {
+                echo "Unauthorized access";
+            }
     
-        $args = array(
-            'headers' => array(
-                'Content-Type' => 'application/json',
-            ),
-            'body'    => array(),
-        );
+            // if ( 200 !== $response_code ) {
+                // echo "Error in pinging API Code:603" . esc_html( $response_code );
+            // }
+        
+            if ( 200 === $response_code ) {
+                $body = json_decode( $body );
     
-        $response = wp_remote_get( wp_http_validate_url($url), $args );
-  
-        $response_code = wp_remote_retrieve_response_code( $response );
-        $body         = wp_remote_retrieve_body( $response );
-    
-        if ( 401 === $response_code ) {
-            echo "Unauthorized access";
-        }
-    
-        // if ( 200 !== $response_code ) {
-            // echo "Error in pinging API Code:603" . esc_html( $response_code );
-        // }
-    
-        if ( 200 === $response_code ) {
-            $body = json_decode( $body );
-    
-            if($body != []) {
-                foreach ( $body as $data ) {
-                    $id = $data->id;
-                }
+                if($body != []) {
+                    foreach ( $body as $data ) {
+                        $id = $data->id;
+                    }
     
                 $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/plugindetails/". $id);
     
@@ -193,16 +186,12 @@ function be_popia_compliant_create() {
 }
 
 function be_popia_compliant_insert_data() {
+
     global $wpdb;
-
     $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
-
     $result = $wpdb->get_results("SELECT ID from $table_name");
-
     if(count($result) > 0) {
-
     } else {
-
         $all_items = array(
             array( 'title' => 'Communication with Clients', 'description' => 'There are mainly two types of communication, service level communication and marketing communication.', 'type' => -1 ),
             array( 'title' => 'Service Level Communication', 'description' => 'Do you communicate with your clients via Telephone, Email, SMS or WhatsApp or any other means, for service delivery excluding marketing?', 'type' => 1 ),
@@ -329,8 +318,7 @@ function be_popiaCompliant_registration_form() {
     $otherIdType = ! empty( $_POST['other_identification_type'] ) ? ( $_POST['other_identification_type'] ) : '';
     $otherIdIssue = ! empty( $_POST['other_identification_issue'] ) ? ( $_POST['other_identification_issue'] ) : '';
 	?>
-	<p>
-        <center><span><b>For POPIA Purposes</b><br>(Powered by <a href="https://bepopiacompliant.co.za" target="_blank">Be POPIA Compliant</a>)<br><br></span></center>
+	<p><center><span><b>For POPIA Purposes</b><br>(Powered by <a href="https://bepopiacompliant.co.za" target="_blank">Be POPIA Compliant</a>)<br><br></span></center>
 		<label for="user_identification_number"><?php esc_html_e( 'South African Identity Number', 'be_popiaCompliant' ) ?><br/>
 			<input type="text"
 			       id="user_identification_number"
@@ -338,7 +326,7 @@ function be_popiaCompliant_registration_form() {
 			       value="<?php echo esc_attr( $identificationNumber ); ?>"
 			       class="input"
                 />
-            </label>
+        </label>
     </p><br>
         <center><span><b>OR</b><br>(If not South African)<br><br></span></center>
     <p>
@@ -447,9 +435,7 @@ function be_popia_compliant_add_user_details_to_py($user_id) {
     $domain = $_SERVER['SERVER_NAME'];
     $first_name = '';
     $surname = '';
-
     $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/getuserid/" . $user_email);
-
     $args = array(
         'headers' => array(
             'Content-Type' => 'application/json',
@@ -458,7 +444,6 @@ function be_popia_compliant_add_user_details_to_py($user_id) {
     );
 
     $response = wp_remote_get( wp_http_validate_url($url), $args );
-
     $response_code = wp_remote_retrieve_response_code( $response );
     $body         = wp_remote_retrieve_body( $response );
 
@@ -473,7 +458,6 @@ function be_popia_compliant_add_user_details_to_py($user_id) {
     if ( 200 === $response_code ) {
         $body = json_decode( $body );   
         if(empty($body)) {
-
         } else {
             foreach ( $body as $data ) {
                 $py_user_id = $data->id;
@@ -483,7 +467,6 @@ function be_popia_compliant_add_user_details_to_py($user_id) {
 
     if(isset($py_user_id)) {
         $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/getwpname/" . $py_user_id);
-
         $args = array(
             'headers' => array(
                 'Content-Type' => 'application/json',
@@ -539,7 +522,6 @@ function be_popia_compliant_add_user_details_to_py($user_id) {
     );
 
     $request = wp_remote_post( wp_http_validate_url(wp_http_validate_url($url)), $args );
-
     if ( is_wp_error( $request ) || wp_remote_retrieve_response_code( $request ) != 200 ) {
         error_log( print_r( $request, true ) );
     }
@@ -569,24 +551,21 @@ function be_popia_compliant_add_user_details_to_py($user_id) {
         );
 
         $request = wp_remote_post( wp_http_validate_url(wp_http_validate_url($url)), $args );
-
         if ( is_wp_error( $request ) || wp_remote_retrieve_response_code( $request ) != 200 ) {
             error_log( print_r( $request, true ) );
         }
-
         $response = wp_remote_retrieve_body( $request );
     }
 }
 
 global $wpdb;
-
 $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
 $result_api = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 1");
 
 if((isset($result_api->value) && $result_api->value !='')) {
     update_option( 'bpc_hasPro' , 1 );
     update_option( 'bpc_disable' , 'disabled' );
-    // update_option( 'bpc_disable' , '' );
+
 } else {
     update_option( 'bpc_disable' , '' );
 }
@@ -598,9 +577,7 @@ function be_popiaCompliant_admin_registration_form( $operation ) {
 		return;
 	}
 
-	$user_identification_number = ! empty( $_POST['user_identification_number'] ) ? ( $_POST['user_identification_number'] ) : 0;
-
-	?>
+	$user_identification_number = ! empty( $_POST['user_identification_number'] ) ? ( $_POST['user_identification_number'] ) : 0;?>
 	<h3><?php esc_html_e( 'Personal Information for POPIA Purposes', 'be_popiaCompliant' ); ?></h3>
 
 	<table class="form-table">
@@ -614,8 +591,8 @@ function be_popiaCompliant_admin_registration_form( $operation ) {
 	</table><br>OR<br>
     <?php
 	$other_identification_number = ! empty( $_POST['other_identification_number'] ) ? ( $_POST['other_identification_number'] ) : '';
-
 	?>
+
 	<table class="form-table">
 		<tr>
 			<th><label for="other_identification_number"><?php esc_html_e( 'Other Identification Number', 'be_popiaCompliant' ); ?></label> <span class="description"></span></th>
@@ -630,9 +607,7 @@ function be_popiaCompliant_admin_registration_form( $operation ) {
 		</tr>
 	</table>
 	<?php
-
     $other_identification_type = ! empty( $_POST['other_identification_type'] ) ? ( $_POST['other_identification_type'] ) : '';
-
     ?>
     <table class="form-table">
         <tr>
@@ -648,9 +623,7 @@ function be_popiaCompliant_admin_registration_form( $operation ) {
         </tr>
     </table>
     <?php
-
     $other_identification_issue = ! empty( $_POST['other_identification_issue'] ) ? ( $_POST['other_identification_issue'] ) : '';
-
     ?>
     <table class="form-table">
         <tr>
@@ -665,11 +638,8 @@ function be_popiaCompliant_admin_registration_form( $operation ) {
             </td>
         </tr>
     </table>
-
     <?php
-
     $bpc_consent_url = ! empty( $_POST['bpc_consent_url'] ) ? ( $_POST['bpc_consent_url'] ) : '';
-
     ?>
     <table class="form-table">
         <tr>
@@ -684,7 +654,6 @@ function be_popiaCompliant_admin_registration_form( $operation ) {
             </td>
         </tr>
     </table>
-    
     <?php
 }
 
@@ -730,37 +699,38 @@ function be_popiaCompliant_user_profile_update_errors( $errors, $update, $user )
 	}
 }
 
-// add_action( 'edit_user_created_user', 'be_popiaCompliant_user_register' );
+add_action( 'edit_user_created_user', 'be_popiaCompliant_user_register' );
 add_action( 'user_profile_update_errors', 'be_popiaCompliant_user_profile_update_errors', 10, 3 );
 add_action( 'show_user_profile', 'be_popiaCompliant_show_extra_profile_fields' );
 add_action( 'edit_user_profile', 'be_popiaCompliant_show_extra_profile_input_fields' );
 
-function be_popiaCompliant_show_extra_profile_fields( $user ) {
-	?>
+function be_popiaCompliant_show_extra_profile_fields( $user ) { ?>
 	<h3><?php esc_html_e( 'Personal Information for POPIA Purposes', 'be_popiaCompliant' ); ?></h3>
-
 	<table class="form-table">
         <?php
         if (esc_html( get_the_author_meta( 'user_identification_number', $user->ID ) )) {
-        ?>
-            <tr>
-                <th><label for="user_identification_number"><?php esc_html_e( 'South African Identity Number', 'be_popiaCompliant' ); ?></label></th>
-                <td><?php echo esc_html( get_the_author_meta( 'user_identification_number', $user->ID ) ); ?></td>
-            </tr>
-
-    <?php
+            $query = get_the_author_meta( 'user_identification_number', $user->ID );
+            if(str_contains($query,'000000')) {?>
+                <tr>
+                    <th><label for="user_identification_number"><?php esc_html_e( 'Consent was retracted', 'be_popiaCompliant' ); ?></label></th>
+                    <td><?php echo esc_html( get_the_author_meta( 'user_identification_number', $user->ID ) ); ?></td>
+                </tr>
+            <?php } else {?>
+                <tr>
+                    <th><label for="user_identification_number"><?php esc_html_e( 'South African Identity Number', 'be_popiaCompliant' ); ?></label></th>
+                    <td><?php echo esc_html( get_the_author_meta( 'user_identification_number', $user->ID ) ); ?></td>
+                </tr>
+            <?php }
         } elseif (esc_html( get_the_author_meta( 'other_identification_number', $user->ID ) )) {
     ?>
             <tr>
                 <th><label for="other_identification_number"><?php esc_html_e( 'Other Identification Number', 'be_popiaCompliant' ); ?></label></th>
                 <td><?php echo esc_html( get_the_author_meta( 'other_identification_number', $user->ID ) ); ?></td>
             </tr>
-
             <tr>
                 <th><label for="other_identification_type"><?php esc_html_e( 'Identification Type', 'be_popiaCompliant' ); ?></label></th>
                 <td><?php echo esc_html( get_the_author_meta( 'other_identification_type', $user->ID ) ); ?></td>
             </tr>
-
             <tr>
                 <th><label for="other_identification_issue"><?php esc_html_e( 'Country of Issue', 'be_popiaCompliant' ); ?></label></th>
                 <td><?php echo esc_html( get_the_author_meta( 'other_identification_issue', $user->ID ) ); ?></td>
@@ -769,7 +739,6 @@ function be_popiaCompliant_show_extra_profile_fields( $user ) {
         }
         ?>
 	</table>
-    
 	<?php
 }
 
@@ -781,12 +750,19 @@ function be_popiaCompliant_show_extra_profile_input_fields( $user ) {
         <?php
             if ( esc_html( get_the_author_meta( 'user_identification_number', $user->ID ) ) || ( esc_html( get_the_author_meta( 'other_identification_number', $user->ID )))) {
                 if (esc_html( get_the_author_meta( 'user_identification_number', $user->ID ) )) {
-        ?>
+                    $query = get_the_author_meta( 'user_identification_number', $user->ID );
+                        if(str_contains($query,'000000')) { ?>
                     <tr>
+                        <th><label for="user_identification_number1"><?php esc_html_e( 'Consent Retracted: ', 'be_popiaCompliant' ); ?></label></th><br>
+                        <td><?php echo esc_html( get_the_author_meta( 'user_identification_number', $user->ID ) ); ?></td>
+                    </tr> 
+                    <?php } else { ?>
+                        <tr>
                         <th><label for="user_identification_number1"><?php esc_html_e( 'South African Identity Number', 'be_popiaCompliant' ); ?></label></th><br>
                         <td><?php echo esc_html( get_the_author_meta( 'user_identification_number', $user->ID ) ); ?></td>
                     </tr>
-            <?php
+                    <?php }
+
                 } elseif (esc_html( get_the_author_meta( 'other_identification_number', $user->ID ) )) {
             ?>
                     <tr>
@@ -818,17 +794,16 @@ function be_popiaCompliant_show_extra_profile_input_fields( $user ) {
             <?php
                 } 
             }
-                    $users_data = get_metadata( 'user', $user->ID, 'bpc_comms_market', true );
+                    $users_data = get_metadata( 'user', $user->ID, 'bpc_comms_market_consent', true );
                     $consent_date = $users_data[0]; $consent_link = $users_data[1]; $a = $users_data[2]; $b = $users_data[3]; $c = $users_data[4]; $d = $users_data[5]; $e = $users_data[6]; $f = $users_data[7]; $g = $users_data[8]; $h = $users_data[9]; $i = $users_data[10]; $j = $users_data[11]; $k = $users_data[12]; $l = $users_data[13]; $m = $users_data[14]; $n = $users_data[15]; $o = $users_data[16]; $p = $users_data[17]; $q = $users_data[18]; $r = $users_data[19];
                         if(isset($consent_date)) {
                             if(strlen($consent_date)==10) {$date = date('d/m/Y', $consent_date);}
                         }
-                        // echo $consent_date;
-                            if(isset($consent_date)){
-                                $last_updated = 'Upload the consent form for this user then Copy & Paste the URL here: (Last updated on: ' . $date . ')';
-                                    } else {
-                                $last_updated = 'Upload the consent form for this user then Copy & Paste the URL here:';
-                                }
+                        if(isset($consent_date)){
+                            $last_updated = 'Upload the consent form for this user then Copy & Paste the URL here: (Last updated on: ' . $date . ')';
+                                } else {
+                            $last_updated = 'Upload the consent form for this user then Copy & Paste the URL here:';
+                            }
                     if(get_option('bpc_hasPro') != 1) {
             ?>
                     <label for="user_consent_URL"><?php esc_html_e( $last_updated, 'be_popiaCompliant' ); ?></label><br>
@@ -886,7 +861,7 @@ function save_extra_user_profile_fields( $user_id ) {
         }
     }
 
-    $users_data = get_metadata( 'user', $user->ID, 'bpc_comms_market', true );
+    $users_data = get_metadata( 'user', $user->ID, 'bpc_comms_market_consent', true );
     $consent_date = $users_data[0]; $consent_link = $users_data[1]; $a = $users_data[2]; $b = $users_data[3]; $c = $users_data[4]; $d = $users_data[5]; $e = $users_data[6]; $f = $users_data[7]; $g = $users_data[8]; $h = $users_data[9]; $i = $users_data[10]; $j = $users_data[11]; $k = $users_data[12]; $l = $users_data[13]; $m = $users_data[14]; $n = $users_data[15]; $o = $users_data[16]; $p = $users_data[17]; $q = $users_data[18]; $r = $users_data[19];
      
     if(isset($_POST['user_consent_URL']) && ($_POST['user_consent_URL'] != '') && (isset($_POST['user_consent_date']) && ($_POST['user_consent_date'] != '') )) {
@@ -896,7 +871,7 @@ function save_extra_user_profile_fields( $user_id ) {
             $srtingDate = strtotime($providedDate);
             $newDate = $srtingDate;
             $value = array($newDate, $_POST['user_consent_URL'], $a, $b, $c, $d, $e, $f, $g, $h, $i, $j, $k, $l, $m, $n, $o, $p, $q, $r);
-            update_user_meta($user_id, 'bpc_comms_market', $value);
+            update_user_meta($user_id, 'bpc_comms_market_consent', $value);
         }
     }
 }
@@ -1023,7 +998,7 @@ function be_popia_compliant_modify_user_table_row( $row_output, $column_id_attr,
     $date_format = 'j M, Y';
     $time_format = 'H:i';
         
-    $user_output =  get_user_meta($user, 'bpc_comms_market', true);
+    $user_output =  get_user_meta($user, 'bpc_comms_market_consent', true);
        
     switch ( $column_id_attr ) {
         case 'user_id' :
@@ -1035,8 +1010,10 @@ function be_popia_compliant_modify_user_table_row( $row_output, $column_id_attr,
                                         
                 if(isset($user_output[2]) && ($user_output[2] == 1)) {update_option('bpc_cp', $user_output[2]);} else {update_option('bpc_cp', 0);} if(isset($user_output[3]) && ($user_output[3] == 1)) {update_option('bpc_cs', $user_output[3]);} else {update_option('bpc_cs', 0);} if(isset($user_output[4]) && ($user_output[4] == 1)) {update_option('bpc_cw', $user_output[4]);} else {update_option('bpc_cw', 0);} if(isset($user_output[5]) && ($user_output[5] == 1)) {update_option('bpc_cm', $user_output[5]);} else {update_option('bpc_cm', 0);} if(isset($user_output[6]) && ($user_output[6] == 1)) {update_option('bpc_ct', $user_output[6]);} else {update_option('bpc_ct', 0);} if(isset($user_output[7]) && ($user_output[7] == 1)) {update_option('bpc_ce', $user_output[7]);} else {update_option('bpc_ce', 0);} if(isset($user_output[8]) && ($user_output[8] == 1)) {update_option('bpc_cca', $user_output[8]);} else {update_option('bpc_cca', 0);} if(isset($user_output[9]) && ($user_output[9] == 1)) {update_option('bpc_ccb', $user_output[9]);} else {update_option('bpc_ccb', 0);} if(isset($user_output[10]) && ($user_output[10] == 1)) {update_option('bpc_ccc', $user_output[10]);} else {update_option('bpc_ccc', 0);}    if(isset($user_output[11]) && ($user_output[11] == 1)) {update_option('bpc_mp', $user_output[11]);} else {update_option('bpc_mp', 0);} if(isset($user_output[12]) && ($user_output[12] == 1)) {update_option('bpc_ms', $user_output[12]);} else {update_option('bpc_ms', 0);} if(isset($user_output[13]) && ($user_output[13] == 1)) {update_option('bpc_mw', $user_output[13]);} else {update_option('bpc_mw', 0);} if(isset($user_output[14]) && ($user_output[14] == 1)) {update_option('bpc_mm', $user_output[14]);} else {update_option('bpc_mm', 0);} if(isset($user_output[15]) && ($user_output[15] == 1)) {update_option('bpc_mt', $user_output[15]);} else {update_option('bpc_mt', 0);} if(isset($user_output[16]) && ($user_output[16] == 1)) {update_option('bpc_me', $user_output[16]);} else {update_option('bpc_me', 0);} if(isset($user_output[17]) && ($user_output[17] == 1)) {update_option('bpc_mca', $user_output[17]);} else {update_option('bpc_mca', 0);} if(isset($user_output[18]) && ($user_output[18] == 1)) {update_option('bpc_mcb', $user_output[18]);} else {update_option('bpc_mcb', 0);} if(isset($user_output[19]) && ($user_output[19] == 1)) {update_option('bpc_mcc', $user_output[19]);} else {update_option('bpc_mcc', 0);} /* if(isset($user_output[20]) && ($user_output[20] !== '')) {update_option('bpc_ccn1', $user_output[20]);} else {update_option('bpc_ccn1, 'Comms Custom 1');} if(isset($user_output[21]) && ($user_output[21] !== '')) {update_option('bpc_ccn2', $user_output[21]);} else {update_option('bpc_ccn2', 'Comms Custom 2');} if(isset($user_output[22]) && ($user_output[22] !== '')) {update_option('bpc_ccn3'], $user_output[22]);} else {update_option('bpc_ccn3', 'Comms Custom 3');} if(isset($user_output[23]) && ($user_output[23] !== '')) {update_option('bpc_cmn1', $user_output[23]);} else {update_option('bpc_cmn1', 'Marketing Custom 1');} if(isset($user_output[24]) && ($user_output[24] !== '')) {update_option('bpc_cmn2', $user_output[24]);} else {update_option('bpc_cmn2', 'Marketing Custom 2');} if(isset($user_output[25]) && ($user_output[25] !== '')) {update_option('bpc_cmn3', $user_output[25]);} else {update_option('bpc_cmn3', 'Marketing Custom 3');} */ if(isset($timestamp) & $timestamp > 1356998400) { if($time = date( $time_format, $timestamp) == "00:00") { $friendly_date = date( $date_format, $timestamp ); }else{ $friendly_date = date( $date_time_format, $timestamp );} } else {$friendly_date = null;}
                 
-                if(isset($consent_url) && ($consent_url != '')) {
+                if(isset($consent_url) && ($consent_url != '') && (!str_contains($consent_url,'redacted'))) {
                         $friendly_date = '<a href="' . $consent_url . '" target="_blank">' . $friendly_date . '</a>';
+                    } else if(str_contains($consent_url,'redacted')){
+                        $friendly_date = '<a href="' . $consent_url . '" target="_blank"><span style="color:crimson">Consent Retracted</span></a>';
                     } else {
                         $friendly_date = $friendly_date;
                     }
@@ -1045,8 +1022,10 @@ function be_popia_compliant_modify_user_table_row( $row_output, $column_id_attr,
                         update_option( 'bpc_timestamp', $timestamp );
                         update_option( 'bpc_consent_url', $consent_url );
                     return $friendly_date;
+                } else if(str_contains($consent_url,'redacted')){
+                    return $friendly_date;
                 } else {
-                    return "-";
+                    return "No Consent Provided";
                 }
             break;
             case 'user_identification_number' :
@@ -1256,7 +1235,7 @@ function be_popia_compliant_save_comms_market_val() {
 
     $value = array($timestamp, $consent_link, $cp, $cs, $cw, $cm, $ct, $ce, $cca, $ccb, $ccc, $mp, $ms, $mw, $mm, $mt, $me, $mca, $mcb, $mcc);
   
-    update_user_meta($user_id, 'bpc_comms_market', $value);
+    update_user_meta($user_id, 'bpc_comms_market_consent', $value);
 }
 
 add_action( 'wp_ajax_be_popia_compliant_save_comms_market_val', 'be_popia_compliant_save_comms_market_val' ); 
@@ -1326,7 +1305,7 @@ function be_popia_compliant_delete_plugin() {
     );
     $response = wp_remote_get( wp_http_validate_url($url), $args );
     $response_code = wp_remote_retrieve_response_code( $response );
-    $body         = wp_remote_retrieve_body( $response );
+    $body          = wp_remote_retrieve_body( $response );
 
     if ( 401 === $response_code ) {
         echo "Unauthorized access";
@@ -1580,19 +1559,6 @@ function be_popia_compliant_dashboard() {
             checkStatus();
         </script>';
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 // Inject a customised message for the user to their admin panel
@@ -2150,47 +2116,47 @@ function be_popia_compliant_dashboard_checklist() {
                                 </div>
                                 <script>
                                                 
-                                    function validate(el, check_id) {
-                                        var label_id = "be_popia_compliant_tab-label" + check_id;
-                                        if (el.checked) {
-                                            jQuery.ajax({
-                                                url: ajaxurl,
-                                                data: {
-                                                    "action":"be_popia_compliant_checklist_update",
-                                                    "check_id" : check_id
-                                                },
-                                                success:function(data) {
-                                                    document.getElementById(label_id).style.background = "#B7191A";
-                                                },  
-                                                error: function(errorThrown) {
-                                                    window.alert(errorThrown);
-                                                }
-                                            });
-                                        } else {
-                                            jQuery.ajax({
-                                                url: ajaxurl,
-                                                data: {
-                                                    "action":"be_popia_compliant_checklist_update",
-                                                    "check_id" : check_id
-                                                },
-                                                success:function(data) {
-                                                    document.getElementById(label_id).style.background = "#1D2327";
-                                                },  
-                                                error: function(errorThrown) {
-                                                    window.alert(errorThrown);
-                                                }
-                                            });
-                                        }
-                                    }
-                                </script>';
+                                function validate(el, check_id) {
+                                    var label_id = "be_popia_compliant_tab-label" + check_id;
+                                    if (el.checked) {
+                                        jQuery.ajax({
+                                            url: ajaxurl,
+                                            data: {
+                                                "action":"be_popia_compliant_checklist_update",
+                                                "check_id" : check_id
+                                            },
+                                            success:function(data) {
+                                                document.getElementById(label_id).style.background = "#B7191A";
+                                            },  
+                                            error: function(errorThrown) {
+                                                window.alert(errorThrown);
+                                            }
+                                        });
+                                    } else {
+                                        jQuery.ajax({
+                                            url: ajaxurl,
+                                            data: {
+                                                "action":"be_popia_compliant_checklist_update",
+                                                "check_id" : check_id
+                                            },
+                                            success:function(data) {
+                                                document.getElementById(label_id).style.background = "#1D2327";
+                                            },  
+                                            error: function(errorThrown) {
+                                                window.alert(errorThrown);
+                                            }
+                                        });
                                     }
                                 }
+                            </script>';
+                                }
                             }
-                            echo'
-                        </div>
+                        }
+                        echo'
                     </div>
                 </div>
-        </div>';
+            </div>
+    </div>';
 }
 
 function be_popia_compliant_checklist_update() {
@@ -2229,7 +2195,6 @@ function be_popia_compliant_checklist_update_url() {
             $wpdb->update( $table_name, array( 'content' => $input, 'does_comply' => 0),array('id'=>$check_id)); 
         }
     }
-
    die();
 }
 add_action( 'wp_ajax_be_popia_compliant_checklist_update_url', 'be_popia_compliant_checklist_update_url' ); 
@@ -2269,9 +2234,6 @@ function be_popia_compliant_checklist_update_compliance() {
 }
 add_action( 'wp_ajax_be_popia_compliant_checklist_update_compliance', 'be_popia_compliant_checklist_update_compliance' ); 
 
-
-
-
 // Cron to ensure that PRO consent and data requests is honored
 add_filter( 'cron_schedules', 'be_popia_compliant_add_hourly' );
 function be_popia_compliant_add_hourly( $schedules ) {
@@ -2283,71 +2245,125 @@ function be_popia_compliant_add_hourly( $schedules ) {
 }
 
 // Schedule an action if it's not already scheduled
-if(get_option( 'bpc_hasPro' ) == 1) {
-    if ( ! wp_next_scheduled( 'be_popia_compliant_add_hourly' ) ) {
-        wp_schedule_event( time(), 'hourly', 'be_popia_compliant_add_hourly' );
-    }
+if ( ! wp_next_scheduled( 'be_popia_compliant_add_hourly' ) ) {
+    wp_schedule_event( time(), 'hourly', 'be_popia_compliant_add_hourly' );
 }
+
 // Hook into that action that'll fire every hour
-if(get_option( 'bpc_hasPro') == 1) {
-    add_action( 'be_popia_compliant_add_hourly', 'hourly_event_func' );
-    function hourly_event_func() {
-        $t = time();
-        update_option('cron_last_fired_at', $t);
-               
-            // Function that will get the domain refference if not set.
-            $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/getconsentchangesexternally/" . $_SERVER['SERVER_NAME']);
-            $args = array(
-                'headers' => array(
-                    'Content-Type' => 'application/json',
-                ),
-                'body'    => array(),
-            );
+add_action( 'be_popia_compliant_add_hourly', 'bpc_popia_data_processing' );
+function bpc_popia_data_processing() {
+    $t = time();
+    update_option('cron_last_fired_at', $t);
         
-            $response = wp_remote_get( wp_http_validate_url($url), $args );
-            $response_code = wp_remote_retrieve_response_code( $response );
-            $body = wp_remote_retrieve_body( $response );
-        
-            if ( 200 === $response_code ) {
-                $body = json_decode( $body );
-        
-                foreach ( $body as $data ) {
-                    $consent_to_update = $data->consentsChanged;
-                    $id = $data->id;
-                    if(isset($id)) {
-                        update_option( 'bpc_refference', $id );
-                    }
-                    if(isset($consent_to_update)) {
-                        if(strpos($consent_to_update, ',') !== false){
-                            $consent_to_update = explode(",", $consent_to_update);
-                            update_option( 'bpc_consent_to_update', $consent_to_update );
-                        } else {
-                            $consent_to_update = [$consent_to_update];
-                            update_option( 'bpc_consent_to_update', $consent_to_update );
-                        }       
-                    }
-                }
-            }
-    
-        // Ping url to ensure plugin is active
-        $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/pingwordpressplugin/". $id. "/");
-            
-        $t = time();
-        $body = array(
-            'last_pinged' => $t
-        );
+        // Function that will get the domain refference if not set.
+        $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/getconsentchangesexternally/" . $_SERVER['SERVER_NAME']);
         $args = array(
             'headers' => array(
-            'Content-Type'   => 'application/json',
+                'Content-Type' => 'application/json',
             ),
-            'body'      => json_encode($body),
-            'method'    => 'PATCH'
+            'body'    => array(),
         );
-        $result =  wp_remote_request( wp_http_validate_url($url), $args );
-        
-        // Check if any changes occured.
+    
+        $response = wp_remote_get( wp_http_validate_url($url), $args );
+        $response_code = wp_remote_retrieve_response_code( $response );
+        $body = wp_remote_retrieve_body( $response );
+    
+        if ( 200 === $response_code ) {
+            $body = json_decode( $body );
+    
+            foreach ( $body as $data ) {
+                $consent_to_update = $data->consentsChanged;
+                $data_request = $data->data_request;
+                $data_request_approved = $data->data_request_approved;
+                $data_deletion = $data->data_deletion;
+                $data_deletion_approved = $data->data_deletion_approved;
+                $id = $data->id;
+
+                if(isset($id)) {
+                    update_option( 'bpc_refference', $id );
+                }
+
+                if(isset($consent_to_update)) {
+                    if(strpos($consent_to_update, ',') !== false){
+                        $consent_to_update = explode(",", $consent_to_update);
+                        update_option( 'bpc_consent_to_update', $consent_to_update );
+                    } else {
+                        $consent_to_update = [$consent_to_update];
+                        update_option( 'bpc_consent_to_update', $consent_to_update );
+                    }       
+                }
+
+                if(isset($data_request)) {
+                    if(strpos($data_request, ',') !== false){
+                        $data_request = explode(",", $data_request);
+                        update_option( 'bpc_data_request', $data_request );
+                    } else {
+                        $data_request = [$data_request];
+                        update_option( 'bpc_data_request', $data_request );
+                    }       
+                }
+
+                if(isset($data_request_approved)) {
+                    if(strpos($data_request_approved, ',') !== false){
+                        $data_request_approved = explode(",", $data_request_approved);
+                        update_option( 'bpc_data_request_approved', $data_request_approved );
+                    } else {
+                        $data_request_approved = [$data_request_approved];
+                        update_option( 'bpc_data_request_approved', $data_request_approved );
+                    }       
+                }
+
+                if(isset($data_deletion)) {
+                    if(strpos($data_deletion, ',') !== false){
+                        $data_deletion = explode(",", $data_deletion);
+                        update_option( 'bpc_data_deletion', $data_deletion );
+                    } else {
+                        $data_deletion = [$data_deletion];
+                        update_option( 'bpc_data_deletion', $data_deletion );
+                    }       
+                }
+
+                if(isset($data_deletion_approved)) {
+                    if(strpos($data_deletion_approved, ',') !== false){
+                        $data_deletion_approved = explode(",", $data_deletion_approved);
+                        update_option( 'bpc_data_deletion_approved', $data_deletion_approved );
+                    } else {
+                        $data_deletion_approved = [$data_deletion_approved];
+                        update_option( 'bpc_data_deletion_approved', $data_deletion_approved );
+                    }       
+                }
+
+            }
+        }
+
+    // Ping url to ensure plugin is active
+    $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/pingwordpressplugin/". $id. "/");      
+    $t = time(); $bpcV = get_option( 'bpc_v' ); $vType = get_option( 'bpc_hasPro' ); if($vType == 1) { $PIV = $bpcV . ' PRO'; } else { $PIV = $bpcV . ' FREE'; } include_once( ABSPATH . '/wp-admin/includes/plugin.php' ); $all_plugins = get_plugins();
+
+    // Get active plugins
+    $active_plugins = get_option('active_plugins'); $pi_count = 0; $active_count = 0; foreach ( $all_plugins as $key => $value ) { $pi_count ++; $is_active = ( in_array( $key, $active_plugins ) ) ? true : false; if ($is_active) $active_count ++; $domain_plugins[ $key ] = array( 'name'    => $value['Name'], 'version' => $value['Version'], 'description' => $value['Description'], 'active'  => $is_active, ); } $PIC = '' . $active_count . '/' . $pi_count . '';
+
+    $body = array(
+        'last_pinged' => $t,
+        'PIV' => $PIV,
+        'PIC' => $PIC,
+        'domain_plugins' => json_encode($domain_plugins),
+    );
+
+    $args = array(
+        'headers' => array(
+        'Content-Type'   => 'application/json',
+        ),
+        'body'      => json_encode($body),
+        'method'    => 'PATCH'
+    );
+    $result =  wp_remote_request( wp_http_validate_url($url), $args );
+    
+    // Check if any changes occured.
+    if(get_option( 'bpc_hasPro') == 1) {
+        /* Data Consent Processing Starts*/
         $ids =  get_option( 'bpc_consent_to_update' );
-        if(isset($ids)){
+        if(isset($ids) && $ids != ''){
             foreach ( $ids as $id ) {
                 $id = str_replace(' ', '', $id);
                 
@@ -2366,15 +2382,13 @@ if(get_option( 'bpc_hasPro') == 1) {
                     $body = json_decode( $body );
                     $id = $body->consent_user_id; $date = $body->timestamp; $consent_url = $body->consent_url; $c_phone = $body->c_phone; $c_sms = $body->c_sms; $c_whatsapp = $body->c_whatsapp; $c_messenger = $body->c_messenger; $c_telegram = $body->c_telegram; $c_email = $body->c_email; $c_custom1 = $body->c_custom1; $c_custom2 = $body->c_custom2; $c_custom3 = $body->c_custom3; $m_phone = $body->m_phone; $m_sms = $body->m_sms; $m_whatsapp = $body->m_whatsapp; $m_messenger = $body->m_messenger; $m_telegram = $body->m_telegram; $m_email = $body->m_email; $m_custom1 = $body->m_custom1; $m_custom2 = $body->m_custom2; $m_custom3 = $body->m_custom3;
                     $value = array($date, $consent_url, $c_phone, $c_sms, $c_whatsapp, $c_messenger, $c_telegram, $c_email, $c_custom1, $c_custom2, $c_custom3, $m_phone, $m_sms, $m_whatsapp, $m_messenger, $m_telegram, $m_email, $m_custom1, $m_custom2, $m_custom3);               
-                    update_user_meta( $id, 'bpc_comms_market', $value );              
+                    update_user_meta( $id, 'bpc_comms_market_consent', $value );              
                 }
             }
             // Remove from changes on BPC
             $removeId = get_option( 'bpc_refference' );
-            echo $removeId;
             $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/updateconsentchangedarray/". $removeId . "/");
         
-            $t = date("h:i:sa d-m-Y",time());
             $body = array(
                 'consentsChanged' => null
             );
@@ -2386,11 +2400,446 @@ if(get_option( 'bpc_hasPro') == 1) {
                 'method'    => 'PUT'
             );
             $result =  wp_remote_request( wp_http_validate_url($url), $args );
-
             update_option( 'bpc_consent_to_update', null );
         }
-    }  
-}
+
+        /*  Data Consent Processing Ends */
+        /* --------------------------------------------------------------------------------------------------------------------------*/        
+        /* Data Request Processing Starts*/
+      
+        $ids =  get_option( 'bpc_data_request' );
+            if(isset($ids) && $ids != ''){
+            $data_to_send ='';
+
+            foreach ( $ids as $id ) {
+                $id = str_replace(' ', '', $id);
+                $data = get_userdata( $id );          
+                $user_email = $data->user_email;
+                $consent_domain_id = get_option( 'this_domain_identity' );
+                $data_to_send = $data_to_send . $id . ',' . $consent_domain_id . ',' . $user_email . ',';
+            }
+        
+        $data_to_send = $data_to_send . ']';
+
+        $data_to_send = str_replace(',]', '', $data_to_send);
+        update_option('data_to_send', $data_to_send);
+
+            //  Now use the opportunity to post this collected data to the BPC Portal for further processing, then repeat for next person if applicable
+            $url  = wp_http_validate_url('https://py.bepopiacompliant.co.za/api/datarequestsapproved/');
+            $body = array(
+                'data_to_send' => $data_to_send
+            );
+
+            $args = array(
+                'method'      => 'POST',
+                'timeout'     => 45,
+                'sslverify'   => false,
+                'headers'     => array(
+                'Content-Type'  => 'application/json',
+                ),
+                'body'        => json_encode($body),
+            );
+
+            $request = wp_remote_post( wp_http_validate_url(wp_http_validate_url($url)), $args );
+
+            if ( is_wp_error( $request ) || wp_remote_retrieve_response_code( $request ) != 200 ) {
+                error_log( print_r( $request, true ) );
+            }
+
+
+            // Remove from changes on BPC
+            $removeId = get_option( 'bpc_refference' );
+            $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/updateconsentchangedarray/". $removeId . "/"); //TO BE UPDATED WITH CORRECT LINK
+        
+            $body = array(
+                'bpc_data_request' => null
+            );
+            $args = array(
+                'headers' => array(
+                'Content-Type'   => 'application/json',
+                ),
+                'body'      => json_encode($body),
+                'method'    => 'PUT'
+            );
+            $result =  wp_remote_request( wp_http_validate_url($url), $args );
+            update_option( 'bpc_data_request', null );
+        }
+
+        /* Data Request Processing Ends  */
+        /* --------------------------------------------------------------------------------------------------------------------------*/ 
+        /* Data Request Processing Approved Starts */
+
+        $ids =  get_option( 'bpc_data_request_approved' );
+        if(isset($ids) && $ids != ''){
+            
+            foreach ( $ids as $id ) {
+                $tb_count = 0;
+                $data_to_send = '[domain_id]' . get_option('bpc_refference') . '[/domain_id][user_id]' . $id . '[/user_id]';
+                $id = str_replace(' ', '', $id);
+
+                if(get_userdata( $id ) !== null) {
+                    $tb_name = 'wp_users';
+                    $r_count = 0;
+                    $tb_count ++;
+                        $data_to_send ='[t' . $tb_count . '][tn]' . $tb_name . '[/tn][dbs]1[/dbs][pk]ID[/pk]';
+                            $data = get_userdata( $id );
+                                $ID = $data -> ID;
+                                if($ID != '') {$r_count ++; $data_to_send = $data_to_send . '[r' . $r_count . ']ID,' . $ID . ',n,s[/r' . $r_count . ']';}
+
+                                $user_login = $data -> user_login;
+                                if($user_login != '') {$r_count ++; $data_to_send = $data_to_send . '[r' . $r_count . ']user_login,' . $user_login . ',n,s[/r' . $r_count . ']';}
+
+                                $user_nicename = $data -> user_nicename;
+                                if($user_nicename != '') {$r_count ++; $data_to_send = $data_to_send . '[r' . $r_count . ']user_nicename,' . $user_nicename . ',y,s[/r' . $r_count . ']';}
+
+                                $user_email = $data -> user_email;
+                                if($user_email != '') {$r_count ++; $data_to_send = $data_to_send . '[r' . $r_count . ']user_email,' . $user_email . ',y,s[/r' . $r_count . ']';}
+
+                                $user_url = $data -> user_url;
+                                if($user_url != '') {$r_count ++; $data_to_send = $data_to_send . '[r' . $r_count . ']user_url,' . $user_url . ',n,s[/r' . $r_count . ']';}
+
+                                $user_registered = $data -> user_registered;
+                                if($user_registered != '') {$r_count ++; $data_to_send = $data_to_send . '[r' . $r_count . ']user_registered,' . $user_registered . ',n,[/r' . $r_count . ']';}
+
+                                $user_activation_key = $data -> user_activation_key;
+                                if($user_activation_key != '') {$r_count ++; $data_to_send = $data_to_send . '[r' . $r_count . ']user_activation_key,' . $user_activation_key . ',n,s[/r' . $r_count . ']';}
+
+                                $user_status = $data -> user_status;
+                                if($user_status != '') {$r_count ++; $data_to_send = $data_to_send . '[r' . $r_count . ']user_status,' . $user_status . ',n,s[/r' . $r_count . ']';}
+
+                                $display_name = $data -> display_name;
+                                if($display_name != '') {$r_count ++; $data_to_send = $data_to_send . '[r' . $r_count . ']display_name,' . $display_name . ',y,s[/r' . $r_count . ']';}
+                                
+                            $data_to_send = $data_to_send .'[rc]' . $r_count . '[/rc]';
+                        $data_to_send = $data_to_send . '[/t' . $tb_count . ']';
+                }
+
+                if(get_user_meta( $id ) !== null) {
+                    $tb_name = 'wp_usermeta';
+                    $mk_count = 0;
+                    $tb_count ++;
+                        $data_to_send = $data_to_send .'[t' . $tb_count . '][tn]' . $tb_name . '[/tn][dbs]2[/dbs]';
+                            $data = get_user_meta( $id ); 
+                                foreach($data as $key => $value ) {
+                                    if($value != [""] && $value != ["true"] && $value != ["false"] && $value != ["0"] && $value != ["1"]) {
+                                        if (!str_contains(json_encode($value), '{') || !str_contains(json_encode($value), '}')) {
+                                            $value = json_encode($value); $value = str_replace('["','', $value); $value = str_replace('"]','', $value);
+                                            $mk_count ++; 
+                                            $data_to_send = $data_to_send . '[mkv]' . $key . ',' . $value . '[/mkv]';
+                                        }
+                                    }
+                                }
+                            $data_to_send = $data_to_send . '[mkc]' . $mk_count . '[/mkc]';
+                        $data_to_send = $data_to_send . '[/t' . $tb_count . ']';
+                }
+
+                if(get_user_meta( $id ) !== null) {
+                    // $tb_name = 'bpc_comms_market';
+                    $tb_name = 'bpc_comms_market_consent';
+                    $bpc_count = 0;
+                    $tb_count ++;
+                        $data_to_send = $data_to_send .'[t' . $tb_count . '][tn]' . $tb_name . '[/tn][dbs]3[/dbs]';
+                            $data = get_user_meta( $id, $tb_name ); 
+                                foreach($data as $key => $value ) {
+                                    $date_time_format = 'j M, Y H:i';
+                                    $date_format = 'j M, Y';
+                                    $time_format = 'H:i';
+                                        if($value != [""] && $value != ["true"] && $value != ["false"] && $value != ["0"] && $value != ["1"]) {
+
+                                        if(date( $time_format, intval($value[0])) == "00:00") {$friendly_date = date( $date_format, intval($value[0]));} else {$friendly_date = date( $date_time_format, intval($value[0])); $bpc_count++;}
+                                        $data_to_send = $data_to_send . '[bpc' . $bpc_count . ']' . 0 . ',timestamp,Consent Provided Date,' . $value[0] . ',' . $friendly_date . '[/bpc' . $bpc_count . ']';
+                                        $bpc_count++; $data_to_send = $data_to_send . '[bpc' . $bpc_count . ']' . 1 . ',consent_link,Signed Consent Form,' . $value[1] . ',' . $value[1] . '[/bpc' . $bpc_count . ']';
+                                        if($value[2] == 1) { $sv = "Yes";} else {$sv = "No";} $bpc_count++; $data_to_send = $data_to_send . '[bpc' . $bpc_count . ']' . 2 . ',cs,Contractual Communication Consent via Phone,' . $value[2] . ',' . $sv . ',[/bpc' . $bpc_count . ']';
+                                        if($value[3] == 1) { $sv = "Yes";} else {$sv = "No";} $bpc_count++; $data_to_send = $data_to_send . '[bpc' . $bpc_count . ']' . 3 . ',cs,Contractual Communication Consent via SMS,' . $value[3] . ',' . $sv . ',[/bpc' . $bpc_count . ']';
+                                        if($value[4] == 1) { $sv = "Yes";} else {$sv = "No";} $bpc_count++; $data_to_send = $data_to_send . '[bpc' . $bpc_count . ']' . 4 . ',cs,Contractual Communication Consent via WhatsApp,' . $value[4] . ',' . $sv . ',[/bpc' . $bpc_count . ']';
+                                        if($value[5] == 1) { $sv = "Yes";} else {$sv = "No";} $bpc_count++; $data_to_send = $data_to_send . '[bpc' . $bpc_count . ']' . 5 . ',cs,Contractual Communication Consent via Messenger,' . $value[5] . ',' . $sv . ',[/bpc' . $bpc_count . ']';
+                                        if($value[6] == 1) { $sv = "Yes";} else {$sv = "No";} $bpc_count++; $data_to_send = $data_to_send . '[bpc' . $bpc_count . ']' . 6 . ',cs,Contractual Communication Consent via Telegram,' . $value[6] . ',' . $sv . ',[/bpc' . $bpc_count . ']';
+                                        if($value[7] == 1) { $sv = "Yes";} else {$sv = "No";} $bpc_count++; $data_to_send = $data_to_send . '[bpc' . $bpc_count . ']' . 7 . ',cs,Contractual Communication Consent via email,' . $value[7] . ',' . $sv . ',[/bpc' . $bpc_count . ']';
+                                        if($value[8] == 1) { $sv = "Yes";} else {$sv = "No";} $bpc_count++; $data_to_send = $data_to_send . '[bpc' . $bpc_count . ']' . 8 . ',cs,Contractual Communication Consent via Custom Type 1,' . $value[8] . ',' . $sv . ',[/bpc' . $bpc_count . ']';
+                                        if($value[9] == 1) { $sv = "Yes";} else {$sv = "No";} $bpc_count++; $data_to_send = $data_to_send . '[bpc' . $bpc_count . ']' . 9 . ',cs,Contractual Communication Consent via Custom Type 2,' . $value[9] . ',' . $sv . ',[/bpc' . $bpc_count . ']';
+                                        if($value[10] == 1) { $sv = "Yes";} else {$sv = "No";} $bpc_count++; $data_to_send = $data_to_send . '[bpc' . $bpc_count . ']' . 10 . ',cs,Contractual Communication Consent via Custom Type 3,' . $value[10] . ',' . $sv . ',[/bpc' . $bpc_count . ']';
+
+                                        if($value[11] == 1) { $sv = "Yes";} else {$sv = "No";} $bpc_count++; $data_to_send = $data_to_send . '[bpc' . $bpc_count . ']' . 11 . ',cs,Marketing Communication Consent via Phone,' . $value[11] . ',' . $sv . ',[/bpc' . $bpc_count . ']';
+                                        if($value[12] == 1) { $sv = "Yes";} else {$sv = "No";} $bpc_count++; $data_to_send = $data_to_send . '[bpc' . $bpc_count . ']' . 12 . ',cs,Marketing Communication Consent via SMS,' . $value[12] . ',' . $sv . ',[/bpc' . $bpc_count . ']';
+                                        if($value[13] == 1) { $sv = "Yes";} else {$sv = "No";} $bpc_count++; $data_to_send = $data_to_send . '[bpc' . $bpc_count . ']' . 13 . ',cs,Marketing Communication Consent via WhatsApp,' . $value[13] . ',' . $sv . ',[/bpc' . $bpc_count . ']';
+                                        if($value[14] == 1) { $sv = "Yes";} else {$sv = "No";} $bpc_count++; $data_to_send = $data_to_send . '[bpc' . $bpc_count . ']' . 14 . ',cs,Marketing Communication Consent via Messenger,' . $value[14] . ',' . $sv . ',[/bpc' . $bpc_count . ']';
+                                        if($value[15] == 1) { $sv = "Yes";} else {$sv = "No";} $bpc_count++; $data_to_send = $data_to_send . '[bpc' . $bpc_count . ']' . 15 . ',cs,Marketing Communication Consent via Telegram,' . $value[15] . ',' . $sv . ',[/bpc' . $bpc_count . ']';
+                                        if($value[16] == 1) { $sv = "Yes";} else {$sv = "No";} $bpc_count++; $data_to_send = $data_to_send . '[bpc' . $bpc_count . ']' . 16 . ',cs,Marketing Communication Consent via email,' . $value[16] . ',' . $sv . ',[/bpc' . $bpc_count . ']';
+                                        if($value[17] == 1) { $sv = "Yes";} else {$sv = "No";} $bpc_count++; $data_to_send = $data_to_send . '[bpc' . $bpc_count . ']' . 17 . ',cs,Marketing Communication Consent via Custom Type 1,' . $value[17] . ',' . $sv . ',[/bpc' . $bpc_count . ']';
+                                        if($value[18] == 1) { $sv = "Yes";} else {$sv = "No";} $bpc_count++; $data_to_send = $data_to_send . '[bpc' . $bpc_count . ']' . 18 . ',cs,Marketing Communication Consent via Custom Type 2,' . $value[18] . ',' . $sv . ',[/bpc' . $bpc_count . ']';
+                                        if($value[19] == 1) { $sv = "Yes";} else {$sv = "No";} $bpc_count++; $data_to_send = $data_to_send . '[bpc' . $bpc_count . ']' . 19 . ',cs,Marketing Communication Consent via Custom Type 3,' . $value[19] . ',' . $sv . ',[/bpc' . $bpc_count . ']';
+                                    }
+                                }
+                            $data_to_send = $data_to_send . '[bpc]' . $bpc_count . '[/bpc]';
+                        $data_to_send = $data_to_send . '[/t' . $tb_count . ']';
+                }
+                
+                global $wpdb;
+                $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
+                $result = $wpdb->get_results("SELECT ID from $table_name");
+                if(count($result) > 0) {
+
+
+                }
+
+
+                $data_to_send = $data_to_send . '[tc]' . $tb_count . '[/tc][user_email]' . $user_email . '[/user_email]';
+                //  Now use the opportunity to post this collected data to the BPC Portal for further processing, then repeat for next person if applicable
+                $url  = wp_http_validate_url('https://py.bepopiacompliant.co.za/api/datarequest/');
+                $body = array(
+                    'data_to_send' => $data_to_send
+                );
+
+                $args = array(
+                    'method'      => 'POST',
+                    'timeout'     => 45,
+                    'sslverify'   => false,
+                    'headers'     => array(
+                        'Content-Type'  => 'application/json',
+                    ),
+                    'body'        => json_encode($body),
+                );
+
+                $request = wp_remote_post( wp_http_validate_url(wp_http_validate_url($url)), $args );
+
+                if ( is_wp_error( $request ) || wp_remote_retrieve_response_code( $request ) != 200 ) {
+                    error_log( print_r( $request, true ) );
+                }
+            } // Data Collection Ends and Sends
+            
+            // Remove from changes on BPC
+            $removeId = get_option( 'bpc_refference' );
+            $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/updateconsentchangedarray/". $removeId . "/"); //TO BE UPDATED WITH CORRECT LINK
+        
+            $body = array(
+                'bpc_data_request_approved' => null
+            );
+            $args = array(
+                'headers' => array(
+                'Content-Type'   => 'application/json',
+                ),
+                'body'      => json_encode($body),
+                'method'    => 'PUT'
+            );
+            $result =  wp_remote_request( wp_http_validate_url($url), $args );
+
+            update_option( 'bpc_data_request_approved', null );
+        }
+
+        /* Data Request Processing Approved Ends */
+        /* --------------------------------------------------------------------------------------------------------------------------*/ 
+        /*Data Deletion Processing Starts*/
+
+        $ids =  get_option( 'bpc_data_deletion' );
+        if(isset($ids) && $ids != ''){
+            // echo 'ID\'s: ' . var_dump($ids);
+            $data_to_send ='[';
+            foreach ( $ids as $id ) {
+                $id = str_replace(' ', '', $id);
+                $data = get_userdata( $id );          
+                $user_email = $data->user_email;
+                $consent_domain_id = get_option( 'this_domain_identity' );
+                $data_to_send = $data_to_send . '{' . $id . ', ' . $consent_domain_id . ', ' . $user_email . '}, ';
+            }
+                        $data_to_send = $data_to_send . ']';
+            $data_to_send = str_replace('}, ]', '}]', $data_to_send);
+
+            //  Now use the opportunity to post this collected data to the BPC Portal for further processing, then repeat for next person if applicable
+            $url  = wp_http_validate_url('https://py.bepopiacompliant.co.za/api/datadeletionrequests/');
+            $body = array(
+                'data_to_send' => $data_to_send
+            );
+
+            $args = array(
+                'method'      => 'POST',
+                'timeout'     => 45,
+                'sslverify'   => false,
+                'headers'     => array(
+                    'Content-Type'  => 'application/json',
+                ),
+                'body'        => json_encode($body),
+            );
+
+            $request = wp_remote_post( wp_http_validate_url(wp_http_validate_url($url)), $args );
+
+            if ( is_wp_error( $request ) || wp_remote_retrieve_response_code( $request ) != 200 ) {
+                error_log( print_r( $request, true ) );
+            }
+
+            // Remove from changes on BPC
+            $removeId = get_option( 'bpc_refference' );
+            $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/updateconsentchangedarray/". $removeId . "/"); //TO BE UPDATED WITH CORRECT LINK
+        
+            $body = array(
+                'bpc_data_deletion' => null
+            );
+            $args = array(
+                'headers' => array(
+                'Content-Type'   => 'application/json',
+                ),
+                'body'      => json_encode($body),
+                'method'    => 'PUT'
+            );
+            $result =  wp_remote_request( wp_http_validate_url($url), $args );
+            update_option( 'bpc_data_deletion', null );
+        }
+
+        /* Data Deletion Processing Ends */
+        /* --------------------------------------------------------------------------------------------------------------------------*/ 
+        /*Data Deletion Processing Approved Starts */
+
+        $ids =  get_option( 'bpc_data_deletion_approved' );
+        if(isset($ids) && $ids != ''){
+            $ids = str_replace(' ', '', $ids);
+            // echo 'This -> ' . var_dump($ids);
+            foreach ( $ids as $id ) {
+                $user_info = get_userdata($id);
+                $this_user_email = $user_info->user_email;
+
+                
+                $redacted = new WP_User_Query( array( 'search' => '*'.esc_attr( '@redacted.' ).'*', 'search_columns' => array( 'user_email' ), ) );
+                $users_found = $redacted->get_results();
+                $red_count = 0;
+                if($users_found != []) { foreach ( $users_found as $data ) { $red_count ++; $email = $data->user_email; } }
+                $red_count++;
+                $time_now = time(); 
+                $red_name = 'redacted' . $red_count; 
+                $red_email = $time_now . '@redacted.' . $red_count . '.' . $_SERVER['SERVER_NAME']; 
+                $red_link = 'https://bepopiacompliant.co.za/redacted?count=' . $red_count . '&time=' . $time_now . '&domain=' . $_SERVER['SERVER_NAME']; 
+                $red_ID = substr('0000000000000' . $red_count, -13);
+                $red_IP = '000.000.000.000';
+                
+                // Single occurance only
+                global $wpdb;
+                $wpdb->update( $wpdb->users, ['user_login' => $red_name], ['ID' => $id] );
+                $user_data = wp_update_user( array( 'ID' => $id, 'user_nicename' => $red_name ) );
+                $user_data = wp_update_user( array( 'ID' => $id, 'user_email' => $red_email ) );
+                $user_data = wp_update_user( array( 'ID' => $id, 'user_url' => $red_link ) );
+                $user_data = wp_update_user( array( 'ID' => $id, 'display_name' => $red_name ) );
+
+                update_user_meta( $id, 'nickname', $red_name );
+                update_user_meta( $id, 'first_name', $red_name );
+                update_user_meta( $id, 'last_name', $red_name );
+                update_user_meta( $id, 'description', $red_name );
+                $value = array('', $red_link, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '');               
+                update_user_meta( $id, 'bpc_comms_market_consent', $value );        
+                update_user_meta( $id, 'user_identification_number', $red_ID );
+                update_user_meta( $id, 'other_identification_issue', $red_name );
+                update_user_meta( $id, 'other_identification_type', $red_name );
+                update_user_meta( $id, 'other_identification_number', $red_name );
+
+                
+                // Single occurance only
+                global $wpdb;
+                $table_name = $wpdb->prefix . 'newsletter';
+                $result = $wpdb->get_results("SELECT * from $table_name WHERE email = '$this_user_email'");
+                if(count($result) > 0) {
+                    $wpdb->update( $table_name, array( 'updated' => $time_now ),array('id'=>$id));
+                    $wpdb->update( $table_name, array( 'surname' => $red_name ),array('id'=>$id));
+                    $wpdb->update( $table_name, array( 'sex' => $red_name ),array('id'=>$id));
+                    $wpdb->update( $table_name, array( 'ip' => $red_IP ),array('id'=>$id));
+                    $wpdb->update( $table_name, array( 'geo' => 0 ),array('id'=>$id));
+                    $wpdb->update( $table_name, array( 'country' => $red_name ),array('id'=>$id));
+                    $wpdb->update( $table_name, array( 'region' => $red_name ),array('id'=>$id));
+                    $wpdb->update( $table_name, array( 'city' => $red_name ),array('id'=>$id));
+                    $wpdb->update( $table_name, array( 'bounce_type' => $red_name ),array('id'=>$id));
+                    $wpdb->update( $table_name, array( 'email' => $red_email ),array('id'=>$id));
+                }
+
+                // Multiple occurance possible
+                global $wpdb;
+                $table_name = $wpdb->prefix . 'wpml_mails';
+                $result = $wpdb->get_results("SELECT mail_id from $table_name WHERE `receiver` = '$this_user_email'");
+            
+                if(count($result) > 0) {
+                    foreach($result as $thisId) {
+                        
+                        $wpdb->update( $table_name, array( 'subject' => $red_name ),array('receiver'=>$this_user_email));
+                        $red_mail_body ='<!doctype html><html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width"><title>WP Mail SMTP Test Email</title><style type="text/css">@media only screen and (max-width: 599px) {table.body .container {width: 95% !important;}.header {padding: 15px 15px 12px 15px !important;}.header img {width: 200px !important;height: auto !important;}.content, .aside {padding: 30px 40px 20px 40px !important;}}</style></head><body style="height: 100% !important; width: 100% !important; min-width: 100%; -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; -webkit-font-smoothing: antialiased !important; -moz-osx-font-smoothing: grayscale !important; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #444; font-family: \'Helvetica Neue\',Helvetica,Arial,sans-serif; font-weight: normal; padding: 0; margin: 0; Margin: 0; font-size: 14px; mso-line-height-rule: exactly; line-height: 140%; background-color: #f1f1f1; text-align: center;"><table border="0" cellpadding="0" cellspacing="0" width="100%" height="100%" class="body" style="border-collapse: collapse; border-spacing: 0; vertical-align: top; mso-table-lspace: 0pt; mso-table-rspace: 0pt; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; height: 100% !important; width: 100% !important; min-width: 100%; -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; -webkit-font-smoothing: antialiased !important; -moz-osx-font-smoothing: grayscale !important; background-color: #f1f1f1; color: #444; font-family: \'Helvetica Neue\',Helvetica,Arial,sans-serif; font-weight: normal; padding: 0; margin: 0; Margin: 0; text-align: left; font-size: 14px; mso-line-height-rule: exactly; line-height: 140%;"><tr style="padding: 0; vertical-align: top; text-align: left;"><td align="center" valign="top" class="body-inner wp-mail-smtp" style="word-wrap: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; mso-table-lspace: 0pt; mso-table-rspace: 0pt; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #444; font-family: \'Helvetica Neue\',Helvetica,Arial,sans-serif; font-weight: normal; padding: 0; margin: 0; Margin: 0; font-size: 14px; mso-line-height-rule: exactly; line-height: 140%; text-align: center;"> The user this was sent too requested that their data be deleted oat the folowing timestamp:' . $time_now . '</td></tr></table></body></html>';                                 
+                        $wpdb->update( $table_name, array( 'subject' => $red_name ),array('receiver'=>$this_user_email));
+                        $wpdb->update( $table_name, array( 'message' => $red_mail_body ),array('receiver'=>$this_user_email));
+                        $wpdb->update( $table_name, array( 'attachements' => NULL ),array('receiver'=>$this_user_email));
+                        $wpdb->update( $table_name, array( 'receiver' => $red_email ),array('receiver'=>$this_user_email));
+                    }
+                }
+
+                // Multiple occurance possible
+                global $wpdb;
+                $table_name = $wpdb->prefix . 'wc_customer_lookup';
+                $result[] = $wpdb->get_results("SELECT customer_id from $table_name WHERE `email` = '$this_user_email''''");
+            
+                if(count($result) > 0) {
+                    foreach($result as $thisId) {
+                        
+                        $wpdb->update( $table_name, array( 'username' => $red_name ),array('email'=>$this_user_email));
+                        $wpdb->update( $table_name, array( 'first_name' => $red_name ),array('email'=>$this_user_email));
+                        $wpdb->update( $table_name, array( 'last_name' => $red_name ),array('email'=>$this_user_email));
+                        $wpdb->update( $table_name, array( 'country' => $red_mail_body ),array('email'=>$this_user_email));
+                        $wpdb->update( $table_name, array( 'postcode' => NULL ),array('email'=>$this_user_email));
+                        $wpdb->update( $table_name, array( 'city' => NULL ),array('email'=>$this_user_email));
+                        $wpdb->update( $table_name, array( 'state' => NULL ),array('email'=>$this_user_email));
+                        $wpdb->update( $table_name, array( 'email' => $red_email ),array('email'=>$this_user_email));
+                    }
+                }
+
+                // Multiple occurance possible
+                global $wpdb;
+                $table_name = $wpdb->prefix . 'cartflows_ca_cart_abandonment';
+                $result[] = $wpdb->get_results("SELECT customer_id from $table_name WHERE `email` = '$this_user_email'");
+
+                if(count($result) > 0) {
+                    foreach($result as $thisId) {
+                        $value = array('wcf_billing_company', '', 'wcf_billing_address_1', '', 'wcf_billing_address_2', '', 'wcf_billing_state', '', 'wcf_billing_postcode', '', 'wcf_shipping_first_name', '', 'wcf_shipping_last_name', '', 'wcf_shipping_company', '', 'wcf_shipping_country', '', 'wcf_shipping_address_1', '', 'wcf_shipping_address_2', '', 'wcf_shipping_city', '', 'wcf_shipping_state', '', 'wcf_shipping_postcode', '', 'wcf_order_comments', '', 'wcf_first_name', '', 'wcf_last_name', '', 'wcf_phone_number', '', 'wcf_location', '');               
+                        $wpdb->update( $table_name, array( 'other_fields' => $value ),array('email'=>$this_user_email));
+                        $wpdb->update( $table_name, array( 'email' => $red_email ),array('email'=>$this_user_email));
+                    }
+                }
+
+                // Multiple occurance possible
+                global $wpdb;
+                $table_name = $wpdb->prefix . 'mailchimp_carts';
+                $result[] = $wpdb->get_results("SELECT customer_id from $table_name WHERE `email` = '$this_user_email'");
+
+                if(count($result) > 0) {
+                    foreach($result as $thisId) {
+                        $wpdb->update( $table_name, array( 'email' => $red_email ),array('email'=>$this_user_email));
+                    }
+                }
+
+                if ( is_wp_error( $user_data ) ) {
+                    // There was an error; possibly this user doesn't exist.
+                    echo 'Error.';
+                } else {
+                    // Success!
+                    echo 'User profile updated.';
+                }
+            }
+
+            // Remove from changes on BPC
+            $removeId = get_option( 'bpc_refference' );
+            $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/updateconsentchangedarray/". $removeId . "/");
+        
+            $body = array(
+                'bpc_data_deletion_approved' => null
+            );
+            $args = array(
+                'headers' => array(
+                'Content-Type'   => 'application/json',
+                ),
+                'body'      => json_encode($body),
+                'method'    => 'PUT'
+            );
+            $result =  wp_remote_request( wp_http_validate_url($url), $args );
+            update_option( 'bpc_data_deletion_approved', null );
+        }              
+        /* Data Deletion Processing Approved Ends  */
+    }
+}  
+
+
+
+
+
 
 // adding styles and scripts
 function be_popia_compliant_cookie_enqueue_scripts() {
@@ -2493,7 +2942,6 @@ function be_popia_compliant_cookie_display_cookie_info() {
     $allowed_html = be_popia_compliant_cookie_allowed_html();
 ?>
     <div class="be_popia_compliant-cookie-info-container" style="<?php echo 'background-color: '.esc_attr( $background_color ).'; '.esc_attr( $cookie_info_placemet ).': 0' ?>" id="be_popia_compliant-cookie-info-container">
-       <!-- remove action method!!! -->
         <form method="post" id="cookie-form"> 
             <p class="be_popia_compliant-cookie-info" style="<?php echo 'color: '.esc_attr( $text_color ) ?>"><?php echo wp_kses( $cookie_message, $allowed_html ); ?><span style="font-size:0px">  <?php echo get_option( 'bpc_v');?></span></p>
             <div class="be_popia_compliant-buttons">
@@ -2528,6 +2976,7 @@ function be_popia_compliant_admin_menus() {
 
 add_action('admin_menu', 'be_popia_compliant_admin_menus');
 
+function be_popia_compliant_menu_order( $menu_ord ) {if ( !$menu_ord ) return true; return array('index.php', 'be_popia_compliant', 'separator1', 'edit.php', 'upload.php', 'link-manager.php', 'edit-comments.php', 'edit.php?post_type=page', 'separator2', 'themes.php', 'plugins.php', 'users.php', 'tools.php', 'options-general.php', 'separator-last',);} add_filter( 'custom_menu_order', 'be_popia_compliant_menu_order', 10, 1 ); add_filter( 'menu_order', 'be_popia_compliant_menu_order', 10, 1 );
 
 // adding settings and sections to page in admin menu
 function be_popia_compliant_cookie_add_new_settings() {
@@ -2585,7 +3034,6 @@ function be_popia_compliant_cookie_add_new_settings() {
     add_settings_section( 'be_popia_compliant_cookie_section_1_configuration', 'Configuration', null, 'jl-slug' );  
     // id (Slug-name to identify the section), title, callback, page slug
     add_settings_section( 'be_popia_compliant_cookie_section_2_layout', 'Layout', null, 'jl-slug-2' );
-
     // adding fields for section
     add_settings_field( 'field-1-cookie-message', 'Cookie Message', 'be_popia_compliant_cookie_field_1_callback', 'jl-slug', 'be_popia_compliant_cookie_section_1_configuration' );       
     // id (Slug-name to identify the field), title, callback, slug-name of the settings page on which to show the section, section, args (attr for field)
@@ -2622,8 +3070,7 @@ function be_popia_compliant_cookie_field_3_callback() {
 
 // field 4 - cookie info placement
 function be_popia_compliant_cookie_field_4_callback() {
-    $isChecked = get_option( "be_popia_compliant_cookie-field4-cookie-plugin-placement", 'bottom' );
-    ?>
+    $isChecked = get_option( "be_popia_compliant_cookie-field4-cookie-plugin-placement", 'bottom' );?>
     <input type="radio" name="be_popia_compliant_cookie-field4-cookie-plugin-placement" value="top" <?php echo esc_html( $isChecked ) === 'top' ? "checked" : null ?> /> Top <br><br>
     <input type="radio" name="be_popia_compliant_cookie-field4-cookie-plugin-placement" value="bottom" <?php echo esc_html( $isChecked ) === 'bottom' ? "checked" : null ?> /> Bottom
     <?php
@@ -2711,42 +3158,29 @@ function be_popia_compliant_cookie_page_html_content() {
 function be_popia_compliant_echo_footer() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
-
     $needComms = $wpdb->get_var("SELECT `does_comply` FROM $table_name WHERE id = 2");
-
     $needMarketing = $wpdb->get_var("SELECT `does_comply` FROM $table_name WHERE id = 3");
-
     if($needComms == 1 && $needMarketing == 0) {
-
         $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND (id != 3) AND (id != 59) AND is_active = 1");
         $rowcount = $wpdb->num_rows;
-
         $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND (id != 3) AND (id != 59) AND is_active = 1");
         $rowcount2 = $wpdb->num_rows;
         $rowcount2;
-
     } elseif($needComms == 0 && $needMarketing == 1) {
-
         $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND (id != 2) AND (id != 58) AND is_active = 1");
         $rowcount = $wpdb->num_rows;
-
         $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND (id != 2) AND (id != 58) AND is_active = 1");
         $rowcount2 = $wpdb->num_rows;
         $rowcount2;
-
     } elseif($needComms == 1 && $needMarketing == 1) {
-
         $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND is_active = 1");
         $rowcount = $wpdb->num_rows;
-
         $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND is_active = 1");
         $rowcount2 = $wpdb->num_rows;
         $rowcount2;
-
     } elseif($needMarketing == 0 && $needComms == 0) {
         $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND (id != 2) AND (id != 3) AND (id != 58) AND (id != 59) AND is_active = 1");
         $rowcount = $wpdb->num_rows;
-
         $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND (id != 2) AND (id != 3) AND (id != 58) AND (id != 59) AND is_active = 1");
         $rowcount2 = $wpdb->num_rows;
         $rowcount2;
@@ -2756,7 +3190,6 @@ function be_popia_compliant_echo_footer() {
     update_option('bpc_rowcount2', $rowcount2);
 
     $rowcount = ($rowcount / $rowcount2) * 100;
-
     $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
     $result_api = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 1");
     $result_company = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 2");
@@ -2826,7 +3259,6 @@ function be_popia_compliant_echo_footer() {
                         // }
                         
                         if ( 200 === $response_code ) {
-                            // echo 'body' . $body;
                             $body = json_decode( $body );
 
                             if($body != []) { 
