@@ -163,10 +163,12 @@ A20: If you have a website, that collects any data such as customer emails, tele
     *  To also add the Identification Number.
     *  Also the Type of Identification used and the Country of Issue if this is not a South African ID Number.
 
-*   For PRO Be POPIA Compliant Plugin users:
-    *  To display all the above details in the users table. (This is all managed automatically by the PRO Be POPIA Compliant Plugin)
-    *  Programatically handle Data Requests and send data to authenticated users (with no action by you).
-    *  Programatically handle Data Deletions and redact all personal info for that authenticated user in your database (with no action by you).
+*   For PRO Be POPIA Plugin users:
+    *  To display all the above details in the users table. (This is all managed automatically by the PRO Be POPIA Compliant Plugin).
+    *  Programatically handle Data Requests.
+    *  Authenticate users, then send data to authenticated users (with no action by you).
+    *  Programatically handle Data Deletion Requests.
+    *  Authenticate users, then Redact all personal data for that authenticated user in your database (with no action by you).
 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
