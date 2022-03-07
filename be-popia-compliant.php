@@ -951,7 +951,7 @@ function be_popia_compliant_modify_user_table_row( $row_output, $column_id_attr,
 
                             "timestamp" : timestamp,
                             "consent_link" : consent_link,
-                            "cp" :cp, "cs" :cs, "cw" :cw, "cm" :cm, "ct" :ct, "ce" :ce, "cca" :cca, "ccb" :ccb, "ccc" :ccc,      "mp" :mp, "ms" :ms, "mw" :mw, "mm" :mm, "mt" :mt, "me" :me, "mca" :mca, "mcb" :mcb, "mcc" :mcc,
+                            "cp" :cp, "cs" :cs, "cw" :cw, "cm" :cm, "ct" :ct, "ce" :ce, "cca" :cca, "ccb" :ccb, "ccc" :ccc, "mp" :mp, "ms" :ms, "mw" :mw, "mm" :mm, "mt" :mt, "me" :me, "mca" :mca, "mcb" :mcb, "mcc" :mcc,
                         },
                         success:function(data) {
                             alert(\'Click "OK" or hit "Esc". \n\n Then please wait for page to refresh before selecting another option.\n\n  If not, previous clicks will not be saved!\');
@@ -964,13 +964,14 @@ function be_popia_compliant_modify_user_table_row( $row_output, $column_id_attr,
                 }
         </script>';
     }
-    
     $date_time_format = 'j M, Y H:i';
     $date_format = 'j M, Y';
     $time_format = 'H:i';
         
     $user_output =  get_user_meta($user, 'bpc_comms_market_consent', true);
-       
+    if(! isset($user_output) || strlen($user_output) < 10 ) {
+        $user_output = array('1356998000', '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    } 
     switch ( $column_id_attr ) {
         case 'user_id' :
             return get_the_author_meta( 'ID', $user );
@@ -1153,9 +1154,10 @@ function be_popia_compliant_modify_user_table_row( $row_output, $column_id_attr,
             default:
                 echo '';
             break;
+        }
+        return $row_output;
     }
-    return $row_output;
-}
+
 
 /* Store onclick events when comms or marketing consent is clicked */
 function be_popia_compliant_save_comms_market_val() {
