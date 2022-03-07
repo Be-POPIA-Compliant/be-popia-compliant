@@ -1,63 +1,41 @@
 <?php
 function be_popia_compliant_active_check() {
-    
     if ( isset($_REQUEST) ) {
         global $wpdb;    
-
         $url = "https://py.bepopiacompliant.co.za/api/domain/check_expiry/" . $_SERVER['SERVER_NAME'];
-
         $args = array(
             'headers' => array(
                 'Content-Type' => 'application/json',
             ),
             'body' => array(),
         );
-
         $response = wp_remote_get( $url, $args );
-
         $response_code = wp_remote_retrieve_response_code( $response );
-
         $body = wp_remote_retrieve_body( $response );
-
         if ( 401 === $response_code ) {
             echo "Unauthorized access, You do not seem to be authorised to access this data!";
         }
-
-        // if ( 200 !== $response_code ) {
-        //     echo " Error in pinging API Code:613, Please try again later.";
-        // }
-
         if ( 200 === $response_code ) {
-
             $trim_brackets = trim($body, "[{}]");
-
             $explode = explode(',', $trim_brackets);
             $trim_date = str_replace('"renew_date":', '', $explode[1]);
             $trim_date = str_replace('"', '', $trim_date);
-
             $go_on = str_replace('"is_subscribed":', '', $explode[2]);
-
             $consent_form_complete = str_replace('"consent_form_complete":', '', $explode[3]);
-
             $domain_form_complete = str_replace('"domain_form_complete":', '', $explode[4]);
             $domain_form_complete = str_replace('"', '', $domain_form_complete);
-
             $domain_form_complete = str_replace('"', '', $domain_form_complete);
-
             $other_parties = str_replace('"other_parties":', '', $explode[5]);
             $other_parties = str_replace('"', '', $other_parties);
-
             $trim_date = trim($trim_date, '"');
             $go_on = trim($go_on, '"');
             $date = strtotime($trim_date);
             $date = date('Y-m-d',$date);
-    
             if($date >= date("Y-m-d") && $consent_form_complete == 1 && $domain_form_complete == 1 && ($other_parties != null) || ($other_parties != '') ){
                 if($go_on == 1){
                     global $wpdb;
                     $privacy = '';
                     $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
-
                     $wpdb->update( $table_name, array( 'value' => 0),array('id'=>3)); 
                         echo '<style>
                             .BePopiaCompliant {
@@ -113,99 +91,72 @@ function be_popia_compliant_active_check() {
                                 </div>
                                 <div class="be_popia_compliant_links">
                                         ';
-                                        echo '<a href="' . esc_url( 'https://bepopicompliant.co.za/#/privacy/' . $_SERVER['SERVER_NAME'] ) . '" target="_blank"><span style="white-space:nowrap">PRIVACY POLICY</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url( 'https://manageconsent.co.za/#/main/request/' . $_SERVER['SERVER_NAME'] ) . '" target="_blank"><span style="white-space:nowrap">MANAGE CONSENT</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url( 'https://bepopiacompliant.co.za/#/details/' . $_SERVER['SERVER_NAME'] ) . '" target="_blank"><span style="white-space:nowrap">RESPONSIBLE PARTIES</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://bepopiacompliant.co.za/#/regulator/' . $_SERVER['SERVER_NAME']  . '" target="_blank"><span style="white-space:nowrap">INFORMATION REGULATOR</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' ;
+                                        echo '<a href="' . esc_url( 'https://bepopicompliant.co.za/#/privacy/' . $_SERVER['SERVER_NAME'] ) . '" target="_blank"><span style="white-space:nowrap">PRIVACY POLICY</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url( 'https://manageconsent.co.za/#/main/request/' . $_SERVER['SERVER_NAME'] ) . '" target="_blank"><span style="white-space:nowrap">MANAGE CONSENT</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url( 'https://bepopiacompliant.co.za/#/details/' . $_SERVER['SERVER_NAME'] ) . '" target="_blank"><span style="white-space:nowrap">RESPONSIBLE PARTIES</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://bepopiacompliant.co.za/#/regulator/' . $_SERVER['SERVER_NAME']  . '" target="_blank"><span style="white-space:nowrap">INFORMATION REGULATOR</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 
                                     echo '
                                 </div>
+                                <span style="font-size:0px">';
+                                    echo "BPC REPORT: " . get_option("bpc_v" );
+                                    $has_active_keys = get_option('has_active_keys'); if($has_active_keys == 1) {echo " PRO ";} else {echo " Free ";}
+                                    if(get_option("cron_last_fired_at")) {echo date("d/m/Y H:i:s", get_option("cron_last_fired_at")+ 7200);} else {echo "No Run";}
+                                    if(get_option("be_popia_compliant_cookie-field9-disable-bpc-cookie-banner") != 1 ) {echo " Active ";} else {echo " Deactivated ";} if(is_ssl()) {echo "Has SSL";} else {echo "No SSL";} echo "<a href='bepopiacompliant.co.za'>Be POPIA Complaint</a>";
+                                '</span>
                             </div>
                         </div>';
-
-                } else { 
-
+                } else {
                     global $wpdb;
                     $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
-
                     $wpdb->update( $table_name, array( 'value' => 1),array('id'=>3));
-
                     $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
-
                     $needComms = $wpdb->get_var("SELECT `does_comply` FROM $table_name WHERE id = 2");
-
                     $needMarketing = $wpdb->get_var("SELECT `does_comply` FROM $table_name WHERE id = 3");
-
-
                     if($needComms == 1 && $needMarketing == 0) {
-
                         $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND (id != 3) AND (id != 59) AND is_active = 1");
                         $rowcount = $wpdb->num_rows;
-                
                         $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND (id != 3) AND (id != 59) AND is_active = 1");
                         $rowcount2 = $wpdb->num_rows;
                         $rowcount2;
-                
                     } elseif($needComms == 0 && $needMarketing == 1) {
-                
                         $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND (id != 2) AND (id != 58) AND is_active = 1");
                         $rowcount = $wpdb->num_rows;
-                
                         $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND (id != 2) AND (id != 58) AND is_active = 1");
                         $rowcount2 = $wpdb->num_rows;
                         $rowcount2;
-                
                     } elseif($needComms == 1 && $needMarketing == 1) {
-                
                         $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND is_active = 1");
                         $rowcount = $wpdb->num_rows;
-                
                         $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND is_active = 1");
                         $rowcount2 = $wpdb->num_rows;
                         $rowcount2;
-                
                     } elseif($needMarketing == 0 && $needComms == 0) {
                         $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND (id != 2) AND (id != 3) AND (id != 58) AND (id != 59) AND is_active = 1");
                         $rowcount = $wpdb->num_rows;
-                
                         $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND (id != 2) AND (id != 3) AND (id != 58) AND (id != 59) AND is_active = 1");
                         $rowcount2 = $wpdb->num_rows;
                         $rowcount2;
                     }
-                
-                    update_option('bpc_rowcount', $rowcount);
-                    update_option('bpc_rowcount2', $rowcount2);
-
-                    $rowcount = ($rowcount / $rowcount2) * 100;
-
-
+                    update_option('bpc_rowcount', $rowcount);                     update_option('bpc_rowcount2', $rowcount2);                     $rowcount = ($rowcount / $rowcount2) * 100;
                     $rowcount = sanitize_text_field( get_option('bpc_rowcount') );
                     $rowcount2 = sanitize_text_field( get_option('bpc_rowcount2') );
-
-                    $rowcount = ($rowcount / $rowcount2) * 100;
-
-                    
+                    $rowcount = ($rowcount / $rowcount2) * 100;                   
                     echo '<br>';
                     $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME']);
                     $args = array(
                         'headers' => array(
                             'Content-Type' => 'application/json',
                         ),
-                        'body'    => array(),
+                        'body'array(),
                     );
                     $response = wp_remote_get( $url, $args );
                     $response_code = wp_remote_retrieve_response_code( $response );
-                    $body         = wp_remote_retrieve_body( $response );
+                    $body = wp_remote_retrieve_body( $response );
 
                     if ( 401 === $response_code ) {
                         echo "Unauthorized access";
                     }
 
-                    // if ( 200 !== $response_code ) {
-                    //     echo "Error in pinging API Code:614" . esc_html( $response_code );
-                    // }
-
                     if ( 200 === $response_code ) {
-                    // echo 'body' . $body;
                     $body = json_decode( $body );
-
                         if($body != []){
                             foreach ( $body as $data ) {
                                 $is_approved = $data->is_approved;
@@ -270,6 +221,12 @@ function be_popia_compliant_active_check() {
                                                 <div class="be_popia_compliant_links">
                                                     <a href="' . esc_url( $privacy ).'" target="_blank"><span style="white-space:nowrap">PRIVACY POLICY</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url( $data ) .'" target="_blank"><span style="white-space:nowrap">DATA REQUESTS</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url( $parties ) .'" target="_blank"><span style="white-space:nowrap">RESPONSIBLE PARTIES</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://bepopiacompliant.co.za/information_regulator" target="_blank"><span style="white-space:nowrap">INFORMATION REGULATOR</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                 </div>
+                                                <span style="font-size:0px">';
+                                                    echo "BPC REPORT: " . get_option("bpc_v" );
+                                                    $has_active_keys = get_option('has_active_keys'); if($has_active_keys == 1) {echo " PRO ";} else {echo " Free ";}
+                                                    if(get_option("cron_last_fired_at")) {echo date("d/m/Y H:i:s", get_option("cron_last_fired_at")+ 7200);} else {echo "No Run";}
+                                                    if( get_option("be_popia_compliant_cookie-field9-disable-bpc-cookie-banner") != 1 ) {echo " Active ";} else {echo " Deactivated ";} if(is_ssl()) {echo "Has SSL";} else {echo "No SSL";} echo "<a href='bepopiacompliant.co.za'>Be POPIA Complaint</a>";
+                                                '</span>
                                             </div>
                                         </div>';
                                     }                                
@@ -281,48 +238,37 @@ function be_popia_compliant_active_check() {
             } else {
                 global $wpdb;
                 $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
-            
                 $needComms = $wpdb->get_var("SELECT does_comply FROM $table_name WHERE id = 2");
-            
                 $needMarketing = $wpdb->get_var("SELECT does_comply FROM $table_name WHERE id = 3");
-                
                 if($needComms == 1 && $needMarketing == 0) {
                     $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND (id != 3) AND (id != 59) AND is_active = 1");
                     $rowcount = $wpdb->num_rows;
-            
                     $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND (id != 3) AND (id != 59) AND is_active = 1");
                     $rowcount2 = $wpdb->num_rows;
-            
                 } elseif($needComms == 0 && $needMarketing == 1) {
                     $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND (id != 2) AND (id != 58) AND is_active = 1");
                     $rowcount = $wpdb->num_rows;
-            
                     $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND (id != 2) AND (id != 58) AND is_active = 1");
                     $rowcount2 = $wpdb->num_rows;
-            
                 } elseif($needComms == 1 && $needMarketing == 1) {
                     $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND is_active = 1");
                     $rowcount = $wpdb->num_rows;
-            
                     $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND is_active = 1");
                     $rowcount2 = $wpdb->num_rows;
-            
                 } elseif($needMarketing == 0 && $needComms == 0) {
                     $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND (id != 2) AND (id != 3) AND (id != 58) AND (id != 59) AND is_active = 1");
                     $rowcount = $wpdb->num_rows;
-            
                     $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND (id != 2) AND (id != 3) AND (id != 58) AND (id != 59) AND is_active = 1");
                     $rowcount2 = $wpdb->num_rows;
                 }
                 $rowcounttotal = ($rowcount / $rowcount2) * 100;
-
                     if($rowcounttotal == 100) {
                             $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME']);
                             $args = array(
                                 'headers' => array(
                                     'Content-Type' => 'application/json',
                                 ),
-                                'body'    => array(),
+                                'body' => array(),
                             );
                             $response = wp_remote_get( wp_http_validate_url($url), $args );
                             $response_code = wp_remote_retrieve_response_code( $response );
@@ -331,15 +277,9 @@ function be_popia_compliant_active_check() {
                             if ( 401 === $response_code ) {
                                 echo "Unauthorized access";
                             }
-                            
-                            // if ( 200 !== $response_code ) {
-                            //     echo "Error in pinging API Code:615" . esc_html( $response_code );
-                            // }
 
                             if ( 200 === $response_code ) {
-                                // echo 'body' . $body;
                                 $body = json_decode( $body );
-
                                 if($body != []){
                                     foreach ( $body as $data ) {
                                         $is_approved = $data->is_approved;
@@ -348,7 +288,6 @@ function be_popia_compliant_active_check() {
                                     $privacy = $wpdb->get_var("SELECT content FROM $table_name WHERE id = 6");
                                     $data = $wpdb->get_var("SELECT content FROM $table_name WHERE id = 21");
                                     $parties = $wpdb->get_var("SELECT content FROM $table_name WHERE id = 32");
-
                                     echo '<style>
                                         .BePopiaCompliant {
                                             background-color: whitesmoke;
@@ -404,6 +343,12 @@ function be_popia_compliant_active_check() {
                                             <div class="be_popia_compliant_links">
                                                 <a href="' . esc_url( $privacy ) .'" target="_blank"><span style="white-space:nowrap">PRIVACY POLICY</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url( $data ) .'"target="_blank"><span style="white-space:nowrap">DATA REQUESTS</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url( $parties ) .'" target="_blank"><span style="white-space:nowrap">RESPONSIBLE PARTIES</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://bepopiacompliant.co.za/#/regulator/' . $_SERVER['SERVER_NAME'] . '" target="_blank"><span style="white-space:nowrap">INFORMATION REGULATOR</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                             </div>
+                                            <span style="font-size:0px">';
+                                                echo "BPC REPORT: " . get_option("bpc_v" );
+                                                $has_active_keys = get_option('has_active_keys'); if($has_active_keys == 1) {echo " PRO ";} else {echo " Free ";}
+                                                if(get_option("cron_last_fired_at")) {echo date("d/m/Y H:i:s", get_option("cron_last_fired_at")+ 7200);} else {echo "No Run";}
+                                                if(get_option("be_popia_compliant_cookie-field9-disable-bpc-cookie-banner") != 1 ) {echo " Active ";} else {echo " Deactivated ";} if(is_ssl()) {echo "Has SSL";} else {echo "No SSL";} echo "<a href='bepopiacompliant.co.za'>Be POPIA Complaint</a>";
+                                            '</span>
                                         </div>
                                     </div>';
                                 }
@@ -415,5 +360,4 @@ function be_popia_compliant_active_check() {
         }
     }
 } 
-
 be_popia_compliant_active_check();
