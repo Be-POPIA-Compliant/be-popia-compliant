@@ -2937,7 +2937,7 @@ function be_popia_compliant_cookie_field_9_callback() {
         echo '<span style="margin-left: 20px">Deselect this to use our Cookie Banner</span>';
     } else {
         echo '<input type="checkbox" name="be_popia_compliant_cookie-field9-disable-bpc-cookie-banner" />';
-        echo '<span style="margin-left: 20px">Select this if you preffer to use a diffirent Cookie Banner</span>';
+        echo '<span style="margin-left: 20px">Select this if you preffer to use a diffirent Cookie Banner Plugin</span>';
     }
 }
 
