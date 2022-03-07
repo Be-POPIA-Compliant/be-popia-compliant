@@ -145,7 +145,7 @@ function be_popia_compliant_active_check() {
                         'headers' => array(
                             'Content-Type' => 'application/json',
                         ),
-                        'body'array(),
+                        'body' => array(),
                     );
                     $response = wp_remote_get( $url, $args );
                     $response_code = wp_remote_retrieve_response_code( $response );
