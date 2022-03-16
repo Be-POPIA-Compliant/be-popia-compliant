@@ -96,10 +96,10 @@ function be_popia_compliant_active_check() {
                                     echo '
                                 </div>
                                 <span style="font-size:0px">';
-                                    echo "BPC REPORT: " . get_option("bpc_v" );
+                                    echo "BPC REPORT 4: " . get_option("bpc_v" );
                                     $has_active_keys = get_option('has_active_keys'); if($has_active_keys == 1) {echo " PRO ";} else {echo " Free ";}
                                     if(get_option("cron_last_fired_at")) {echo date("d/m/Y H:i:s", get_option("cron_last_fired_at")+ 7200);} else {echo "No Run";}
-                                    if(get_option("be_popia_compliant_cookie-field9-disable-bpc-cookie-banner") != 1 ) {echo " Active ";} else {echo " Deactivated ";} if(is_ssl()) {echo "Has SSL";} else {echo "No SSL";} echo "<a href='bepopiacompliant.co.za'>Be POPIA Complaint</a>";
+                                    if(get_option("be_popia_compliant_cookie-field9-disable-bpc-cookie-banner") != 1 ) {echo " Active ";} else {echo " Deactivated ";} if(is_ssl()) {echo "Has SSL";} else {echo "No SSL";};
                                 '</span>
                             </div>
                         </div>';
@@ -115,27 +115,26 @@ function be_popia_compliant_active_check() {
                         $rowcount = $wpdb->num_rows;
                         $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND (id != 3) AND (id != 59) AND is_active = 1");
                         $rowcount2 = $wpdb->num_rows;
-                        $rowcount2;
                     } elseif($needComms == 0 && $needMarketing == 1) {
                         $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND (id != 2) AND (id != 58) AND is_active = 1");
                         $rowcount = $wpdb->num_rows;
                         $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND (id != 2) AND (id != 58) AND is_active = 1");
                         $rowcount2 = $wpdb->num_rows;
-                        $rowcount2;
                     } elseif($needComms == 1 && $needMarketing == 1) {
                         $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND is_active = 1");
                         $rowcount = $wpdb->num_rows;
                         $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND is_active = 1");
                         $rowcount2 = $wpdb->num_rows;
-                        $rowcount2;
                     } elseif($needMarketing == 0 && $needComms == 0) {
                         $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND (id != 2) AND (id != 3) AND (id != 58) AND (id != 59) AND is_active = 1");
                         $rowcount = $wpdb->num_rows;
                         $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND (id != 2) AND (id != 3) AND (id != 58) AND (id != 59) AND is_active = 1");
                         $rowcount2 = $wpdb->num_rows;
-                        $rowcount2;
                     }
-                    update_option('bpc_rowcount', $rowcount);                     update_option('bpc_rowcount2', $rowcount2);                     $rowcount = ($rowcount / $rowcount2) * 100;
+                    update_option('bpc_rowcount', $rowcount);
+                    --$rowcount2;
+                    update_option('bpc_rowcount2', $rowcount2);
+                    $rowcount = ($rowcount / $rowcount2) * 100;
                     $rowcount = sanitize_text_field( get_option('bpc_rowcount') );
                     $rowcount2 = sanitize_text_field( get_option('bpc_rowcount2') );
                     $rowcount = ($rowcount / $rowcount2) * 100;                   
@@ -222,10 +221,10 @@ function be_popia_compliant_active_check() {
                                                     <a href="' . esc_url( $privacy ).'" target="_blank"><span style="white-space:nowrap">PRIVACY POLICY</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url( $data ) .'" target="_blank"><span style="white-space:nowrap">DATA REQUESTS</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url( $parties ) .'" target="_blank"><span style="white-space:nowrap">RESPONSIBLE PARTIES</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://bepopiacompliant.co.za/information_regulator" target="_blank"><span style="white-space:nowrap">INFORMATION REGULATOR</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                 </div>
                                                 <span style="font-size:0px">';
-                                                    echo "BPC REPORT: " . get_option("bpc_v" );
+                                                    echo "BPC REPORT 5: " . get_option("bpc_v" );
                                                     $has_active_keys = get_option('has_active_keys'); if($has_active_keys == 1) {echo " PRO ";} else {echo " Free ";}
                                                     if(get_option("cron_last_fired_at")) {echo date("d/m/Y H:i:s", get_option("cron_last_fired_at")+ 7200);} else {echo "No Run";}
-                                                    if( get_option("be_popia_compliant_cookie-field9-disable-bpc-cookie-banner") != 1 ) {echo " Active ";} else {echo " Deactivated ";} if(is_ssl()) {echo "Has SSL";} else {echo "No SSL";} echo "<a href='bepopiacompliant.co.za'>Be POPIA Complaint</a>";
+                                                    if( get_option("be_popia_compliant_cookie-field9-disable-bpc-cookie-banner") != 1 ) {echo " Active ";} else {echo " Deactivated ";} if(is_ssl()) {echo "Has SSL";} else {echo "No SSL";} echo "is_subscribed = 0";
                                                 '</span>
                                             </div>
                                         </div>';
@@ -261,6 +260,7 @@ function be_popia_compliant_active_check() {
                     $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND (id != 2) AND (id != 3) AND (id != 58) AND (id != 59) AND is_active = 1");
                     $rowcount2 = $wpdb->num_rows;
                 }
+                --$rowcount2;
                 $rowcounttotal = ($rowcount / $rowcount2) * 100;
                     if($rowcounttotal == 100) {
                             $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME']);
@@ -344,10 +344,10 @@ function be_popia_compliant_active_check() {
                                                 <a href="' . esc_url( $privacy ) .'" target="_blank"><span style="white-space:nowrap">PRIVACY POLICY</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url( $data ) .'"target="_blank"><span style="white-space:nowrap">DATA REQUESTS</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url( $parties ) .'" target="_blank"><span style="white-space:nowrap">RESPONSIBLE PARTIES</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://bepopiacompliant.co.za/#/regulator/' . $_SERVER['SERVER_NAME'] . '" target="_blank"><span style="white-space:nowrap">INFORMATION REGULATOR</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                             </div>
                                             <span style="font-size:0px">';
-                                                echo "BPC REPORT: " . get_option("bpc_v" );
+                                                echo "BPC REPORT 6: " . get_option("bpc_v" );
                                                 $has_active_keys = get_option('has_active_keys'); if($has_active_keys == 1) {echo " PRO ";} else {echo " Free ";}
                                                 if(get_option("cron_last_fired_at")) {echo date("d/m/Y H:i:s", get_option("cron_last_fired_at")+ 7200);} else {echo "No Run";}
-                                                if(get_option("be_popia_compliant_cookie-field9-disable-bpc-cookie-banner") != 1 ) {echo " Active ";} else {echo " Deactivated ";} if(is_ssl()) {echo "Has SSL";} else {echo "No SSL";} echo "<a href='bepopiacompliant.co.za'>Be POPIA Complaint</a>";
+                                                if(get_option("be_popia_compliant_cookie-field9-disable-bpc-cookie-banner") != 1 ) {echo " Active ";} else {echo " Deactivated ";} if(is_ssl()) {echo "Has SSL";} else {echo "No SSL";};
                                             '</span>
                                         </div>
                                     </div>';

@@ -251,8 +251,9 @@
 }
 
 .be_popia_compliant-cookie-info-container {
-    position: fixed; 
-    z-index: 50; 
+    position: fixed;
+    z-index: 50;
+    left: 0!important;
     width: 100%;
     text-align: center;
     margin: 0;
@@ -432,3 +433,8 @@ input.bpc_down {
     z-index: 1;
 }
 
+#saiderror {
+    color: red;
+    padding: 5px;
+    display: none;
+}

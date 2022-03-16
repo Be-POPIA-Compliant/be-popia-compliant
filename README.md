@@ -1,30 +1,28 @@
 # be-popia-compliant
-POPIA Compliance WordPress Plugin for Websites operating in South Africa.
-
 === Be POPIA Compliant ===
 Contributors: bepopiacompliant
-Tags: POPI, POPIA, POPI Act, BePOPIACompliant, Be POPIA Compliant, Be POPI Compliant, Manage, Consent, Manage Consent, Be, Be POPIA, Be POPI, POPIA Plugin, POPIA WordPress Plugin, POPIA WP Plugin, WP POPIA
+Tags: POPI, POPIA, POPI Act, BePOPIACompliant, Be POPIA Compliant, Be POPI Compliant, Manage, Consent, Manage Consent, Be, Be POPIA, Be POPI, POPIA Plugin, POPIA WordPress Plugin, POPIA WP Plugin, WP POPIA, WooCommerce, WooCommerse
 Requires at least: 5.4
 Tested up to: 5.9.1
 Requires PHP: 7.3
 Stable tag: 1.1.0
 License: License: GPLv2 or later
 
-The only POPIA Compliance plugin, that is NOT JUST a Cookie Banner! For any site that operates in South Africa. *Get your site compliant in as little as 15 minutes (only by using PRO).
+The only POPIA Compliance plugin that is NOT JUST a Cookie Banner! For any site that operates in South Africa. *Get your site compliant in as little as 15 minutes (only by using PRO).
 
 == Description ==
-== What BePOPIA Compliant provide you ==
-The only POPIA Compliance plugin, that is NOT JUST a Cookie Banner! For any site that operates in South Africa. 
-Use Be POPIA COmpliant and ensure your website is 100% POPIA Compliant in as little as 15 minutes.
-We also provide a checklist with all the conditions as per the Protection of Personal Information Act, Act 4 of 2013. If you'd rather read up by your self, please visit https://bepopiacompliant.co.za/popia/act/index.php for the full legislation. Using our PRO Be POPIA Compliant Plugin, you will already be able to receive consent process data requests and data deletion requests without lifting a finger! 
-* Fun Fact: There is not a single mention about cookie banners in the POPIA Act.
+The only POPIA Compliance plugin that is NOT JUST a Cookie Banner! 
+Use Be POPIA Compliant and ensure your website is 100% POPIA Compliant in as little as 15 minutes with PRO.
+We also provide a checklist with all the conditions as per the Protection of Personal Information Act, Act 4 of 2013. If you'd rather read up by yourself, please visit https://bepopiacompliant.co.za/popia/act/index.php for the full legislation. Using our PRO Be POPIA Compliant Plugin, you will already be able to receive consent process data requests and data deletion requests automatically, without any need to intervene! 
 
-NOTE: INSTALLING THIS PLUGIN ALONE DOES NOT MAKE YOUR SITE POPIA COMPLIANT. COOKIES, IS REQUIRED BY GDPR, BUT NOT POPIA. YOU NEED TO ENSURE YOU HAVE COMPLETED EVERY STEP IN THE POPIA CHECKLIST. YES, WE KNOW... IT IS GOING TO TAKE SOME TIME TO GET ALL OF THAT IN ORDER. THAT IS EXACTLY WHY WE OFFER THE PRO VERSION SO THAT YOUR SITE IS COMPLETELY POPIA COMPLIANT IN AS LITTLE AS 15 MINUTES, WITH MINIMAL TO NO FURTHER ACTION FROM YOU IN FUTURE.
+* Fun Fact: There is not a single mention about cookie banners in the POPIA Act, and yet many website owners think that is all they require to be POPIA Compliant.
+
+NOTE: INSTALLING THIS PLUGIN ALONE DOES NOT MAKE YOUR SITE POPIA COMPLIANT. COOKIES, IS REQUIRED BY GDPR, BUT NOT POPIA SINCE THERE IS MUCH MORE TO BE CONSIDERED. YOU NEED TO ENSURE YOU HAVE COMPLETED EVERY STEP IN THE POPIA CHECKLIST. YES, WE KNOW... IT IS GOING TO TAKE SOME TIME TO GET ALL OF THAT IN ORDER. AND THEN YOU STILL HAVE TO PROCESS DATA REQUESTS MANUALLY. THAT IS EXACTLY WHY WE OFFER THE PRO VERSION SO THAT YOUR SITE IS COMPLETELY POPIA COMPLIANT IN AS LITTLE AS 15 MINUTES, WITH MINIMAL TO NO FURTHER ACTION FROM YOU IN FUTURE.
 
 == 3rd Party and External Services ==
 For our plugin to work on your site, we rely on our server to communicate with your plugin. This 3rd party service together with the circumstances under which we make calls are documented herein:
 
-We make calls to our server, using our plugin from your WordPress website. This enables us to perform data requests on your behalf, as well as to send you notifications, and to do certain checks so you get the best we can offer. For your security we have programmed the calls in such a manner, to only allow transmission between sites that contain our plugin and our server with a specific URL only. Each call is signed with your API Key and therefore no unauthorised calls can be made to our plugin.
+We make calls to our server, using our plugin from your WordPress website. This enables us to perform data requests on your behalf, as well as to send you notifications, and to do certain checks so you get the best we have to offer. For your security we have codded the calls in such a manner, to only allow transmission between sites that contain our plugin and our server with a specific URL only. Each call is signed with your API Key and therefore no unauthorised calls can be made to our server, and no calls are ever made to the Be POPIA Plugin on your site. We add a single cronjob via our plugin to run data requests every hour.
 
 Link to service: https://bepopiacompliant.co.za/
 Link to service Privacy Policy: https://bepopiacompliant.co.za/#/privacy/80
@@ -44,33 +42,40 @@ https://py.bepopiacompliant.co.za/api/plugindetails/
 - to indicate when our plugin is installed on your website.
 
 https://py.bepopiacompliant.co.za/api/domain/"server_name"
-- to get data from our database to indicate that you completed the PRO Steps and save it to your database.
+- to get data from our database to indicate that you completed the PRO steps and save it to your database.
 
 https://py.bepopiacompliant.co.za/api/getmessage/
 - to show you any notifications about POPIA updates in your admin panel, that we might need to share.
 
 https://py.bepopiacompliant.co.za/api/plugindetailscheck/“server_name”
-- to show a message if we disapprove of the use of our plugin on your website, especially if we determine that you do not comply with POPIA using the free version, but claims that you are compliant.
+- to show a message if we disapprove of the use of our plugin on your website, especially if we determine that you do not comply with POPIA using the free version, but claims that you are compliant. Misuse of our plugin may result in a suspension after which a thorough inspection will be required to determine whether your plugin should be reinstated. 
+
+These inspections shall be billed at R500 per inspection request before the inspection is initiated. If we have found after any inspection request that your plugin is still not used correctly, we will provide you with a report of all fixes that are required. After fixing those problems, you shall be required to submit a follow-up inspection request and again pay an R500 inspection fee before we do the inspection. When we are satisfied that all the requirements are met and that your site is POPIA Compliant, we shall reinstate your plugin.
+
+Alternatively, you can sign up for the PRO version of BE POPIA Compliant in order to wave the inspection and reactivation costs.
 
 https://py.bepopiacompliant.co.za/api/domainapicheck/$company_key
-- to validate your entered key for using the PRO Version of Be POPIA Compliant Plugin in our database to ensure you are registered with us as a PRO Member.
+- to validate your entered key for using the PRO Version of Be POPIA Compliant in our database to ensure you are registered with us as a Pro Member.
 
 https://py.bepopiacompliant.co.za/api/domain/check_expiry/"server_name"
-- to check whether your PRO Membership has expired on our database.
+- to check whether your PRO Membership is up to date and paid in full.
 
 == Installation ==
-== Install from WordPress Library ==
-Log in to the admin panel of your WordPress website, click on \"plugins\", then again at the top left on \"Add New\".
-Now type \"POPIA\" into the search bar and wait for the plugins to filter. Note that at the date of recording, none of the other plugins provides a fully-fledged solution to POPIA, even though stating it. They merely provide cookie consent options that are only a small portion of the POPI Act requirements and are already included in our plugin. Now click on \"Install Now\". After installation, activate the plugin. Thereafter you will find the heading \"POPIA Compliance\" in the
-left-hand menu.
+Install from WordPress Library
 
-== Install From Website ==
-Follow the following link and download the latest version of the BPC Plugin directly from our website.
-https://bepopiacompliant.co.za/bpc_plugin.zip
+Log in to the admin panel of your WordPress website, click on "plugins", then again at the top left on "Add New".
+Now type "POPIA" into the search bar and wait for the plugins to filter. Note that at the date of recording, none of the other plugins provides any bonified solution to POPIA, even though stating it. They merely provide cookie consent options that are only a small portion of the POPI Act requirements and are already included in our plugin, should you choose to use it. Now click on "Install Now" on the BE POPIA COmpliant Plugin. After installation, activate the plugin. Thereafter you will find the heading "POPIA Compliance" in the left-hand menu under "Dashboard".
+
+Install From Website
+The link on our website will take you to our official Plugin Page on WordPress.
+Alternatively, you can go straight there by visiting: https://wordpress.org/plugins/be-popia-compliant/
+
+Click on the download button to download the latest official zipped file of our plugin. Now log in to the admin panel of your WordPress website, click on "plugins", then again at the top left on "Add New". Thereafter click on "Upload Plugin" and select or drag and drop the file you just downloaded.
+After installation, activate the plugin. Thereafter you will find the heading "POPIA Compliance" in the left-hand menu under "Dashboard".
 
 == Frequently Asked Questions ==
 Q1: What is a cookie anyway? 
-A1: A cookie is a digital record, (text files with small pieces of data), stored on your computer, or better, in your browser. This is used to track, personalise and save information about each user\'s session. Any data can be stored and retrieved from a cookie. It is up to the developer of the site or system what goes in there. Cookies let websites remember you, your website logins, shopping carts and much more information. But they can also be a treasure trove of your private information for criminals to spy on.
+A1: A cookie is a digital record, (text files with small pieces of data), stored on your computer, or better, in your browser. This is used to track, personalise and save information about each user's session. Any data can be stored and retrieved from a cookie. It is up to the developer of the site or system what goes in there. Cookies let websites remember you, your website logins, shopping carts and much more information. But they can also be a treasure trove of your private information for criminals to spy on.
 This being said, having a Cookie notice or giving consent to having cookies stored in your browser, is but one small segment of the many regulations to be implemented to Be POPIA compliant.
 
 Q2: What is POPIA?
@@ -89,14 +94,14 @@ A5: According to the POPI Act, if you have a filing system, on paper or digital,
 Q6: I am running a small online business on the side as a sole proprietor can I be prosecuted?
 A6: Yes, unfortunately, you are directly liable and may be fined or may end up in prison or both. We suggest you register a company to protect yourself from any unforeseen judgements. You will still be held liable, but there is a small barrier between owners of a company and the company, since the company if registered is seen as a juristic person.
 
-Q7: What happens if we don\'t comply with POPIA?
+Q7: What happens if we don't comply with POPIA?
 A7: There are significant consequences for non-compliance, including up to R10 million rands in fines or up to 10 years in prison, or both.
 
 Q8: What is considered personal information?
 A8: Personal information is any information about an identifiable living, natural person or a juristic person including but not limited to race, gender, sex, sexual orientation, marital status, nationality, age, physical or mental health, disability, language, education, any data relating to medical, financial or employment records, ID number, email address, physical or postal address, location info, phone numbers, blood type or biometric data, personal opinions or references, private or confidential correspondence or even views or opinions of another person about you.
 
 Q9: What is a data subject?
-A9: Any person, a living natural person, or a juristic person, that\'s data is being processed.
+A9: Any person, a living natural person, or a juristic person, that's data is being processed.
 
 Q10: What is generally considered a breach of POPIA? 
 A10: The following is the common breaches:
@@ -108,7 +113,7 @@ A10: The following is the common breaches:
 - Processing special personal information without there being a necessity
 
 Q11: I am a visitor to the site, should I be somehow compliant? 
-A11: No, the POPI Act is there for your safety. The regulations imposed by POPIA, all act as safeguards so that each users info gets looked after and is not recklessly being utilised in such a manner that your information may fall into the hands of unauthorised persons. Therefore, it is in your interest to insist on signing a consent form, so you can manage your consent by limiting the data being collected and disseminated.
+A11: No, the POPI Act is there for your safety. The regulations imposed by POPIA, all act as safeguards so that each user's info gets looked after and is not recklessly being utilised in such a manner that your information may fall into the hands of unauthorised persons. Therefore, it is in your interest to insist on signing a consent form, so you can manage your consent by limiting the data being collected and disseminated.
 
 Q12: How do I register my information officer with the regulator?
 A12: A responsible party should register their information officer and deputy information officer if relevant on the Information Regulator Registration Portal.
@@ -146,60 +151,59 @@ A20: If you have a website, that collects any data such as customer emails, tele
 
 
 == Screenshots ==
-1. Be POPIA Compliant (BPC) | Dashboard - Gives you a brief overview of the BPC plugin.
+1. Be POPIA Compliant (BPC) | Dashboard - This gives you a brief overview of the BPC plugin.
 2. Be POPIA Compliant (BPC) | Checklist - Complete all these instructions and tick them as you complete them.
 3. Be POPIA Compliant (BPC) | Cookie Settings - Customize your Cookie Notice Banner to match your brand.
-4. A Cookie Consent Banner will appear for your visitors to accept the use of cookies.
-5. Once Cookie Consent was given, and your site is compliant, the POPIA Compliance banner will be posted to the bottom of your site pages.
 
 == Changelog ==
 
 = 1.1.0 =
 * Added the following functionality:
-
 *   For free plugin users: 
     *  To be able to add their user preferences to each user.
-    *  To upload consentforms and then save the generated link for each user in the user settings.
+    *  To upload consent forms and then save the generated link for each user in the user settings.
     *  To also add the Identification Number.
     *  Also the Type of Identification used and the Country of Issue if this is not a South African ID Number.
-
 *   For PRO Be POPIA Plugin users:
-    *  To display all the above details in the users table. (This is all managed automatically by the PRO Be POPIA Compliant Plugin).
-    *  Programatically handle Data Requests.
+    *  To display all the above details in the users' table. (This is all managed automatically by the PRO Be POPIA Compliant Plugin).
+    *  Programmatically handle Data Requests.
     *  Authenticate users, then send data to authenticated users (with no action by you).
-    *  Programatically handle Data Deletion Requests.
+    *  Programmatically handle Data Deletion Requests.
     *  Authenticate users, then Redact all personal data for that authenticated user in your database (with no action by you).
+    *  Added basic support for WooCommerce - to request consent when registering, or on checkout.
 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
 = 1.0.17 =
 * Fixed - Free banner disappears when registering on BPC Website without company info.
 
+
 = 1.0.16 =
 * Fixed Calculation proplem on Checklist.
+
 
 = 1.0.15 =
 * Added Hidden Version number for easier debugging.
 
+
 = 1.0.14 =
 * Fixed file not found in some instances
 
+
 = 1.0.13 =
-* Tested compatibality for WordPress 5.9.
+* Tested compatibility for WordPress 5.9.
 * Added Links to Main Plugin Menu for ease of navigation.
 
-= 1.0.12 =
 
+= 1.0.12 =
 * Fix - Error in pinging API.
 * Fix - Can’t activate plugin: Fatal Error
 * Fix - Simplified API Call to improve performance
 
 
 = 1.0.1 =
-
 * Added functionality on PRO for emails to be sent for collecting consent once a user registers on your site (Ensure you ask for email as usernames)
 
 
 = 1.0.0 =
-
 * Initial Be POPIA Compliant Plugin
