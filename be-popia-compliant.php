@@ -554,7 +554,7 @@ function be_popiaCompliant_admin_registration_form($operation)
     }
 
     $user_identification_number = !empty($_POST['user_identification_number']) ? ($_POST['user_identification_number']) : 0; ?>
-    <h3><?php esc_html_e('Personal Information for POPIA Purposes', 'be_popiaCompliant'); ?></h3>
+    <h3><?php esc_html_e('Personal Information for POPIA Purposesw', 'be_popiaCompliant'); ?></h3>
 
     <table class="form-table">
         <tr>
