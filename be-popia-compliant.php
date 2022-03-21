@@ -3,7 +3,7 @@
     Plugin Name: Be POPIA Compliant & Optional Cookie Banner
     Plugin URI: https://bepopiacompliant.co.za
     Description: The only POPIA Compliance plugin, that is NOT JUST a Cookie Banner! That enables your clients to Manage Consent. Get your site compliant in as little as 15 minutes.
-    Version: 1.1.1
+    Version: 1.1.2
     Author: Web-X | For Everything Web | South Africa
     Author URI: https://web-x.co.za/
     License: GPLv2 or later
@@ -45,12 +45,11 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-update_option('bpc_v', '1.1.1');
+update_option('bpc_v', '1.1.2');
 
 /* Enqueue scripts*/
 function be_popia_compliant_user_scripts() {
     $plugin_url = wp_http_validate_url(plugin_dir_url( __FILE__ ));
-
     wp_enqueue_style( 'style',  $plugin_url . "styles.css");
 }
 
@@ -58,9 +57,8 @@ add_action( 'admin_print_styles', 'be_popia_compliant_user_scripts' );
 
 function theme_name_scripts() {
     $plugin_url = wp_http_validate_url(plugin_dir_url(__FILE__));
- 
-  wp_enqueue_script( 'ValidateSAID', $plugin_url . 'includes/js/be_popia_compliant_validation_script.js', array('jquery'), '1.0.0', true );
-  wp_enqueue_script( 'ValidateBillSAID', $plugin_url . 'includes/js/be_popia_compliant_validation_script_bill.js', array('jquery'), '1.0.0', true );
+    wp_enqueue_script( 'ValidateSAID', $plugin_url . 'includes/js/be_popia_compliant_validation_script.js', array('jquery'), '1.1.2', true );
+    wp_enqueue_script( 'ValidateBillSAID', $plugin_url . 'includes/js/be_popia_compliant_validation_script_bill.js', array('jquery'), '1.1.2', true );
 }
 
 add_action( 'wp_enqueue_scripts', 'theme_name_scripts' );
