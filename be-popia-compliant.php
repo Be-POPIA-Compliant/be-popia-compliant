@@ -3012,129 +3012,182 @@ function bpc_popia_data_processing()
             update_option('bpc_data_request', null);
         } /* Data Request Processing Ends  */
     }
-}
-/*Data Deletion Processing Approved Starts */
-$ids = get_option('bpc_data_deletion_approved');
-if (isset($ids) && $ids != '') {
-    $ids = str_replace(' ', '', $ids);
-    foreach ($ids as $id) {
-        $data = get_userdata($id);
-        $this_user_email = $data->user_email;
-        $consent_domain_id = get_option('this_domain_identity');
-        $this_user_name = $data->display_name;
-        $bpc_ref = get_option('bpc_refference');
-        $redacted = new WP_User_Query(array('search' => '*' . esc_attr('@redacted.') . '*', 'search_columns' => array('user_email'),));
-        $users_found = $redacted->get_results();
-        $red_count = 0;
-        if ($users_found != []) {
-            foreach ($users_found as $data) {
-                $red_count++;
-                $email = $data->user_email;
+
+    /*Data Deletion Processing Approved Starts */
+    $ids = get_option('bpc_data_deletion_approved');
+    if (isset($ids) && $ids != '') {
+        $ids = str_replace(' ', '', $ids);
+        foreach ($ids as $id) {
+            $data = get_userdata($id);
+            $this_user_email = $data->user_email;
+            $consent_domain_id = get_option('this_domain_identity');
+            $this_user_name = $data->display_name;
+            $bpc_ref = get_option('bpc_refference');
+            $redacted = new WP_User_Query(array('search' => '*' . esc_attr('@redacted.') . '*', 'search_columns' => array('user_email'),));
+            $users_found = $redacted->get_results();
+            $red_count = 0;
+            if ($users_found != []) {
+                foreach ($users_found as $data) {
+                    $red_count++;
+                    $email = $data->user_email;
+                }
+            }
+            $red_count++;
+            $time_now = time();
+            $red_name = 'redacted' . $red_count;
+            $red_email = $time_now . '@redacted.' . $red_count . '.' . $_SERVER['SERVER_NAME'];
+            $red_link = 'https://redacted.bepopiacompliant.co.za/redacted.php?count=' . $red_count . '&time=' . $time_now . '&domain=' . $_SERVER['SERVER_NAME'];
+            $red_ID = substr('0000000000000' . $red_count, -13);
+            $red_IP = '000.000.000.000';
+            // Single occurance only
+            global $wpdb;
+            $wpdb->update($wpdb->users, ['user_login' => $red_name], ['ID' => $id]);
+            $user_data = wp_update_user(array('ID' => $id, 'user_nicename' => $red_name));
+            $user_data = wp_update_user(array('ID' => $id, 'user_email' => $red_email));
+            $user_data = wp_update_user(array('ID' => $id, 'user_url' => $red_link));
+            $user_data = wp_update_user(array('ID' => $id, 'display_name' => $red_name));
+            update_user_meta($id, 'nickname', $red_name);
+            update_user_meta($id, 'first_name', $red_name);
+            update_user_meta($id, 'last_name', $red_name);
+            update_user_meta($id, 'description', $red_name);
+            $value = array('', $red_link, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '');
+            update_user_meta($id, 'bpc_comms_market_consent', $value);
+            update_user_meta($id, 'user_identification_number', $red_ID);
+            update_user_meta($id, 'other_identification_issue', $red_name);
+            update_user_meta($id, 'other_identification_type', $red_name);
+            update_user_meta($id, 'other_identification_number', $red_name);
+            // Single occurance only
+            global $wpdb;
+            $table_name = $wpdb->prefix . 'newsletter';
+            $result = $wpdb->get_results("SELECT * from $table_name WHERE email = '$this_user_email'");
+            if (count($result) > 0) {
+                $wpdb->update($table_name, array('updated' => $time_now), array('id' => $id));
+                $wpdb->update($table_name, array('surname' => $red_name), array('id' => $id));
+                $wpdb->update($table_name, array('sex' => $red_name), array('id' => $id));
+                $wpdb->update($table_name, array('ip' => $red_IP), array('id' => $id));
+                $wpdb->update($table_name, array('geo' => 0), array('id' => $id));
+                $wpdb->update($table_name, array('country' => $red_name), array('id' => $id));
+                $wpdb->update($table_name, array('region' => $red_name), array('id' => $id));
+                $wpdb->update($table_name, array('city' => $red_name), array('id' => $id));
+                $wpdb->update($table_name, array('bounce_type' => $red_name), array('id' => $id));
+                $wpdb->update($table_name, array('email' => $red_email), array('id' => $id));
+            }
+            // Multiple occurance possible
+            global $wpdb;
+            $table_name = $wpdb->prefix . 'wpml_mails';
+            $result = $wpdb->get_results("SELECT mail_id from $table_name WHERE `receiver` = '$this_user_email'");
+            if (count($result) > 0) {
+                foreach ($result as $thisId) {
+                    $wpdb->update($table_name, array('subject' => $red_name), array('receiver' => $this_user_email));
+                    $red_mail_body = '<!doctype html><html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width"><title>WP Mail SMTP Test Email</title><style type="text/css">@media only screen and (max-width: 599px) {table.body .container {width: 95% !important;}.header {padding: 15px 15px 12px 15px !important;}.header img {width: 200px !important;height: auto !important;}.content, .aside {padding: 30px 40px 20px 40px !important;}}</style></head><body style="height: 100% !important; width: 100% !important; min-width: 100%; -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; -webkit-font-smoothing: antialiased !important; -moz-osx-font-smoothing: grayscale !important; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #444; font-family: \'Helvetica Neue\',Helvetica,Arial,sans-serif; font-weight: normal; padding: 0; margin: 0; Margin: 0; font-size: 14px; mso-line-height-rule: exactly; line-height: 140%; background-color: #f1f1f1; text-align: center;"><table border="0" cellpadding="0" cellspacing="0" width="100%" height="100%" class="body" style="border-collapse: collapse; border-spacing: 0; vertical-align: top; mso-table-lspace: 0pt; mso-table-rspace: 0pt; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; height: 100% !important; width: 100% !important; min-width: 100%; -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; -webkit-font-smoothing: antialiased !important; -moz-osx-font-smoothing: grayscale !important; background-color: #f1f1f1; color: #444; font-family: \'Helvetica Neue\',Helvetica,Arial,sans-serif; font-weight: normal; padding: 0; margin: 0; Margin: 0; text-align: left; font-size: 14px; mso-line-height-rule: exactly; line-height: 140%;"><tr style="padding: 0; vertical-align: top; text-align: left;"><td align="center" valign="top" class="body-inner wp-mail-smtp" style="word-wrap: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; mso-table-lspace: 0pt; mso-table-rspace: 0pt; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #444; font-family: \'Helvetica Neue\',Helvetica,Arial,sans-serif; font-weight: normal; padding: 0; margin: 0; Margin: 0; font-size: 14px; mso-line-height-rule: exactly; line-height: 140%; text-align: center;"> The user this was sent too requested that their data be deleted oat the folowing timestamp:' . $time_now . '</td></tr></table></body></html>';
+                    $wpdb->update($table_name, array('subject' => $red_name), array('receiver' => $this_user_email));
+                    $wpdb->update($table_name, array('message' => $red_mail_body), array('receiver' => $this_user_email));
+                    $wpdb->update($table_name, array('attachements' => NULL), array('receiver' => $this_user_email));
+                    $wpdb->update($table_name, array('receiver' => $red_email), array('receiver' => $this_user_email));
+                }
+            }
+            // Multiple occurance possible
+            global $wpdb;
+            $table_name = $wpdb->prefix . 'wc_customer_lookup';
+            $result[] = $wpdb->get_results("SELECT customer_id from $table_name WHERE `email` = '$this_user_email''''");
+            if (count($result) > 0) {
+                foreach ($result as $thisId) {
+                    $wpdb->update($table_name, array('username' => $red_name), array('email' => $this_user_email));
+                    $wpdb->update($table_name, array('first_name' => $red_name), array('email' => $this_user_email));
+                    $wpdb->update($table_name, array('last_name' => $red_name), array('email' => $this_user_email));
+                    $wpdb->update($table_name, array('country' => $red_name), array('email' => $this_user_email));
+                    $wpdb->update($table_name, array('postcode' => '0000'), array('email' => $this_user_email));
+                    $wpdb->update($table_name, array('city' => $red_name), array('email' => $this_user_email));
+                    $wpdb->update($table_name, array('state' => $red_name), array('email' => $this_user_email));
+                    $wpdb->update($table_name, array('email' => $red_email), array('email' => $this_user_email));
+                }
+            }
+            // Multiple occurance possible
+            global $wpdb;
+            $table_name = $wpdb->prefix . 'cartflows_ca_cart_abandonment';
+            $result[] = $wpdb->get_results("SELECT customer_id from $table_name WHERE `email` = '$this_user_email'");
+            if (count($result) > 0) {
+                foreach ($result as $thisId) {
+                    $value = array('wcf_billing_company', '', 'wcf_billing_address_1', '', 'wcf_billing_address_2', '', 'wcf_billing_state', '', 'wcf_billing_postcode', '', 'wcf_shipping_first_name', '', 'wcf_shipping_last_name', '', 'wcf_shipping_company', '', 'wcf_shipping_country', '', 'wcf_shipping_address_1', '', 'wcf_shipping_address_2', '', 'wcf_shipping_city', '', 'wcf_shipping_state', '', 'wcf_shipping_postcode', '', 'wcf_order_comments', '', 'wcf_first_name', '', 'wcf_last_name', '', 'wcf_phone_number', '', 'wcf_location', '');
+                    $wpdb->update($table_name, array('other_fields' => $value), array('email' => $this_user_email));
+                    $wpdb->update($table_name, array('email' => $red_email), array('email' => $this_user_email));
+                }
+            }
+            // Multiple occurance possible
+            global $wpdb;
+            $table_name = $wpdb->prefix . 'mailchimp_carts';
+            $result[] = $wpdb->get_results("SELECT customer_id from $table_name WHERE `email` = '$this_user_email'");
+            if (count($result) > 0) {
+                foreach ($result as $thisId) {
+                    $wpdb->update($table_name, array('email' => $red_email), array('email' => $this_user_email));
+                }
+            }
+            if (is_wp_error($user_data)) {
+                // There was an error; possibly this user doesn't exist.
+                echo 'Error.';
+            } else {
+                // Success!
+                echo 'User profile updated.';
+            }
+            //  Now use the opportunity to notify the user that their data had been redacted, then repeat for next person if applicable
+            $url  = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/deleteddata/");
+            $body = array(
+                'name' => $this_user_name,
+                'email' => $this_user_email,
+                'domain_id' => $consent_domain_id,
+            );
+            $args = array(
+                'method' => 'PUT',
+                'timeout' => 45,
+                'sslverify' => false,
+                'headers' => array(
+                    'Content-Type' => 'application/json',
+                ),
+                'body' => json_encode($body),
+            );
+            $request = wp_remote_post(wp_http_validate_url($url), $args);
+            if (is_wp_error($request) || wp_remote_retrieve_response_code($request) != 200) {
+                error_log(print_r($request, true));
             }
         }
-        $red_count++;
-        $time_now = time();
-        $red_name = 'redacted' . $red_count;
-        $red_email = $time_now . '@redacted.' . $red_count . '.' . $_SERVER['SERVER_NAME'];
-        $red_link = 'https://redacted.bepopiacompliant.co.za/redacted.php?count=' . $red_count . '&time=' . $time_now . '&domain=' . $_SERVER['SERVER_NAME'];
-        $red_ID = substr('0000000000000' . $red_count, -13);
-        $red_IP = '000.000.000.000';
-        // Single occurance only
-        global $wpdb;
-        $wpdb->update($wpdb->users, ['user_login' => $red_name], ['ID' => $id]);
-        $user_data = wp_update_user(array('ID' => $id, 'user_nicename' => $red_name));
-        $user_data = wp_update_user(array('ID' => $id, 'user_email' => $red_email));
-        $user_data = wp_update_user(array('ID' => $id, 'user_url' => $red_link));
-        $user_data = wp_update_user(array('ID' => $id, 'display_name' => $red_name));
-        update_user_meta($id, 'nickname', $red_name);
-        update_user_meta($id, 'first_name', $red_name);
-        update_user_meta($id, 'last_name', $red_name);
-        update_user_meta($id, 'description', $red_name);
-        $value = array('', $red_link, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '');
-        update_user_meta($id, 'bpc_comms_market_consent', $value);
-        update_user_meta($id, 'user_identification_number', $red_ID);
-        update_user_meta($id, 'other_identification_issue', $red_name);
-        update_user_meta($id, 'other_identification_type', $red_name);
-        update_user_meta($id, 'other_identification_number', $red_name);
-        // Single occurance only
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'newsletter';
-        $result = $wpdb->get_results("SELECT * from $table_name WHERE email = '$this_user_email'");
-        if (count($result) > 0) {
-            $wpdb->update($table_name, array('updated' => $time_now), array('id' => $id));
-            $wpdb->update($table_name, array('surname' => $red_name), array('id' => $id));
-            $wpdb->update($table_name, array('sex' => $red_name), array('id' => $id));
-            $wpdb->update($table_name, array('ip' => $red_IP), array('id' => $id));
-            $wpdb->update($table_name, array('geo' => 0), array('id' => $id));
-            $wpdb->update($table_name, array('country' => $red_name), array('id' => $id));
-            $wpdb->update($table_name, array('region' => $red_name), array('id' => $id));
-            $wpdb->update($table_name, array('city' => $red_name), array('id' => $id));
-            $wpdb->update($table_name, array('bounce_type' => $red_name), array('id' => $id));
-            $wpdb->update($table_name, array('email' => $red_email), array('id' => $id));
-        }
-        // Multiple occurance possible
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'wpml_mails';
-        $result = $wpdb->get_results("SELECT mail_id from $table_name WHERE `receiver` = '$this_user_email'");
-        if (count($result) > 0) {
-            foreach ($result as $thisId) {
-                $wpdb->update($table_name, array('subject' => $red_name), array('receiver' => $this_user_email));
-                $red_mail_body = '<!doctype html><html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width"><title>WP Mail SMTP Test Email</title><style type="text/css">@media only screen and (max-width: 599px) {table.body .container {width: 95% !important;}.header {padding: 15px 15px 12px 15px !important;}.header img {width: 200px !important;height: auto !important;}.content, .aside {padding: 30px 40px 20px 40px !important;}}</style></head><body style="height: 100% !important; width: 100% !important; min-width: 100%; -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; -webkit-font-smoothing: antialiased !important; -moz-osx-font-smoothing: grayscale !important; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #444; font-family: \'Helvetica Neue\',Helvetica,Arial,sans-serif; font-weight: normal; padding: 0; margin: 0; Margin: 0; font-size: 14px; mso-line-height-rule: exactly; line-height: 140%; background-color: #f1f1f1; text-align: center;"><table border="0" cellpadding="0" cellspacing="0" width="100%" height="100%" class="body" style="border-collapse: collapse; border-spacing: 0; vertical-align: top; mso-table-lspace: 0pt; mso-table-rspace: 0pt; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; height: 100% !important; width: 100% !important; min-width: 100%; -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; -webkit-font-smoothing: antialiased !important; -moz-osx-font-smoothing: grayscale !important; background-color: #f1f1f1; color: #444; font-family: \'Helvetica Neue\',Helvetica,Arial,sans-serif; font-weight: normal; padding: 0; margin: 0; Margin: 0; text-align: left; font-size: 14px; mso-line-height-rule: exactly; line-height: 140%;"><tr style="padding: 0; vertical-align: top; text-align: left;"><td align="center" valign="top" class="body-inner wp-mail-smtp" style="word-wrap: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; mso-table-lspace: 0pt; mso-table-rspace: 0pt; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #444; font-family: \'Helvetica Neue\',Helvetica,Arial,sans-serif; font-weight: normal; padding: 0; margin: 0; Margin: 0; font-size: 14px; mso-line-height-rule: exactly; line-height: 140%; text-align: center;"> The user this was sent too requested that their data be deleted oat the folowing timestamp:' . $time_now . '</td></tr></table></body></html>';
-                $wpdb->update($table_name, array('subject' => $red_name), array('receiver' => $this_user_email));
-                $wpdb->update($table_name, array('message' => $red_mail_body), array('receiver' => $this_user_email));
-                $wpdb->update($table_name, array('attachements' => NULL), array('receiver' => $this_user_email));
-                $wpdb->update($table_name, array('receiver' => $red_email), array('receiver' => $this_user_email));
-            }
-        }
-        // Multiple occurance possible
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'wc_customer_lookup';
-        $result[] = $wpdb->get_results("SELECT customer_id from $table_name WHERE `email` = '$this_user_email''''");
-        if (count($result) > 0) {
-            foreach ($result as $thisId) {
-                $wpdb->update($table_name, array('username' => $red_name), array('email' => $this_user_email));
-                $wpdb->update($table_name, array('first_name' => $red_name), array('email' => $this_user_email));
-                $wpdb->update($table_name, array('last_name' => $red_name), array('email' => $this_user_email));
-                $wpdb->update($table_name, array('country' => $red_name), array('email' => $this_user_email));
-                $wpdb->update($table_name, array('postcode' => '0000'), array('email' => $this_user_email));
-                $wpdb->update($table_name, array('city' => $red_name), array('email' => $this_user_email));
-                $wpdb->update($table_name, array('state' => $red_name), array('email' => $this_user_email));
-                $wpdb->update($table_name, array('email' => $red_email), array('email' => $this_user_email));
-            }
-        }
-        // Multiple occurance possible
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'cartflows_ca_cart_abandonment';
-        $result[] = $wpdb->get_results("SELECT customer_id from $table_name WHERE `email` = '$this_user_email'");
-        if (count($result) > 0) {
-            foreach ($result as $thisId) {
-                $value = array('wcf_billing_company', '', 'wcf_billing_address_1', '', 'wcf_billing_address_2', '', 'wcf_billing_state', '', 'wcf_billing_postcode', '', 'wcf_shipping_first_name', '', 'wcf_shipping_last_name', '', 'wcf_shipping_company', '', 'wcf_shipping_country', '', 'wcf_shipping_address_1', '', 'wcf_shipping_address_2', '', 'wcf_shipping_city', '', 'wcf_shipping_state', '', 'wcf_shipping_postcode', '', 'wcf_order_comments', '', 'wcf_first_name', '', 'wcf_last_name', '', 'wcf_phone_number', '', 'wcf_location', '');
-                $wpdb->update($table_name, array('other_fields' => $value), array('email' => $this_user_email));
-                $wpdb->update($table_name, array('email' => $red_email), array('email' => $this_user_email));
-            }
-        }
-        // Multiple occurance possible
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'mailchimp_carts';
-        $result[] = $wpdb->get_results("SELECT customer_id from $table_name WHERE `email` = '$this_user_email'");
-        if (count($result) > 0) {
-            foreach ($result as $thisId) {
-                $wpdb->update($table_name, array('email' => $red_email), array('email' => $this_user_email));
-            }
-        }
-        if (is_wp_error($user_data)) {
-            // There was an error; possibly this user doesn't exist.
-            echo 'Error.';
-        } else {
-            // Success!
-            echo 'User profile updated.';
-        }
-        //  Now use the opportunity to notify the user that their data had been redacted, then repeat for next person if applicable
-        $url  = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/deleteddata/");
+        // Remove from changes on BPC
+        $removeId = get_option('bpc_refference');
+        $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/updateconsentchangedarray/" . $removeId . "/");
         $body = array(
-            'name' => $this_user_name,
-            'email' => $this_user_email,
-            'domain_id' => $consent_domain_id,
+            'data_deletion_approved' => null
+        );
+        $args = array(
+            'headers' => array(
+                'Content-Type'   => 'application/json',
+            ),
+            'body' => json_encode($body),
+            'method' => 'PUT'
+        );
+        $result =  wp_remote_request(wp_http_validate_url($url), $args);
+        update_option('bpc_data_deletion_approved', null);
+    }
+    /* Data Deletion Processing Approved Ends  */
+    /* --------------------------------------------------------------------------------------------------------------------------*/
+    /*Data Deletion Processing Requests Starts*/
+    $ids =  get_option('bpc_data_deletion');
+    if (isset($ids) && $ids != '') {
+        $data_to_send = '[';
+        foreach ($ids as $id) {
+            $id = str_replace(' ', '', $id);
+            $data = get_userdata($id);
+            $user_email = $data->user_email;
+            $consent_domain_id = get_option('this_domain_identity');
+            $data_to_send = $data_to_send . '{' . $id . ', ' . $consent_domain_id . ', ' . $user_email . '}, ';
+        }
+        $data_to_send = $data_to_send . ']';
+        $data_to_send = str_replace('}, ]', '}]', $data_to_send);
+        $data_to_send = str_replace('[{', '', $data_to_send);
+        $data_to_send = str_replace('}]', '', $data_to_send);
+        $bpc_ref = get_option('bpc_refference');
+        //  Now use the opportunity to post this collected data to the BPC Portal for further processing, then repeat for next person if applicable
+        $url  = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/datadeletewp/" . $bpc_ref . "/");
+        $body = array(
+            'data' => $data_to_send
         );
         $args = array(
             'method' => 'PUT',
@@ -3149,78 +3202,25 @@ if (isset($ids) && $ids != '') {
         if (is_wp_error($request) || wp_remote_retrieve_response_code($request) != 200) {
             error_log(print_r($request, true));
         }
+        // Remove from changes on BPC
+        $removeId = get_option('bpc_refference');
+        $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/updateconsentchangedarray/" . $removeId . "/");
+        $body = array(
+            'data_deletion' => null
+        );
+        $args = array(
+            'headers' => array(
+                'Content-Type' => 'application/json',
+            ),
+            'body' => json_encode($body),
+            'method' => 'PUT'
+        );
+        $result = wp_remote_request(wp_http_validate_url($url), $args);
+        update_option('bpc_data_deletion', null);
     }
-    // Remove from changes on BPC
-    $removeId = get_option('bpc_refference');
-    $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/updateconsentchangedarray/" . $removeId . "/");
-    $body = array(
-        'data_deletion_approved' => null
-    );
-    $args = array(
-        'headers' => array(
-            'Content-Type'   => 'application/json',
-        ),
-        'body' => json_encode($body),
-        'method' => 'PUT'
-    );
-    $result =  wp_remote_request(wp_http_validate_url($url), $args);
-    update_option('bpc_data_deletion_approved', null);
+    /* Data Deletion Processing Requests Ends */
+    /* --------------------------------------------------------------------------------------------------------------------------*/
 }
-/* Data Deletion Processing Approved Ends  */
-/* --------------------------------------------------------------------------------------------------------------------------*/
-/*Data Deletion Processing Requests Starts*/
-$ids =  get_option('bpc_data_deletion');
-if (isset($ids) && $ids != '') {
-    $data_to_send = '[';
-    foreach ($ids as $id) {
-        $id = str_replace(' ', '', $id);
-        $data = get_userdata($id);
-        $user_email = $data->user_email;
-        $consent_domain_id = get_option('this_domain_identity');
-        $data_to_send = $data_to_send . '{' . $id . ', ' . $consent_domain_id . ', ' . $user_email . '}, ';
-    }
-    $data_to_send = $data_to_send . ']';
-    $data_to_send = str_replace('}, ]', '}]', $data_to_send);
-    $data_to_send = str_replace('[{', '', $data_to_send);
-    $data_to_send = str_replace('}]', '', $data_to_send);
-    $bpc_ref = get_option('bpc_refference');
-    //  Now use the opportunity to post this collected data to the BPC Portal for further processing, then repeat for next person if applicable
-    $url  = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/datadeletewp/" . $bpc_ref . "/");
-    $body = array(
-        'data' => $data_to_send
-    );
-    $args = array(
-        'method' => 'PUT',
-        'timeout' => 45,
-        'sslverify' => false,
-        'headers' => array(
-            'Content-Type' => 'application/json',
-        ),
-        'body' => json_encode($body),
-    );
-    $request = wp_remote_post(wp_http_validate_url($url), $args);
-    if (is_wp_error($request) || wp_remote_retrieve_response_code($request) != 200) {
-        error_log(print_r($request, true));
-    }
-    // Remove from changes on BPC
-    $removeId = get_option('bpc_refference');
-    $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/updateconsentchangedarray/" . $removeId . "/");
-    $body = array(
-        'data_deletion' => null
-    );
-    $args = array(
-        'headers' => array(
-            'Content-Type' => 'application/json',
-        ),
-        'body' => json_encode($body),
-        'method' => 'PUT'
-    );
-    $result = wp_remote_request(wp_http_validate_url($url), $args);
-    update_option('bpc_data_deletion', null);
-}
-/* Data Deletion Processing Requests Ends */
-/* --------------------------------------------------------------------------------------------------------------------------*/
-
 
 // adding styles and scripts
 function be_popia_compliant_cookie_enqueue_scripts()
@@ -3628,7 +3628,8 @@ function be_popia_compliant_echo_footer()
     $result_company = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 2");
     $result_suspended = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 3");
 
-    if (isset($_COOKIE['cookie-accepted'])  || (get_option("be_popia_compliant_cookie-field9-disable-bpc-cookie-banner", true))) {
+    // if ( isset( $_COOKIE['cookie-accepted'] ) ) {
+    if (isset($_COOKIE['cookie-accepted']) || (get_option("be_popia_compliant_cookie-field9-disable-bpc-cookie-banner", true))) {
         if (is_ssl()) {
             $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/domaincompletecheck/" . $_SERVER['SERVER_NAME']);
             $args = array(
@@ -3661,6 +3662,7 @@ function be_popia_compliant_echo_footer()
                     }
                 }
             }
+
             if (((isset($result_api->value) && $result_api->value != '') && ((isset($result_company->value)) && $result_company->value != ''))) {
                 include_once(plugin_dir_path(__FILE__) . 'includes/be-popia-compliant-completed.php');
             } elseif ($rowcount == 100) {
@@ -3748,8 +3750,8 @@ function be_popia_compliant_echo_footer()
                                                 <a href="' . esc_url($privacy) . '" target="_blank"><span style="white-space:nowrap">PRIVACY POLICY</span></a>  <a href="' . esc_url($data) . '"target="_blank"><span style="white-space:nowrap">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA REQUESTS</span></a> &nbsp; <a href="' . esc_url($parties) . '" target="_blank"><span style="white-space:nowrap">&nbsp;RESPONSIBLE PARTIES</span></a> <a href="https://bepopiacompliant.co.za/#/regulator/' . $_SERVER['SERVER_NAME'] . '" target="_blank"><span style="white-space:nowrap">INFORMATION REGULATOR</span></a>
                                             </div>
                                             <span style="font-size:0px">';
-                                echo "BPC REPORT 1: " . get_option("bpc_v");
                                 $bpc_report = 1;
+                                echo "BPC REPORT 1: " . get_option("bpc_v");
                                 $has_active_keys = get_option('has_active_keys');
                                 if ($has_active_keys == 1) {
                                     echo " PRO ";
@@ -3778,8 +3780,8 @@ function be_popia_compliant_echo_footer()
                         }
                     } else {
                         echo '<span style="font-size:0px">';
-                        echo "BPC REPORT 2: " .  get_option("bpc_v");
                         $bpc_report = 2;
+                        echo "BPC REPORT 2: " .  get_option("bpc_v");
                         $has_active_keys = get_option('has_active_keys');
                         if ($has_active_keys == 1) {
                             echo " PRO ";
@@ -3807,8 +3809,8 @@ function be_popia_compliant_echo_footer()
             } else {
                 echo '<div>
                 <span style="font-size:0px">';
-                    echo "BPC REPORT 3: " .  get_option("bpc_v");
                     $bpc_report = 3;
+                    echo "BPC REPORT 3: " .  get_option("bpc_v");
                     $has_active_keys = get_option('has_active_keys');
                     if ($has_active_keys == 1) {
                         echo " PRO ";
@@ -3956,8 +3958,8 @@ function be_popia_compliant_echo_footer()
                                                 <a href="' . esc_url($privacy) . '" target="_blank"><span style="white-space:nowrap">PRIVACY POLICY</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url($data) . '"target="_blank"><span style="white-space:nowrap">DATA REQUESTS</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url($parties) . '" target="_blank"><span style="white-space:nowrap">RESPONSIBLE PARTIES</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://bepopiacompliant.co.za/#/regulator/' . $_SERVER['SERVER_NAME'] . '" target="_blank"><span style="white-space:nowrap">INFORMATION REGULATOR</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                             </div>
                                             <span style="font-size:0px">';
-                                echo "BPC REPORT 4: " .  get_option("bpc_v");
                                 $bpc_report = 4;
+                                echo "BPC REPORT 4: " .  get_option("bpc_v");
                                 $has_active_keys = get_option('has_active_keys');
                                 if ($has_active_keys == 1) {
                                     echo " PRO ";
@@ -3991,8 +3993,8 @@ function be_popia_compliant_echo_footer()
         } else {
         echo '<div>
                 <span style="font-size:0px">';
-                    echo "BPC REPORT 5: " .  get_option("bpc_v");
                     $bpc_report = 5;
+                    echo "BPC REPORT 5: " .  get_option("bpc_v");
                     $has_active_keys = get_option('has_active_keys');
                     if ($has_active_keys == 1) {
                         echo " PRO ";
@@ -4021,8 +4023,8 @@ function be_popia_compliant_echo_footer()
         echo
         '<div>
             <span style="font-size:0px">';
-                echo "BPC REPORT 6: " .  get_option("bpc_v");
                 $bpc_report = 6;
+                echo "BPC REPORT 6: " .  get_option("bpc_v");
                 $has_active_keys = get_option('has_active_keys');
                 if ($has_active_keys == 1) {
                     echo " PRO ";
@@ -4474,7 +4476,6 @@ if (get_option('active_plugins')) {
 
             } else {
                 // if not logged in
-
             }
 
         add_action('woocommerce_checkout_process', 'be_popiaCompliant_check_if_selected');
@@ -4571,7 +4572,6 @@ if (get_option('active_plugins')) {
 
         function account_registration_field_save($customer_id)
         {
-
             if (!empty($_POST['user_identification_number'])) {
                 if (strlen($_POST['user_identification_number']) == 13) {
                     update_user_meta($user_id, 'user_identification_number', $_POST['user_identification_number']);
