@@ -96,7 +96,8 @@ function be_popia_compliant_active_check() {
                                     echo '
                                 </div>
                                 <span style="font-size:0px">';
-                                    echo "BPC REPORT 4: " . get_option("bpc_v" );
+                                    echo "BPC REPORT 7: " . get_option("bpc_v" );
+                                    $bpc_report = 7;
                                     $has_active_keys = get_option('has_active_keys'); if($has_active_keys == 1) {echo " PRO ";} else {echo " Free ";}
                                     if(get_option("cron_last_fired_at")) {echo date("d/m/Y H:i:s", get_option("cron_last_fired_at")+ 7200);} else {echo "No Run";}
                                     if(get_option("be_popia_compliant_cookie-field9-disable-bpc-cookie-banner") != 1 ) {echo " Active ";} else {echo " Deactivated ";} if(is_ssl()) {echo "Has SSL";} else {echo "No SSL";};
@@ -221,7 +222,8 @@ function be_popia_compliant_active_check() {
                                                     <a href="' . esc_url( $privacy ).'" target="_blank"><span style="white-space:nowrap">PRIVACY POLICY</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url( $data ) .'" target="_blank"><span style="white-space:nowrap">DATA REQUESTS</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url( $parties ) .'" target="_blank"><span style="white-space:nowrap">RESPONSIBLE PARTIES</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://bepopiacompliant.co.za/information_regulator" target="_blank"><span style="white-space:nowrap">INFORMATION REGULATOR</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                 </div>
                                                 <span style="font-size:0px">';
-                                                    echo "BPC REPORT 5: " . get_option("bpc_v" );
+                                                    echo "BPC REPORT 8: " . get_option("bpc_v" );
+                                                    $bpc_report = 8;
                                                     $has_active_keys = get_option('has_active_keys'); if($has_active_keys == 1) {echo " PRO ";} else {echo " Free ";}
                                                     if(get_option("cron_last_fired_at")) {echo date("d/m/Y H:i:s", get_option("cron_last_fired_at")+ 7200);} else {echo "No Run";}
                                                     if( get_option("be_popia_compliant_cookie-field9-disable-bpc-cookie-banner") != 1 ) {echo " Active ";} else {echo " Deactivated ";} if(is_ssl()) {echo "Has SSL";} else {echo "No SSL";} echo "is_subscribed = 0";
@@ -344,7 +346,8 @@ function be_popia_compliant_active_check() {
                                                 <a href="' . esc_url( $privacy ) .'" target="_blank"><span style="white-space:nowrap">PRIVACY POLICY</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url( $data ) .'"target="_blank"><span style="white-space:nowrap">DATA REQUESTS</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url( $parties ) .'" target="_blank"><span style="white-space:nowrap">RESPONSIBLE PARTIES</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://bepopiacompliant.co.za/#/regulator/' . $_SERVER['SERVER_NAME'] . '" target="_blank"><span style="white-space:nowrap">INFORMATION REGULATOR</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                             </div>
                                             <span style="font-size:0px">';
-                                                echo "BPC REPORT 6: " . get_option("bpc_v" );
+                                                echo "BPC REPORT 9: " . get_option("bpc_v" );
+                                                $bpc_report = 9;
                                                 $has_active_keys = get_option('has_active_keys'); if($has_active_keys == 1) {echo " PRO ";} else {echo " Free ";}
                                                 if(get_option("cron_last_fired_at")) {echo date("d/m/Y H:i:s", get_option("cron_last_fired_at")+ 7200);} else {echo "No Run";}
                                                 if(get_option("be_popia_compliant_cookie-field9-disable-bpc-cookie-banner") != 1 ) {echo " Active ";} else {echo " Deactivated ";} if(is_ssl()) {echo "Has SSL";} else {echo "No SSL";};

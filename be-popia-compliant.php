@@ -64,6 +64,7 @@ function theme_name_scripts() {
 }
 
 add_action( 'wp_enqueue_scripts', 'theme_name_scripts' );
+add_action( 'login_enqueue_scripts', 'theme_name_scripts', 1 );
 
 /* Adds new links to plugin in plugins.php */
 function add_action_links($actions)
@@ -3626,7 +3627,7 @@ function be_popia_compliant_echo_footer()
     $result_api = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 1");
     $result_company = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 2");
     $result_suspended = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 3");
-    // if ( isset( $_COOKIE['cookie-accepted'] ) ) {
+
     if (isset($_COOKIE['cookie-accepted'])  || (get_option("be_popia_compliant_cookie-field9-disable-bpc-cookie-banner", true))) {
         if (is_ssl()) {
             $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/domaincompletecheck/" . $_SERVER['SERVER_NAME']);
@@ -3747,7 +3748,8 @@ function be_popia_compliant_echo_footer()
                                                 <a href="' . esc_url($privacy) . '" target="_blank"><span style="white-space:nowrap">PRIVACY POLICY</span></a>  <a href="' . esc_url($data) . '"target="_blank"><span style="white-space:nowrap">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA REQUESTS</span></a> &nbsp; <a href="' . esc_url($parties) . '" target="_blank"><span style="white-space:nowrap">&nbsp;RESPONSIBLE PARTIES</span></a> <a href="https://bepopiacompliant.co.za/#/regulator/' . $_SERVER['SERVER_NAME'] . '" target="_blank"><span style="white-space:nowrap">INFORMATION REGULATOR</span></a>
                                             </div>
                                             <span style="font-size:0px">';
-                                echo "BPC REPORT 1: " .  get_option("bpc_v");
+                                echo "BPC REPORT 1: " . get_option("bpc_v");
+                                $bpc_report = 1;
                                 $has_active_keys = get_option('has_active_keys');
                                 if ($has_active_keys == 1) {
                                     echo " PRO ";
@@ -3777,6 +3779,7 @@ function be_popia_compliant_echo_footer()
                     } else {
                         echo '<span style="font-size:0px">';
                         echo "BPC REPORT 2: " .  get_option("bpc_v");
+                        $bpc_report = 2;
                         $has_active_keys = get_option('has_active_keys');
                         if ($has_active_keys == 1) {
                             echo " PRO ";
@@ -3801,7 +3804,36 @@ function be_popia_compliant_echo_footer()
                         '</span>';
                     }
                 }
+            } else {
+                echo '<div>
+                <span style="font-size:0px">';
+                    echo "BPC REPORT 3: " .  get_option("bpc_v");
+                    $bpc_report = 3;
+                    $has_active_keys = get_option('has_active_keys');
+                    if ($has_active_keys == 1) {
+                        echo " PRO ";
+                    } else {
+                        echo " Free ";
+                    }
+                    if (get_option("cron_last_fired_at")) {
+                        echo date("d/m/Y H:i:s", get_option("cron_last_fired_at") + 7200);
+                    } else {
+                        echo "No Run";
+                    }
+                    if (get_option("be_popia_compliant_cookie-field9-disable-bpc-cookie-banner") != 1) {
+                        echo " Active ";
+                    } else {
+                        echo " Deactivated ";
+                    }
+                    if (is_ssl()) {
+                        echo "Has SSL";
+                    } else {
+                        echo "No SSL";
+                    };
+                '</span>
+                </div>';
             }
+
         } //isSSL
         else {
             $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/domaincompletecheck/" . $_SERVER['SERVER_NAME']);
@@ -3924,7 +3956,8 @@ function be_popia_compliant_echo_footer()
                                                 <a href="' . esc_url($privacy) . '" target="_blank"><span style="white-space:nowrap">PRIVACY POLICY</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url($data) . '"target="_blank"><span style="white-space:nowrap">DATA REQUESTS</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url($parties) . '" target="_blank"><span style="white-space:nowrap">RESPONSIBLE PARTIES</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://bepopiacompliant.co.za/#/regulator/' . $_SERVER['SERVER_NAME'] . '" target="_blank"><span style="white-space:nowrap">INFORMATION REGULATOR</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                             </div>
                                             <span style="font-size:0px">';
-                                echo "BPC REPORT 3: " .  get_option("bpc_v");
+                                echo "BPC REPORT 4: " .  get_option("bpc_v");
+                                $bpc_report = 4;
                                 $has_active_keys = get_option('has_active_keys');
                                 if ($has_active_keys == 1) {
                                     echo " PRO ";
@@ -3955,6 +3988,64 @@ function be_popia_compliant_echo_footer()
                 }
             }
         }
+        } else {
+        echo '<div>
+                <span style="font-size:0px">';
+                    echo "BPC REPORT 5: " .  get_option("bpc_v");
+                    $bpc_report = 5;
+                    $has_active_keys = get_option('has_active_keys');
+                    if ($has_active_keys == 1) {
+                        echo " PRO ";
+                    } else {
+                        echo " Free ";
+                    }
+                    if (get_option("cron_last_fired_at")) {
+                        echo date("d/m/Y H:i:s", get_option("cron_last_fired_at") + 7200);
+                    } else {
+                        echo "No Run";
+                    }
+                    if (get_option("be_popia_compliant_cookie-field9-disable-bpc-cookie-banner") != 1) {
+                        echo " Active ";
+                    } else {
+                        echo " Deactivated ";
+                    }
+                    if (is_ssl()) {
+                        echo "Has SSL";
+                    } else {
+                        echo "No SSL";
+                    };
+                '</span>
+            </div>';
+    }
+    if(!isset($bpc_report)) {
+        echo
+        '<div>
+            <span style="font-size:0px">';
+                echo "BPC REPORT 6: " .  get_option("bpc_v");
+                $bpc_report = 6;
+                $has_active_keys = get_option('has_active_keys');
+                if ($has_active_keys == 1) {
+                    echo " PRO ";
+                } else {
+                    echo " Free ";
+                }
+                if (get_option("cron_last_fired_at")) {
+                    echo date("d/m/Y H:i:s", get_option("cron_last_fired_at") + 7200);
+                } else {
+                    echo "No Run";
+                }
+                if (get_option("be_popia_compliant_cookie-field9-disable-bpc-cookie-banner") != 1) {
+                    echo " Active ";
+                } else {
+                    echo " Deactivated ";
+                }
+                if (is_ssl()) {
+                    echo "Has SSL";
+                } else {
+                    echo "No SSL";
+                };'
+            </span>
+        </div>';
     }
 }
 

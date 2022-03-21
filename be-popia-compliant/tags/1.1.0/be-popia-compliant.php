@@ -3,7 +3,7 @@
     Plugin Name: Be POPIA Compliant & Optional Cookie Banner
     Plugin URI: https://bepopiacompliant.co.za
     Description: The only POPIA Compliance plugin, that is NOT JUST a Cookie Banner! That enables your clients to Manage Consent. Get your site compliant in as little as 15 minutes.
-    Version: 1.1.0
+    Version: 1.1.1
     Author: Web-X | For Everything Web | South Africa
     Author URI: https://web-x.co.za/
     License: GPLv2 or later
@@ -45,45 +45,25 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-update_option('bpc_v', '1.1.0');
+update_option('bpc_v', '1.1.1');
 
 /* Enqueue scripts*/
-function be_popia_compliant_user_scripts($hook) {
- 
-    // create my own version codes
-    
-    $my_js_ver  = date("ymd-Gis", filemtime( plugin_dir_path( __FILE__ ) . 'includes/js/be_popia_compliant_validation_script.js' ));
-    $my_js_ver  = date("ymd-Gis", filemtime( plugin_dir_path( __FILE__ ) . 'includes/js/be_popia_compliant_validation_script_bill.js' ));
-    $my_css_ver = date("ymd-Gis", filemtime( plugin_dir_path( __FILE__ ) . 'styles.css' ));
-     
-    //
-    wp_enqueue_script( 'ValidateSAID', plugins_url( 'includes/js/be_popia_compliant_validation_script.js', __FILE__ ), array('jquery'), $my_js_ver );
-    wp_enqueue_script( 'ValidateBillSAID', plugins_url( 'includes/js/be_popia_compliant_validation_script_bill.js', __FILE__ ), array('jquery'), $my_js_ver );
-    wp_register_style( 'my_css',    plugins_url( 'styles.css',    __FILE__ ), false,   $my_css_ver );
-    wp_enqueue_style ( 'my_css' );
- 
+function be_popia_compliant_user_scripts() {
+    $plugin_url = wp_http_validate_url(plugin_dir_url( __FILE__ ));
+
+    wp_enqueue_style( 'style',  $plugin_url . "styles.css");
 }
 
-add_action('wp_enqueue_scripts', 'be_popia_compliant_user_scripts');
-add_action( 'login_enqueue_scripts', 'be_popia_compliant_user_scripts', 10 );
-// add_action( 'login_enqueue_scripts', 'be_popia_compliant_user_scripts', 1 );
+add_action( 'admin_print_styles', 'be_popia_compliant_user_scripts' );
 
+function theme_name_scripts() {
+    $plugin_url = wp_http_validate_url(plugin_dir_url(__FILE__));
+ 
+  wp_enqueue_script( 'ValidateSAID', $plugin_url . 'includes/js/be_popia_compliant_validation_script.js', array('jquery'), '1.0.0', true );
+  wp_enqueue_script( 'ValidateBillSAID', $plugin_url . 'includes/js/be_popia_compliant_validation_script_bill.js', array('jquery'), '1.0.0', true );
+}
 
-// function be_popia_compliant_user_scripts()
-// {
-//     $plugin_url = wp_http_validate_url(plugin_dir_url(__FILE__));
-//     wp_enqueue_style('style',  $plugin_url . "styles.css");
-// }
-
-// add_action('admin_print_styles', 'be_popia_compliant_user_scripts');
-
-
-// function bpc_scripts()
-// {
-//     wp_enqueue_script( 'ValidateSAID', get_template_directory_uri() . 'includes/js/be_popia_compliant_validation_script.js', array( 'jquery' ), '1.0.0', true );
-// }
-
-// add_action( 'wp_enqueue_scripts', 'bpc_scripts' );
+add_action( 'wp_enqueue_scripts', 'theme_name_scripts' );
 
 /* Adds new links to plugin in plugins.php */
 function add_action_links($actions)
@@ -108,7 +88,7 @@ function add_action_links($actions)
 
 add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'add_action_links');
 
-//* Create Database Table for Be POPIA Compliant *//
+//* Create Database Table for Be POPIA Compliant 
 function be_popia_compliant_create()
 {
     global $wpdb;
