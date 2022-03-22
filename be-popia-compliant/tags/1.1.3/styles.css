@@ -432,6 +432,7 @@ input.bpc_down {
     top: 0;
     z-index: 1;
 }
+
 #saiderror {
     color: red;
     padding: 5px;

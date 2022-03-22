@@ -1,7 +1,3 @@
-if (typeof $ == 'undefined') {
-    var $ = jQuery;
- }
- 
 jQuery(document).ready(function(){
     function ValidateSAID() {
         // first clear any left over error messages

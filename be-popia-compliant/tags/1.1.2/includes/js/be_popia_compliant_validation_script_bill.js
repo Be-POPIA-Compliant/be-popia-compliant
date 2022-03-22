@@ -1,16 +1,16 @@
-if (typeof $ === 'undefined') {
+if (typeof $ == 'undefined') {
     var $ = jQuery;
  }
- 
-jQuery(document).ready(function(){
-    function ValidateSAID() {
+
+ jQuery(document).ready(function(){
+    function ValidateBillSAID() {
         // first clear any left over error messages
-        $('#saiderror p').remove();
+        $('#billsaiderror p').remove();
     
         // store the error div, to save typing
-        var error = $('#saiderror');
+        var error = $('#billsaiderror');
     
-        var idNumber = $('#user_identification_number').val();
+        var idNumber = $('#billing_user_SAID').val();
     
         // assume everything is correct and if it later turns out not to be, just set this to false
         var correct = true;
@@ -84,5 +84,5 @@ jQuery(document).ready(function(){
         }
     }
     
-    $('#user_identification_number').blur(ValidateSAID);
+    $('#billing_user_SAID').blur(ValidateBillSAID);
 });

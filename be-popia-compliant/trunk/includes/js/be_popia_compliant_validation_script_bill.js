@@ -1,8 +1,4 @@
-if (typeof $ == 'undefined') {
-    var $ = jQuery;
- }
-
- jQuery(document).ready(function(){
+jQuery(document).ready(function(){
     function ValidateBillSAID() {
         // first clear any left over error messages
         $('#billsaiderror p').remove();
