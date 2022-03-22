@@ -440,4 +440,5 @@ function be_popia_compliant_active_check()
         }
     }
 }
+
 be_popia_compliant_active_check();
