@@ -45,7 +45,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-update_option('bpc_v', '1.1.4');
+update_option('bpc_v', '1.1.5');
 
 /* Enqueue scripts*/
 function be_popia_compliant_user_scripts()
