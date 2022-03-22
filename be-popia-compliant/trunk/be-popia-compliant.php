@@ -3,7 +3,7 @@
     Plugin Name: Be POPIA Compliant
     Plugin URI: https://bepopiacompliant.co.za
     Description: The only POPIA Compliance plugin, that is NOT JUST a Cookie Banner! That enables your clients to Manage Consent. Get your site compliant in as little as 15 minutes.
-    Version: 1.1.3
+    Version: 1.1.5
     Author: Web-X | For Everything Web | South Africa
     Author URI: https://web-x.co.za/
     License: GPLv2 or later
@@ -45,7 +45,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-update_option('bpc_v', '1.1.3');
+update_option('bpc_v', '1.1.5');
 
 /* Enqueue scripts*/
 function be_popia_compliant_user_scripts()
@@ -65,7 +65,6 @@ function be_popia_compliant_scripts()
 
 add_action('wp_enqueue_scripts', 'be_popia_compliant_scripts');
 add_action('login_enqueue_scripts', 'be_popia_compliant_scripts', 1);
-add_action( 'login_enqueue_scripts', 'theme_name_scripts', 1 );
 
 /* Adds new links to plugin in plugins.php */
 function add_action_links($actions)
@@ -3899,7 +3898,6 @@ function be_popia_compliant_echo_footer()
                 echo'</span>
                 </div>';
             }
-
         } //isSSL
         else {
             $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/domaincompletecheck/" . $_SERVER['SERVER_NAME']);
@@ -4530,6 +4528,7 @@ if (get_option('active_plugins')) {
 
             //         if(get_user_meta( $bpc_logged_in_user, 'other_identification_issue', true )) update_user_meta( $bpc_logged_in_user, 'other_identification_issue', NULL );
             //         if(get_user_meta( $bpc_logged_in_user, 'billing_user_OIDI', true )) update_user_meta( $bpc_logged_in_user, 'billing_user_OIDI', NULL );
+
             //     } elseif(isset($secondaryID)) {
 
             //         // Update all fields

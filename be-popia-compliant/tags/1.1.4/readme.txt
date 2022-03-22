@@ -4,7 +4,7 @@ Tags: POPI, POPIA, POPI Act, BePOPIACompliant, Be POPIA Compliant, Be POPI Compl
 Requires at least: 5.4
 Tested up to: 5.9.1
 Requires PHP: 7.3
-Stable tag: 1.1.5
+Stable tag: 1.1.4
 License: License: GPLv2 or later
 
 The only POPIA Compliance plugin that is NOT JUST a Cookie Banner! For any site that operates in South Africa. *Get your site compliant in as little as 15 minutes (only by using PRO).
