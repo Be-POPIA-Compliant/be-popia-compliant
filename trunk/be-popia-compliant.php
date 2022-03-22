@@ -3,7 +3,7 @@
     Plugin Name: Be POPIA Compliant & Optional Cookie Banner
     Plugin URI: https://bepopiacompliant.co.za
     Description: The only POPIA Compliance plugin, that is NOT JUST a Cookie Banner! That enables your clients to Manage Consent. Get your site compliant in as little as 15 minutes.
-    Version: 1.1.2
+    Version: 1.1.3
     Author: Web-X | For Everything Web | South Africa
     Author URI: https://web-x.co.za/
     License: GPLv2 or later
@@ -45,7 +45,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-update_option('bpc_v', '1.1.2');
+update_option('bpc_v', '1.1.3');
 
 /* Enqueue scripts*/
 function be_popia_compliant_user_scripts() {
@@ -130,7 +130,7 @@ function be_popia_compliant_create()
 
         $response = wp_remote_get(wp_http_validate_url($url), $args);
         $response_code = wp_remote_retrieve_response_code($response);
-        $body         = wp_remote_retrieve_body($response);
+        $body = wp_remote_retrieve_body($response);
 
         if (401 === $response_code) {
             echo "Unauthorized access";
@@ -159,7 +159,7 @@ function be_popia_compliant_create()
                     'method'    => 'PUT'
                 );
 
-                $result =  wp_remote_request(wp_http_validate_url($url), $args);
+                $result = wp_remote_request(wp_http_validate_url($url), $args);
             } else {
                 $t = date("h:i:sa d-m-Y", time());
                 $url  = wp_http_validate_url('https://py.bepopiacompliant.co.za/api/plugindetails/');
@@ -3087,7 +3087,7 @@ function bpc_popia_data_processing()
             // Multiple occurance possible
             global $wpdb;
             $table_name = $wpdb->prefix . 'wc_customer_lookup';
-            $result[] = $wpdb->get_results("SELECT customer_id from $table_name WHERE `email` = '$this_user_email''''");
+            $result[] = $wpdb->get_results("SELECT customer_id from $table_name WHERE `email` = '$this_user_email'");
             if (count($result) > 0) {
                 foreach ($result as $thisId) {
                     $wpdb->update($table_name, array('username' => $red_name), array('email' => $this_user_email));
