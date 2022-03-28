@@ -4815,6 +4815,18 @@ function WooCommerce_functions() {
             }
         }
     }
+    
+    add_filter( 'default_checkout_billing_country', 'change_default_checkout_country' );
+    // add_filter( 'default_checkout_billing_state', 'change_default_checkout_state' );
+    
+    function change_default_checkout_country() {
+      return 'South Africa'; // country code
+    }
+    
+    // function change_default_checkout_state() {
+    //   return 'XX'; // state code
+    // }
+    }
 }
 
 // WooCommerce ends

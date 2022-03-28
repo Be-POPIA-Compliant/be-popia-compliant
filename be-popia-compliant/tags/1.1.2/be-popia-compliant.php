@@ -1,9 +1,9 @@
 <?php
 /*
-    Plugin Name: Be POPIA Compliant
+    Plugin Name: Be POPIA Compliant & Optional Cookie Banner
     Plugin URI: https://bepopiacompliant.co.za
     Description: The only POPIA Compliance plugin, that is NOT JUST a Cookie Banner! That enables your clients to Manage Consent. Get your site compliant in as little as 15 minutes.
-    Version: 1.1.5
+    Version: 1.1.2
     Author: Web-X | For Everything Web | South Africa
     Author URI: https://web-x.co.za/
     License: GPLv2 or later
@@ -45,27 +45,24 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-$bpcV = '1.1.5';
-update_option('bpc_v', $bpcV);
+update_option('bpc_v', '1.1.2');
 
 /* Enqueue scripts*/
-function be_popia_compliant_user_scripts()
-{
-    $plugin_url = wp_http_validate_url(plugin_dir_url(__FILE__));
-    wp_enqueue_style('style',  $plugin_url . "styles.css");
+function be_popia_compliant_user_scripts() {
+    $plugin_url = wp_http_validate_url(plugin_dir_url( __FILE__ ));
+    wp_enqueue_style( 'style',  $plugin_url . "styles.css");
 }
 
-add_action('admin_print_styles', 'be_popia_compliant_user_scripts');
+add_action( 'admin_print_styles', 'be_popia_compliant_user_scripts' );
 
-function be_popia_compliant_scripts()
-{
+function theme_name_scripts() {
     $plugin_url = wp_http_validate_url(plugin_dir_url(__FILE__));
-    wp_enqueue_script('ValidateSAID', $plugin_url . 'includes/js/be_popia_compliant_validation_script.js', array('jquery'), get_option('bpc_v'), true);
-    wp_enqueue_script('ValidateBillSAID', $plugin_url . 'includes/js/be_popia_compliant_validation_script_bill.js', array('jquery'), get_option('bpc_v'), true);
+    wp_enqueue_script( 'ValidateSAID', $plugin_url . 'includes/js/be_popia_compliant_validation_script.js', array('jquery'), '1.1.2', true );
+    wp_enqueue_script( 'ValidateBillSAID', $plugin_url . 'includes/js/be_popia_compliant_validation_script_bill.js', array('jquery'), '1.1.2', true );
 }
 
-add_action('wp_enqueue_scripts', 'be_popia_compliant_scripts');
-add_action('login_enqueue_scripts', 'be_popia_compliant_scripts', 1);
+add_action( 'wp_enqueue_scripts', 'theme_name_scripts' );
+add_action( 'login_enqueue_scripts', 'theme_name_scripts', 1 );
 
 /* Adds new links to plugin in plugins.php */
 function add_action_links($actions)
@@ -133,7 +130,7 @@ function be_popia_compliant_create()
 
         $response = wp_remote_get(wp_http_validate_url($url), $args);
         $response_code = wp_remote_retrieve_response_code($response);
-        $body = wp_remote_retrieve_body($response);
+        $body         = wp_remote_retrieve_body($response);
 
         if (401 === $response_code) {
             echo "Unauthorized access";
@@ -162,7 +159,7 @@ function be_popia_compliant_create()
                     'method'    => 'PUT'
                 );
 
-                $result = wp_remote_request(wp_http_validate_url($url), $args);
+                $result =  wp_remote_request(wp_http_validate_url($url), $args);
             } else {
                 $t = date("h:i:sa d-m-Y", time());
                 $url  = wp_http_validate_url('https://py.bepopiacompliant.co.za/api/plugindetails/');
@@ -314,29 +311,15 @@ function be_popiaCompliant_registration_form()
 {
 
     $identificationNumber = !empty($_POST['user_identification_number']) ? ($_POST['user_identification_number']) : '';
-    if(!isset($identificationNumber)) {
-        $identificationNumber = get_user_meta( $user_id, 'user_identification_number', $single );
-    }
     $otherIdNumber = !empty($_POST['other_identification_number']) ? ($_POST['other_identification_number']) : '';
-    if(!isset($otherIdNumber)) {
-        $otherIdNumber = get_user_meta( $user_id, 'other_identification_number', $single );
-    }
     $otherIdType = !empty($_POST['other_identification_type']) ? ($_POST['other_identification_type']) : '';
-    if(!isset($otherIdType)) {
-        $otherIdType = get_user_meta( $user_id, 'other_identification_type', $single );
-    }
     $otherIdIssue = !empty($_POST['other_identification_issue']) ? ($_POST['other_identification_issue']) : '';
-    if(!isset($otherIdIssue)) {
-        $otherIdIssue = get_user_meta( $user_id, 'other_identification_issue', $single );
-    }
 ?>
     <p>
-        <center>
-            <div style='font-size:10px!important'>(Powered by <a href="https://bepopiacompliant.co.za" target="_blank"><span style="color:#B61F20">Be POPIA Compliant</span></a> & <a href="https://manageconsent.co.za" target="_blank"><span style="color:#7a7a7a">Manage Consent</span></a>)</div><br>
-        </center>
-    <div id="saiderror" style="color: red; padding: 5px; display: none; font-size: 14px; line-height: 14px;"></div><br><label for="user_identification_number"><?php esc_html_e('South African Identity Number', 'be_popiaCompliant') ?><br />
-        <input type="text" id="user_identification_number" name="user_identification_number" value="<?php echo esc_attr($identificationNumber); ?>" class="input" />
-    </label>
+        <center><div style='font-size:10px!important'>(Powered by <a href="https://bepopiacompliant.co.za" target="_blank"><span style="color:#B61F20">Be POPIA Compliant</span></a> & <a href="https://manageconsent.co.za" target="_blank"><span style="color:#7a7a7a">Manage Consent</span></a>)</div><br></center>
+        <div id="saiderror" style="color: red; padding: 5px; display: none; font-size: 14px; line-height: 14px;"></div><br><label for="user_identification_number"><?php esc_html_e('South African Identity Number', 'be_popiaCompliant') ?><br />
+            <input type="text" id="user_identification_number" name="user_identification_number" value="<?php echo esc_attr($identificationNumber); ?>" class="input" />
+        </label>
     </p><br>
     <center><span><b>OR</b><br>(If not South African ID Number)<br><br></span></center>
     <p>
@@ -429,14 +412,38 @@ add_action('user_register', 'be_popia_compliant_add_user_details_to_py');
 function be_popia_compliant_add_user_details_to_py($user_id)
 {
     $new_user = get_userdata($user_id);
+    $user_email = $new_user->user_email;
+    $domain = $_SERVER['SERVER_NAME'];
+    $first_name = '';
+    $surname = '';
+    $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/getuserid/" . $user_email);
+    $args = array(
+        'headers' => array(
+            'Content-Type' => 'application/json',
+        ),
+        'body'    => array(),
+    );
 
-    if(!get_user_meta( $user_id, 'has_provided_consent', $single )){
+    $response = wp_remote_get(wp_http_validate_url($url), $args);
+    $response_code = wp_remote_retrieve_response_code($response);
+    $body         = wp_remote_retrieve_body($response);
 
-        $user_email = $new_user->user_email;
-        $domain = $_SERVER['SERVER_NAME'];
-        $first_name = '';
-        $surname = '';
-        $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/getuserid/" . $user_email);
+    if (401 === $response_code) {
+        echo "Unauthorized access";
+    }
+
+    if (200 === $response_code) {
+        $body = json_decode($body);
+        if (empty($body)) {
+        } else {
+            foreach ($body as $data) {
+                $py_user_id = $data->id;
+            }
+        }
+    }
+
+    if (isset($py_user_id)) {
+        $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/getwpname/" . $py_user_id);
         $args = array(
             'headers' => array(
                 'Content-Type' => 'application/json',
@@ -446,7 +453,7 @@ function be_popia_compliant_add_user_details_to_py($user_id)
 
         $response = wp_remote_get(wp_http_validate_url($url), $args);
         $response_code = wp_remote_retrieve_response_code($response);
-        $body = wp_remote_retrieve_body($response);
+        $body         = wp_remote_retrieve_body($response);
 
         if (401 === $response_code) {
             echo "Unauthorized access";
@@ -454,55 +461,57 @@ function be_popia_compliant_add_user_details_to_py($user_id)
 
         if (200 === $response_code) {
             $body = json_decode($body);
-            if (empty($body)) {
-            } else {
-                foreach ($body as $data) {
-                    $py_user_id = $data->id;
-                }
+
+            foreach ($body as $data) {
+                $first_name = $data->data_officer_first_name;
+                $surname = $data->data_officer_surname;
             }
         }
+    }
 
-        if (isset($py_user_id)) {
-            $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/getwpname/" . $py_user_id);
-            $args = array(
-                'headers' => array(
-                    'Content-Type' => 'application/json',
-                ),
-                'body'    => array(),
-            );
+    if (!$new_user) {
+        error_log('Unable to get userdata!');
+        return;
+    }
 
-            $response = wp_remote_get(wp_http_validate_url($url), $args);
-            $response_code = wp_remote_retrieve_response_code($response);
-            $body = wp_remote_retrieve_body($response);
+    $url  = wp_http_validate_url('https://py.bepopiacompliant.co.za/api/newusercreated/');
+    $body = array(
+        'domain' => $domain,
+        'email' => $user_email,
+        'user_id' => $user_id,
+        'first_name' => $first_name,
+        'surname' => $surname,
+        'py_user_id' => $py_user_id
+    );
 
-            if (401 === $response_code) {
-                echo "Unauthorized access";
-            }
+    $args = array(
+        'method'      => 'POST',
+        'timeout'     => 45,
+        'sslverify'   => false,
+        'headers'     => array(
+            'Content-Type'  => 'application/json',
+        ),
+        'body'        => json_encode($body),
+    );
 
-            if (200 === $response_code) {
-                $body = json_decode($body);
+    $request = wp_remote_post(wp_http_validate_url($url), $args);
 
-                foreach ($body as $data) {
-                    $first_name = $data->data_officer_first_name;
-                    $surname = $data->data_officer_surname;
-                }
-            }
+    if (is_wp_error($request) || wp_remote_retrieve_response_code($request) != 200) {
+        error_log(print_r($request, true));
+    }
+
+    $response = wp_remote_retrieve_body($request);
+    if (!isset($py_user_id)) {
+        $characters = '23456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ';
+        $charactersLength = strlen($characters);
+        $randomString = '';
+        for ($i = 0; $i < 8; $i++) {
+            $randomString .= $characters[rand(0, $charactersLength - 1)];
         }
-
-        if (!$new_user) {
-            error_log('Unable to get userdata!');
-            return;
-        }
-
-        
-        $url  = wp_http_validate_url('https://py.bepopiacompliant.co.za/api/newusercreated/');
+        $url  = wp_http_validate_url('https://py.bepopiacompliant.co.za/api/users/');
         $body = array(
-            'domain' => $domain,
-            'email' => $user_email,
-            'user_id' => $user_id,
-            'first_name' => $first_name,
-            'surname' => $surname,
-            'py_user_id' => $py_user_id
+            'username' => $user_email,
+            'password' => $randomString
         );
 
         $args = array(
@@ -516,94 +525,10 @@ function be_popia_compliant_add_user_details_to_py($user_id)
         );
 
         $request = wp_remote_post(wp_http_validate_url($url), $args);
-
         if (is_wp_error($request) || wp_remote_retrieve_response_code($request) != 200) {
             error_log(print_r($request, true));
         }
-
         $response = wp_remote_retrieve_body($request);
-        if (!isset($py_user_id)) {
-            $characters = '23456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ';
-            $charactersLength = strlen($characters);
-            $randomString = '';
-            for ($i = 0; $i < 8; $i++) {
-                $randomString .= $characters[rand(0, $charactersLength - 1)];
-            }
-            $url  = wp_http_validate_url('https://py.bepopiacompliant.co.za/api/users/');
-            
-            update_option('the_format', $user_id);
-
-            $id_number = get_user_meta($user_id, 'user_identification_number', true);
-                if(strlen($id_number) < 13) {
-                    $id_number = get_user_meta($user_id, 'billing_user_SAID', true);
-                }
-                if(strlen($id_number) < 13) {
-                    $id_number = get_user_meta($user_id, 'other_identification_number', true);
-                }
-                if(strlen($id_number) < 6) {
-                    $id_number = get_user_meta($user_id, 'billing_user_OtherID', true);
-                }
-                update_option( 'test_got_idnumber' , $id_number);
-
-            $body = array(
-                'email' => $user_email,
-                'username' => $id_number,
-                'password' => $randomString
-            );
-
-            $args = array(
-                'method' => 'POST',
-                'timeout' => 45,
-                'sslverify' => false,
-                'headers' => array(
-                'Content-Type' => 'application/json',
-                ),
-                'body' => json_encode($body),
-            );
-
-            $request = wp_remote_post(wp_http_validate_url($url), $args);
-            if (is_wp_error($request) || wp_remote_retrieve_response_code($request) != 200) {
-                error_log(print_r($request, true));   
-            } 
-            
-            if (200 === $response_code) {
-                update_option( 'test_got_response' , 'Yes');
-
-                $body = wp_remote_retrieve_body($request);
-                update_option( 'body_before', $body);
-                    $body = json_decode($body);
-                    update_option( 'body_after', $body);
-        
-                    // foreach ($body as $data) {
-                        $id = $body->id;
-                        $username = $body->username;
-                        $email = $body->email;
-                        update_option( 'test_got_id' , $id);
-                    // }
-
-                $url  = wp_http_validate_url('https://py.bepopiacompliant.co.za/api/newuserprofile/');
-                $body = array(
-                    'user' => $id,
-                    'data_officer_direct_email' => $email,
-                    'data_officer_first_name' => $first_name,
-                    'data_officer_surname' => $surname,
-                    'id_number' => $id_number
-                );
-
-                $args = array(
-                    'method' => 'POST',
-                    'timeout' => 45,
-                    'sslverify' => false,
-                    'headers' => array(
-                    'Content-Type' => 'application/json',
-                    ),
-                    'body' => json_encode($body),
-                );
-
-                $request = wp_remote_post(wp_http_validate_url($url), $args);
-            }
-            
-        }
     }
 }
 
@@ -631,9 +556,7 @@ function be_popiaCompliant_admin_registration_form($operation)
 
     <table class="form-table">
         <tr>
-            <th>
-                <div id="saiderror" style="color: red; padding: 5px; display: none; font-size: 14px; line-height: 14px;"></div><br><label for="user_identification_number"><?php esc_html_e('South African Identification Number', 'be_popiaCompliant'); ?></label> <span class="description"></span>
-            </th>
+            <th><div id="saiderror" style="color: red; padding: 5px; display: none; font-size: 14px; line-height: 14px;"></div><br><label for="user_identification_number"><?php esc_html_e('South African Identification Number', 'be_popiaCompliant'); ?></label> <span class="description"></span></th>
             <td>
                 <input type="text" id="user_identification_number" name="user_identification_number" value="<?php echo esc_attr($user_identification_number); ?>" class="regular-text" />
             </td>
@@ -744,9 +667,7 @@ function be_popiaCompliant_show_extra_profile_fields($user)
             $query = get_the_author_meta('user_identification_number', $user->ID);
             if (str_contains($query, '000000')) { ?>
                 <tr>
-                    <th>
-                        <div id="saiderror" style="color: red; padding: 5px; display: none; font-size: 14px; line-height: 14px;"></div><br><label for="user_identification_number"><?php esc_html_e('Consent was retracted', 'be_popiaCompliant'); ?></label>
-                    </th>
+                    <th><div id="saiderror" style="color: red; padding: 5px; display: none; font-size: 14px; line-height: 14px;"></div><br><label for="user_identification_number"><?php esc_html_e('Consent was retracted', 'be_popiaCompliant'); ?></label></th>
                     <td><?php echo esc_html(get_the_author_meta('user_identification_number', $user->ID)); ?></td>
                 </tr>
             <?php } else { ?>
@@ -788,9 +709,7 @@ function be_popiaCompliant_show_extra_profile_input_fields($user)
                 $query = get_the_author_meta('user_identification_number', $user->ID);
                 if (str_contains($query, '000000')) { ?>
                     <tr>
-                        <th>
-                            <div id="saiderror" style="color: red; padding: 5px; display: none; font-size: 14px; line-height: 14px;"></div><br><label for="user_identification_number"><?php esc_html_e('Consent Retracted: ', 'be_popiaCompliant'); ?></label>
-                        </th><br>
+                        <th><div id="saiderror" style="color: red; padding: 5px; display: none; font-size: 14px; line-height: 14px;"></div><br><label for="user_identification_number"><?php esc_html_e('Consent Retracted: ', 'be_popiaCompliant'); ?></label></th><br>
                         <td><?php echo esc_html(get_the_author_meta('user_identification_number', $user->ID)); ?></td>
                     </tr>
                 <?php } else { ?>
@@ -818,9 +737,7 @@ function be_popiaCompliant_show_extra_profile_input_fields($user)
         } else {
             if (get_option('bpc_hasPro') != 1) {
             ?>
-                <label class="user_identification_number" for="user_identification_number"><b>
-                        <div id="saiderror" style="color: red; padding: 5px; display: none; font-size: 14px; line-height: 14px;"></div><br>South African Identity Number (If South African)
-                    </b></label><br>
+                <label class="user_identification_number" for="user_identification_number"><b><div id="saiderror" style="color: red; padding: 5px; display: none; font-size: 14px; line-height: 14px;"></div><br>South African Identity Number (If South African)</b></label><br>
                 <input class="input" type="text" size="40" id="user_identification_number" name="user_identification_number" value="<?php echo esc_html(get_the_author_meta('user_identification_number', $user->ID)); ?>">
                 <br><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;------------- OR ------------- <br><br>
                 <label class="other_identification_number" for="other_identification_number"><b>Other Identification Number (if not using South African ID Number)</b></label><br>
@@ -872,7 +789,7 @@ function be_popiaCompliant_show_extra_profile_input_fields($user)
             <input class="input" type="date" id="user_consent_date" name="user_consent_date" value=""> <br><br>
         <?php    } ?>
     </table>
-<?php
+    <?php
 }
 
 add_action('personal_options_update', 'save_extra_user_profile_fields');
@@ -1841,21 +1758,21 @@ function be_popia_compliant_notice()
         }
     }
 
-    // if (isset($server_message) && ($server_message != 'null')) {
-    //     if (in_array($pagenow, $admin_pages)) {
-    //         if (isset($server_message)) {
-?>
-    <!--             <div class="notice notice-warning is-dismissible">
-                     <p> -->
-    <?php
-    //                     echo esc_html($server_message);
+    if (isset($server_message) && ($server_message != 'null')) {
+        if (in_array($pagenow, $admin_pages)) {
+            if (isset($server_message)) {
     ?>
-    <!--                 </p>
-                 </div> -->
-    <?
-    //         }
-    //     }
-    // }
+                <div class="notice notice-warning is-dismissible">
+                    <p>
+                        <?php
+                        echo esc_html($server_message);
+                        ?>
+                    </p>
+                </div>
+                <?
+            }
+        }
+    }
 
     $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME']);
     $args = array(
@@ -1892,7 +1809,7 @@ function be_popia_compliant_notice()
         if (isset($disapproved_reason) && ($disapproved_reason != 'null')) {
             if (in_array($pagenow, $admin_pages)) {
                 if (isset($disapproved_reason)) {
-    ?>
+                ?>
                     <!-- <div class="notice notice-error is-dismissible">  -->
                     <div class="notice notice-error">
                         <p><?php
@@ -3170,7 +3087,7 @@ function bpc_popia_data_processing()
             // Multiple occurance possible
             global $wpdb;
             $table_name = $wpdb->prefix . 'wc_customer_lookup';
-            $result[] = $wpdb->get_results("SELECT customer_id from $table_name WHERE `email` = '$this_user_email'");
+            $result[] = $wpdb->get_results("SELECT customer_id from $table_name WHERE `email` = '$this_user_email''''");
             if (count($result) > 0) {
                 foreach ($result as $thisId) {
                     $wpdb->update($table_name, array('username' => $red_name), array('email' => $this_user_email));
@@ -3544,6 +3461,7 @@ function be_popia_compliant_cookie_field_9_callback()
         echo '<span style="margin-left: 20px">Select this if you preffer to use a diffirent Cookie Banner Plugin</span>';
     }
 }
+
 // field 1 - cookie message
 function be_popia_compliant_cookie_field_1_callback()
 {
@@ -3830,7 +3748,7 @@ function be_popia_compliant_echo_footer()
                                                 <a href="' . esc_url($privacy) . '" target="_blank"><span style="white-space:nowrap">PRIVACY POLICY</span></a>  <a href="' . esc_url($data) . '"target="_blank"><span style="white-space:nowrap">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA REQUESTS</span></a> &nbsp; <a href="' . esc_url($parties) . '" target="_blank"><span style="white-space:nowrap">&nbsp;RESPONSIBLE PARTIES</span></a> <a href="https://bepopiacompliant.co.za/#/regulator/' . $_SERVER['SERVER_NAME'] . '" target="_blank"><span style="white-space:nowrap">INFORMATION REGULATOR</span></a>
                                             </div>
                                             <span style="font-size:0px">';
-                                update_option('bpc_report', '1');
+                                $bpc_report = 1;
                                 echo "BPC REPORT 1: " . get_option("bpc_v");
                                 $has_active_keys = get_option('has_active_keys');
                                 if ($has_active_keys == 1) {
@@ -3852,56 +3770,16 @@ function be_popia_compliant_echo_footer()
                                     echo "Has SSL";
                                 } else {
                                     echo "No SSL";
-                                }
-                                $table_name = $wpdb->base_prefix . 'be_popia_compliant_checklist';
-                                $query = $wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table_name));
-                                if (!$wpdb->get_var($query) == $table_name) {
-                                    echo ' Checklist Table Not Built';
-                                } else {
-                                    echo ' Checklist Table Built';
-                                }
-                                echo '</span>
+                                };
+                                '</span>
                                         </div>
                                     </div>';
-                            } else {
-                                echo '<span style="font-size:0px">';
-                                update_option('bpc_report', '2');
-                                echo "BPC REPORT 2: " .  get_option("bpc_v");
-                                $has_active_keys = get_option('has_active_keys');
-                                if ($has_active_keys == 1) {
-                                    echo " PRO ";
-                                } else {
-                                    echo " Free ";
-                                }
-                                if (get_option("cron_last_fired_at")) {
-                                    echo date("d/m/Y H:i:s", get_option("cron_last_fired_at") + 7200);
-                                } else {
-                                    echo "No Run";
-                                }
-                                if (get_option("be_popia_compliant_cookie-field9-disable-bpc-cookie-banner") != 1) {
-                                    echo " Active ";
-                                } else {
-                                    echo " Deactivated ";
-                                }
-                                if (is_ssl()) {
-                                    echo "Has SSL";
-                                } else {
-                                    echo "No SSL";
-                                }
-                                $table_name = $wpdb->base_prefix . 'be_popia_compliant_checklist';
-                                $query = $wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table_name));
-                                if (!$wpdb->get_var($query) == $table_name) {
-                                    echo ' Checklist Table Not Built';
-                                } else {
-                                    echo ' Checklist Table Built';
-                                }
-                                echo '</span>';
                             }
                         }
                     } else {
                         echo '<span style="font-size:0px">';
-                        update_option('bpc_report', '3');
-                        echo "BPC REPORT 3: " .  get_option("bpc_v");
+                        $bpc_report = 2;
+                        echo "BPC REPORT 2: " .  get_option("bpc_v");
                         $has_active_keys = get_option('has_active_keys');
                         if ($has_active_keys == 1) {
                             echo " PRO ";
@@ -3922,53 +3800,40 @@ function be_popia_compliant_echo_footer()
                             echo "Has SSL";
                         } else {
                             echo "No SSL";
-                        }
-                        $table_name = $wpdb->base_prefix . 'be_popia_compliant_checklist';
-                        $query = $wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table_name));
-                        if (!$wpdb->get_var($query) == $table_name) {
-                            echo ' Checklist Table Not Built';
-                        } else {
-                            echo ' Checklist Table Built';
-                        }
-                        echo '</span>';
+                        };
+                        '</span>';
                     }
                 }
             } else {
                 echo '<div>
                 <span style="font-size:0px">';
-                update_option('bpc_report', '4');
-                echo "BPC REPORT 4: " .  get_option("bpc_v");
-                $has_active_keys = get_option('has_active_keys');
-                if ($has_active_keys == 1) {
-                    echo " PRO ";
-                } else {
-                    echo " Free ";
-                }
-                if (get_option("cron_last_fired_at")) {
-                    echo date("d/m/Y H:i:s", get_option("cron_last_fired_at") + 7200);
-                } else {
-                    echo "No Run";
-                }
-                if (get_option("be_popia_compliant_cookie-field9-disable-bpc-cookie-banner") != 1) {
-                    echo " Active ";
-                } else {
-                    echo " Deactivated ";
-                }
-                if (is_ssl()) {
-                    echo "Has SSL";
-                } else {
-                    echo "No SSL";
-                }
-                $table_name = $wpdb->base_prefix . 'be_popia_compliant_checklist';
-                $query = $wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table_name));
-                if (!$wpdb->get_var($query) == $table_name) {
-                    echo ' Checklist Table Not Built';
-                } else {
-                    echo ' Checklist Table Built';
-                }
-                echo'</span>
+                    $bpc_report = 3;
+                    echo "BPC REPORT 3: " .  get_option("bpc_v");
+                    $has_active_keys = get_option('has_active_keys');
+                    if ($has_active_keys == 1) {
+                        echo " PRO ";
+                    } else {
+                        echo " Free ";
+                    }
+                    if (get_option("cron_last_fired_at")) {
+                        echo date("d/m/Y H:i:s", get_option("cron_last_fired_at") + 7200);
+                    } else {
+                        echo "No Run";
+                    }
+                    if (get_option("be_popia_compliant_cookie-field9-disable-bpc-cookie-banner") != 1) {
+                        echo " Active ";
+                    } else {
+                        echo " Deactivated ";
+                    }
+                    if (is_ssl()) {
+                        echo "Has SSL";
+                    } else {
+                        echo "No SSL";
+                    };
+                '</span>
                 </div>';
             }
+
         } //isSSL
         else {
             $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/domaincompletecheck/" . $_SERVER['SERVER_NAME']);
@@ -4091,8 +3956,8 @@ function be_popia_compliant_echo_footer()
                                                 <a href="' . esc_url($privacy) . '" target="_blank"><span style="white-space:nowrap">PRIVACY POLICY</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url($data) . '"target="_blank"><span style="white-space:nowrap">DATA REQUESTS</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url($parties) . '" target="_blank"><span style="white-space:nowrap">RESPONSIBLE PARTIES</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://bepopiacompliant.co.za/#/regulator/' . $_SERVER['SERVER_NAME'] . '" target="_blank"><span style="white-space:nowrap">INFORMATION REGULATOR</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                             </div>
                                             <span style="font-size:0px">';
-                                update_option('bpc_report', '5');
-                                echo "BPC REPORT 5: " .  get_option("bpc_v");
+                                $bpc_report = 4;
+                                echo "BPC REPORT 4: " .  get_option("bpc_v");
                                 $has_active_keys = get_option('has_active_keys');
                                 if ($has_active_keys == 1) {
                                     echo " PRO ";
@@ -4113,95 +3978,75 @@ function be_popia_compliant_echo_footer()
                                     echo "Has SSL";
                                 } else {
                                     echo "No SSL";
-                                }
-                                $table_name = $wpdb->base_prefix . 'be_popia_compliant_checklist';
-                                $query = $wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table_name));
-                                if (!$wpdb->get_var($query) == $table_name) {
-                                    echo ' Checklist Table Not Built';
-                                } else {
-                                    echo ' Checklist Table Built';
-                                }
-                                echo '</span>
-                                </div>
-                            </div>';
+                                };
+                                '</span>
+                                        </div>
+                                    </div>';
                             }
                         }
                     }
                 }
             }
         }
-    } else {
+        } else {
         echo '<div>
                 <span style="font-size:0px">';
-        update_option('bpc_report', '6');
-        echo "BPC REPORT 6: " .  get_option("bpc_v");
-        $has_active_keys = get_option('has_active_keys');
-        if ($has_active_keys == 1) {
-            echo " PRO ";
-        } else {
-            echo " Free ";
-        }
-        if (get_option("cron_last_fired_at")) {
-            echo date("d/m/Y H:i:s", get_option("cron_last_fired_at") + 7200);
-        } else {
-            echo "No Run";
-        }
-        if (get_option("be_popia_compliant_cookie-field9-disable-bpc-cookie-banner") != 1) {
-            echo " Active ";
-        } else {
-            echo " Deactivated ";
-        }
-        if (is_ssl()) {
-            echo "Has SSL";
-        } else {
-            echo "No SSL";
-        }
-        $table_name = $wpdb->base_prefix . 'be_popia_compliant_checklist';
-        $query = $wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table_name));
-        if (!$wpdb->get_var($query) == $table_name) {
-            echo ' Checklist Table Not Built';
-        } else {
-            echo ' Checklist Table Built';
-        }
-        echo '</span>
-    </div>';
+                    $bpc_report = 5;
+                    echo "BPC REPORT 5: " .  get_option("bpc_v");
+                    $has_active_keys = get_option('has_active_keys');
+                    if ($has_active_keys == 1) {
+                        echo " PRO ";
+                    } else {
+                        echo " Free ";
+                    }
+                    if (get_option("cron_last_fired_at")) {
+                        echo date("d/m/Y H:i:s", get_option("cron_last_fired_at") + 7200);
+                    } else {
+                        echo "No Run";
+                    }
+                    if (get_option("be_popia_compliant_cookie-field9-disable-bpc-cookie-banner") != 1) {
+                        echo " Active ";
+                    } else {
+                        echo " Deactivated ";
+                    }
+                    if (is_ssl()) {
+                        echo "Has SSL";
+                    } else {
+                        echo "No SSL";
+                    };
+                '</span>
+            </div>';
     }
-
-    if (!get_option('bpc_report')) {
-        echo '<span style="font-size:0px">';
-        update_option('bpc_report', '7');
-        echo "BPC REPORT 7: " .  get_option("bpc_v");
-        $has_active_keys = get_option('has_active_keys');
-        if ($has_active_keys == 1) {
-            echo " PRO ";
-        } else {
-            echo " Free ";
-        }
-        if (get_option("cron_last_fired_at")) {
-            echo date("d/m/Y H:i:s", get_option("cron_last_fired_at") + 7200);
-        } else {
-            echo "No Run";
-        }
-        if (get_option("be_popia_compliant_cookie-field9-disable-bpc-cookie-banner") != 1) {
-            echo " Active ";
-        } else {
-            echo " Deactivated ";
-        }
-        if (is_ssl()) {
-            echo "Has SSL";
-        } else {
-            echo "No SSL";
-        }
-        $table_name = $wpdb->base_prefix . 'be_popia_compliant_checklist';
-        $query = $wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table_name));
-        if (!$wpdb->get_var($query) == $table_name) {
-            echo ' Checklist Table Not Built';
-        } else {
-            echo ' Checklist Table Built';
-        }
-        echo '</span>';
+    if(!isset($bpc_report)) {
+        echo
+        '<div>
+            <span style="font-size:0px">';
+                $bpc_report = 6;
+                echo "BPC REPORT 6: " .  get_option("bpc_v");
+                $has_active_keys = get_option('has_active_keys');
+                if ($has_active_keys == 1) {
+                    echo " PRO ";
+                } else {
+                    echo " Free ";
+                }
+                if (get_option("cron_last_fired_at")) {
+                    echo date("d/m/Y H:i:s", get_option("cron_last_fired_at") + 7200);
+                } else {
+                    echo "No Run";
+                }
+                if (get_option("be_popia_compliant_cookie-field9-disable-bpc-cookie-banner") != 1) {
+                    echo " Active ";
+                } else {
+                    echo " Deactivated ";
+                }
+                if (is_ssl()) {
+                    echo "Has SSL";
+                } else {
+                    echo "No SSL";
+                };'
+            </span>
+        </div>';
     }
-    update_option('bpc_report', null);
 }
 
 
@@ -4217,22 +4062,10 @@ add_action('woocommerce_edit_account_form', 'display_account_registration_field'
 function display_account_registration_field()
 {
     $identificationNumber = !empty($_POST['user_identification_number']) ? ($_POST['user_identification_number']) : '';
-    if(!isset($identificationNumber)) {
-        $identificationNumber = get_user_meta( $user_id, 'user_identification_number', $single );
-    }
     $otherIdNumber = !empty($_POST['other_identification_number']) ? ($_POST['other_identification_number']) : '';
-    if(!isset($otherIdNumber)) {
-        $otherIdNumber = get_user_meta( $user_id, 'other_identification_number', $single );
-    }
     $otherIdType = !empty($_POST['other_identification_type']) ? ($_POST['other_identification_type']) : '';
-    if(!isset($otherIdType)) {
-        $otherIdType = get_user_meta( $user_id, 'other_identification_type', $single );
-    }
     $otherIdIssue = !empty($_POST['other_identification_issue']) ? ($_POST['other_identification_issue']) : '';
-    if(!isset($otherIdIssue)) {
-        $otherIdIssue = get_user_meta( $user_id, 'other_identification_issue', $single );
-    }
-?>
+    ?>
 
     <p>
         <center><span><b>For POPIA Purposes</b><br>
@@ -4263,7 +4096,7 @@ function display_account_registration_field()
             <br><br>
         </center>
     </p>
-<?php
+    <?php
 }
 
 add_filter('woocommerce_form_field', 'be_popiaCompliant_remove_checkout_optional_text', 10, 4);
@@ -4286,10 +4119,11 @@ function be_popia_compliant_checkout_style()
             echo '<style>input#bpc_hide {display:none;}<style>';
 
             if (is_user_logged_in()) {
-                update_option('bpc_logged_in_user', get_current_user_id());
+                update_option('bpc_logged_in_user', get_current_user_id() );
                 echo 'User ID: ' . get_current_user_id();
+
             } else {
-                update_option('bpc_logged_in_user', NULL);
+                update_option('bpc_logged_in_user', NULL );
                 echo "Not Logged In";
                 if (is_checkout() && !is_wc_endpoint_url()) {
                     echo "is Checkout and not logged in";
@@ -4305,43 +4139,41 @@ if (get_option('active_plugins')) {
 
     if (in_array('woocommerce/woocommerce.php', $array, true)) {
 
-        add_filter('woocommerce_checkout_fields', 'bpc_billing_another_group');
-        function bpc_billing_another_group($checkout_fields)
-        {
+        add_filter( 'woocommerce_checkout_fields', 'bpc_billing_another_group' );
+        function bpc_billing_another_group( $checkout_fields ){
             $checkout_fields['order']['billing_user_SAID'] = $checkout_fields['billing']['billing_user_SAID'];
             $checkout_fields['order']['billing_user_OtherID'] = $checkout_fields['billing']['billing_user_OtherID'];
             $checkout_fields['order']['billing_user_OIDT'] = $checkout_fields['billing']['billing_user_OIDT'];
             $checkout_fields['order']['billing_user_OIDI'] = $checkout_fields['billing']['billing_user_OIDI'];
             $checkout_fields['order']['billing_SAIDD'] = $checkout_fields['billing']['billing_SAIDD'];
-            unset($checkout_fields['billing']['billing_user_SAID']);
-            unset($checkout_fields['billing']['billing_user_OtherID']);
-            unset($checkout_fields['billing']['billing_user_OIDT']);
-            unset($checkout_fields['billing']['billing_user_OIDI']);
-            unset($checkout_fields['billing']['billing_SAIDD']);
-            unset($checkout_fields['shipping']['shipping_user_SAID']);
-            unset($checkout_fields['shipping']['shipping_user_OtherID']);
-            unset($checkout_fields['shipping']['shipping_user_OIDT']);
-            unset($checkout_fields['shipping']['shipping_user_OIDI']);
-            unset($checkout_fields['shipping']['shipping_SAIDD']);
-            return $checkout_fields;
+            unset( $checkout_fields['billing']['billing_user_SAID'] );
+            unset( $checkout_fields['billing']['billing_user_OtherID'] );
+            unset( $checkout_fields['billing']['billing_user_OIDT'] );
+            unset( $checkout_fields['billing']['billing_user_OIDI'] );
+            unset( $checkout_fields['billing']['billing_SAIDD'] );
+            unset( $checkout_fields['shipping']['shipping_user_SAID'] );
+            unset( $checkout_fields['shipping']['shipping_user_OtherID'] );
+            unset( $checkout_fields['shipping']['shipping_user_OIDT'] );
+            unset( $checkout_fields['shipping']['shipping_user_OIDI'] );
+            unset( $checkout_fields['shipping']['shipping_SAIDD'] );
+        return $checkout_fields;
         }
 
         /* Display field value on the order in the backend edit page on order form */
-        add_action('woocommerce_admin_order_data_after_billing_address', 'my_custom_checkout_field_display_admin_order_meta', 10, 1);
+        add_action( 'woocommerce_admin_order_data_after_billing_address', 'my_custom_checkout_field_display_admin_order_meta', 10, 1 );
 
-        function my_custom_checkout_field_display_admin_order_meta($order)
-        {
-            if (get_post_meta($order->get_id(), '_billing_user_SAID', true)) {
-                echo '<p><strong>' . __('South African ID #') . ':</strong><br>' . get_post_meta($order->get_id(), '_billing_user_SAID', true) . '</p>';
+        function my_custom_checkout_field_display_admin_order_meta($order){
+            if(get_post_meta( $order->get_id(), '_billing_user_SAID', true )){
+            echo '<p><strong>'.__('South African ID #').':</strong><br>' . get_post_meta( $order->get_id(), '_billing_user_SAID', true ) . '</p>';
             }
-            if (get_post_meta($order->get_id(), '_billing_user_OtherID', true)) {
-                echo '<p><strong>' . __('Other Idendification #') . ':</strong><br>' . get_post_meta($order->get_id(), '_billing_user_OtherID', true) . '</p>';
+            if(get_post_meta( $order->get_id(), '_billing_user_OtherID', true )){
+                echo '<p><strong>'.__('Other Idendification #').':</strong><br>' . get_post_meta( $order->get_id(), '_billing_user_OtherID', true ) . '</p>';
             }
-            if (get_post_meta($order->get_id(), '_billing_user_OIDT', true)) {
-                echo '<p><strong>' . __('Identification Type') . ':</strong><br>' . get_post_meta($order->get_id(), '_billing_user_OIDT', true) . '</p>';
+            if(get_post_meta( $order->get_id(), '_billing_user_OIDT', true )){
+                echo '<p><strong>'.__('Identification Type').':</strong><br>' . get_post_meta( $order->get_id(), '_billing_user_OIDT', true ) . '</p>';
             }
-            if (get_post_meta($order->get_id(), '_billing_user_OIDI', true)) {
-                echo '<p><strong>' . __('Country of Issue') . ':</strong><br>' . get_post_meta($order->get_id(), '_billing_user_OIDI', true) . '</p>';
+            if(get_post_meta( $order->get_id(), '_billing_user_OIDI', true )){
+                echo '<p><strong>'.__('Country of Issue').':</strong><br>' . get_post_meta( $order->get_id(), '_billing_user_OIDI', true ) . '</p>';
             }
         }
 
@@ -4349,361 +4181,300 @@ if (get_option('active_plugins')) {
         add_filter('woocommerce_default_address_fields', 'be_popiaCompliant_override_default_address_fields');
 
         function be_popiaCompliant_override_default_address_fields($address_fields)
-        {
-            $temp_fields = array();
+                    {
+                        $temp_fields = array();
 
-            $address_fields['user_SAID'] = array(
-                'label' => __('<hr><span><b>For POPIA Purposes, we require some sort of identification.</b><br><div style=\'font-size:10px!important\'>(Powered by <a href="https://bepopiacompliant.co.za" target="_blank"><span style="color:#B61F20">Be POPIA Compliant</span></a> & <a href="https://manageconsent.co.za" target="_blank"><span style="color:#7a7a7a">Manage Consent</span></a>)</div></span><div id="billsaiderror" style="color: red; padding: 5px; display: none; font-size: 14px; line-height: 14px;"></div><br>South African ID Number<br>', 'woocommerce'),
-                'placeholder' => '',
-                'class' => array('form-row-wide', 'address-field'),
-                'type' => 'text',
-                'id' => __('billing_user_SAID', 'woocommerce'),
-                'tabindex' => __('0', 'woocommerce')
-            );
+                        $address_fields['user_SAID'] = array(
+                            'label' => __('<hr><span><b>For POPIA Purposes, we require some sort of identification.</b><br><div style=\'font-size:10px!important\'>(Powered by <a href="https://bepopiacompliant.co.za" target="_blank"><span style="color:#B61F20">Be POPIA Compliant</span></a> & <a href="https://manageconsent.co.za" target="_blank"><span style="color:#7a7a7a">Manage Consent</span></a>)</div></span><div id="billsaiderror" style="color: red; padding: 5px; display: none; font-size: 14px; line-height: 14px;"></div><br>South African ID Number<br>', 'woocommerce'),
+                            'placeholder' => '',
+                            'class' => array('form-row-wide', 'address-field'),
+                            'type' => 'text',
+                            'id' => __('billing_user_SAID', 'woocommerce'),
+                            'tabindex' => __('0', 'woocommerce')
+                        );
 
-            $address_fields['user_OtherID'] = array(
-                'label' => __('<hr>OR<hr><br>Passport, Social Security or other Identification Number<br>', 'woocommerce'),
-                'placeholder' => 'if not using SA ID Number',
-                'required' => false,
-                'class' => array('form-row-wide', 'address-field'),
-                'type' => 'text'
-            );
+                        $address_fields['user_OtherID'] = array(
+                            'label' => __('<hr>OR<hr><br>Passport, Social Security or other Identification Number', 'woocommerce'),
+                            'placeholder' => 'if not using SA ID Number',
+                            'required' => false,
+                            'class' => array('form-row-wide', 'address-field'),
+                            'type' => 'text'
+                        );
 
-            $address_fields['user_OIDT'] = array(
-                'label' => __('and<br>Type of Identification Number Used', 'woocommerce'),
-                'placeholder' => 'if not using SA ID Number',
-                'required' => false,
-                'class' => array('form-row-wide', 'address-field'),
-                'type' => 'text'
-            );
+                        $address_fields['user_OIDT'] = array(
+                            'label' => __('and<br>Type of Identification Number Used', 'woocommerce'),
+                            'placeholder' => 'if not using SA ID Number',
+                            'required' => false,
+                            'class' => array('form-row-wide', 'address-field'),
+                            'type' => 'text'
+                        );
 
-            $address_fields['user_OIDI'] = array(
-                'label' => __('and<br>Country Of Issue', 'woocommerce'),
-                'placeholder' => 'if not using SA ID Number',
-                'required' => false,
-                'class' => array('form-row-wide', 'address-field'),
-                'type' => 'text'
-            );
+                        $address_fields['user_OIDI'] = array(
+                            'label' => __('and<br>Country Of Issue', 'woocommerce'),
+                            'placeholder' => 'if not using SA ID Number',
+                            'required' => false,
+                            'class' => array('form-row-wide', 'address-field'),
+                            'type' => 'text'
+                        );
 
-            $address_fields['SAIDD'] = array(
-                'label' => __('<hr>', 'woocommerce'),
-                'id' => __('bpc_hide', 'woocommerce')
-            );
+                        $address_fields['SAIDD'] = array(
+                            'label' => __('<hr>', 'woocommerce'),
+                            'id' => __('bpc_hide', 'woocommerce')
+                        );
 
-            global $be_popiaCompliant_address_fields;
+                        global $be_popiaCompliant_address_fields;
 
-            if ($be_popiaCompliant_address_fields) {
-                foreach ($be_popiaCompliant_address_fields as $fky) {
-                    if(isset($address_fields[$fky])) {
-                    $temp_fields[$fky] = $address_fields[$fky];
+                        if ($be_popiaCompliant_address_fields) {
+                            foreach ($be_popiaCompliant_address_fields as $fky) {
+                                $temp_fields[$fky] = $address_fields[$fky];
+                            }
+
+                            $address_fields = $temp_fields;
+
+                            return $address_fields;
+                        }
                     }
-                }
-                $address_fields = $temp_fields;
-                return $address_fields;
-            }
-        }
 
-
-add_action('init', 'WooCommerce_functions');
-function WooCommerce_functions() {
         $bpc_logged_in_user = get_option('bpc_logged_in_user');
-        if ($bpc_logged_in_user > 0) {
-            $bpc_logged_in_user = intval($bpc_logged_in_user);
-
-            // check if consent was provided
-            $user_identification_number = get_user_meta($bpc_logged_in_user, 'user_identification_number');
-            if ($user_identification_number) {
-                if (intval($user_identification_number) > 0) {
-                    $user_identification_number = implode('', $user_identification_number);
-                    if (strlen(strval($user_identification_number)) == 13) {
-                        $id_verify = '' . $user_identification_number[0] . $user_identification_number[1] . $user_identification_number[2] . $user_identification_number[3] . $user_identification_number[4] . $user_identification_number[5] . '';
-                        if (str_contains(strval($id_verify), '000000')) {
-                            $userIDis = 0;
-                            update_option('userIDis', $userIDis);
-                        } else {
-                            $userIDis = 1;
-                            update_option('userIDis', $userIDis);
-                        }
-                    } else {
-                        $userIDis = 0;
-                        update_option('userIDis', $userIDis);
-                    }
-                } else {
-                    $userIDis = 0;
-                    update_option('userIDis', $userIDis);
-                }
-            }
-
-            $other_identification_number = get_user_meta($bpc_logged_in_user, 'other_identification_number');
-            if ($other_identification_number) {
-                if (intval($other_identification_number) > 0) {
-                    $other_identification_number = implode('', $other_identification_number);
-                    if (strlen(strval($other_identification_number)) > 6) {
-                        $userOtherIDis = 1;
-                        update_option('userOtherIDis', $userOtherIDis);
-                    }
-                } else {
-                    $userOtherIDis = 0;
-                    update_option('userOtherIDis', $userOtherIDis);
-                }
-            } else {
-                $userOtherIDis = 0;
-                update_option('userOtherIDis', $userOtherIDis);
-            }
-
-            $other_identification_type = get_user_meta($bpc_logged_in_user, 'other_identification_type');
-            if ($other_identification_type) {
-                if (intval($other_identification_type) > 0) {
-                    $other_identification_type = implode('', $other_identification_type);
-                    if (strlen(strval($other_identification_type)) > 8) {
-                        $userOtherIDtypeIs = 1;
-                        update_option('userOtherIDtypeIs', $userOtherIDtypeIs);
-                    }
-                } else {
-                    $userOtherIDtypeIs = 0;
-                    update_option('userOtherIDtypeIs', $userOtherIDtypeIs);
-                }
-            } else {
-                $userOtherIDtypeIs = 0;
-                update_option('userOtherIDtypeIs', $userOtherIDtypeIs);
-            }
-
-            $other_identification_issue = get_user_meta($bpc_logged_in_user, 'other_identification_issue');
-            if ($other_identification_issue) {
-                if (intval($other_identification_issue) > 0) {
-                    $other_identification_issue = implode('', $other_identification_issue);
-                    if (strlen(strval($other_identification_issue)) > 3) {
-                        $userOtherIDIssueIs = 1;
-                        update_option('userOtherIDIssueIs', $userOtherIDIssueIs);
-                    }
-                } else {
-                    $userOtherIDIssueIs = 0;
-                    update_option('userOtherIDIssueIs', $userOtherIDIssueIs);
-                }
-            } else {
-                $userOtherIDIssueIs = 0;
-                update_option('userOtherIDIssueIs', $userOtherIDIssueIs);
-            }
-
-            $billing_user_SAID = get_user_meta($bpc_logged_in_user, 'billing_user_SAID');
-            if ($billing_user_SAID) {
-                if (intval($billing_user_SAID) > 0) {
-                    $billing_user_SAID = implode('', $billing_user_SAID);
-                    if (strlen(strval($billing_user_SAID)) == 13) {
-                        $id_verify = '' . $billing_user_SAID[0] . $billing_user_SAID[1] . $billing_user_SAID[2] . $billing_user_SAID[3] . $billing_user_SAID[4] . $billing_user_SAID[5] . '';
-                        if (str_contains(strval($id_verify), '000000')) {
-                            $billUserIDis = 0;
-                            update_option('billUserIDis', $billUserIDis);
-                        } else {
-                            $billUserIDis = 1;
-                            update_option('billUserIDis', $billUserIDis);
-                        }
-                    } else {
-                        $billUserIDis = 0;
-                        update_option('billUserIDis', $billUserIDis);
-                    }
-                } else {
-                    $billUserIDis = 0;
-                    update_option('billUserIDis', $billUserIDis);
-                }
-            }
-
-            $billing_user_OtherID = get_user_meta($bpc_logged_in_user, 'billing_user_OtherID');
-            if ($billing_user_OtherID) {
-                if (intval($billing_user_OtherID) > 0) {
-                    $billing_user_OtherID = implode('', $billing_user_OtherID);
-                    if (strlen(strval($billing_user_OtherID)) > 6) {
-                        $billUserOtherIDis = 1;
-                        update_option('billUserOtherIDis', $billUserOtherIDis);
-                    }
-                } else {
-                    $billUserOtherIDis = 0;
-                    update_option('billUserOtherIDis', $billUserOtherIDis);
-                }
-            } else {
-                $billUserOtherIDis = 0;
-                update_option('billUserOtherIDis', $billUserOtherIDis);
-            }
-
-            $billing_user_OIDT = get_user_meta($bpc_logged_in_user, 'billing_user_OIDT');
-            if ($billing_user_OIDT) {
-                if (intval($billing_user_OIDT) > 0) {
-                    $billing_user_OIDT = implode('', $billing_user_OIDT);
-                    if (strlen(strval($billing_user_OIDT)) > 8) {
-                        $billUserOtherIDtypeIs = 1;
-                        update_option('billUserOtherIDtypeIs', $billUserOtherIDtypeIs);
-                    }
-                } else {
-                    $billUserOtherIDtypeIs = 0;
-                    update_option('billUserOtherIDtypeIs', $billUserOtherIDtypeIs);
-                }
-            } else {
-                $billUserOtherIDtypeIs = 0;
-                update_option('billUserOtherIDtypeIs', $billUserOtherIDtypeIs);
-            }
-
-            $billing_user_OIDI = get_user_meta($bpc_logged_in_user, 'billing_user_OIDI');
-            if ($billing_user_OIDI) {
-                if (intval($billing_user_OIDI) > 0) {
-                    $billing_user_OIDI = implode('', $billing_user_OIDI);
-                    if (strlen(strval($billing_user_OIDI)) > 3) {
-                        $billUserOtherIDIssueIs = 1;
-                        update_option('billUserOtherIDIssueIs', $billUserOtherIDIssueIs);
-                    }
-                } else {
-                    $billUserOtherIDIssueIs = 0;
-                    update_option('billUserOtherIDIssueIs', $billUserOtherIDIssueIs);
-                }
-            } else {
-                $billUserOtherIDIssueIs = 0;
-                update_option('billUserOtherIDIssueIs', $billUserOtherIDIssueIs);
-            }
-
-            $this_user_output = get_user_meta($bpc_logged_in_user, 'bpc_comms_market_consent');
-
-            if (!isset($this_user_output) || !is_array($this_user_output) || empty($this_user_output)) {
-                $consentProvidedIs = 0;
-            } else {
-                $this_user_consent_provided_link = json_encode($this_user_output);
-                $this_user_consent_provided_link = explode(",", $this_user_consent_provided_link);
-                $this_user_consent_provided_link = $this_user_consent_provided_link[1];
-                $this_user_consent_provided_link = str_replace(' ', '', $this_user_consent_provided_link);
-                $this_user_consent_provided_link = str_replace('"', '', $this_user_consent_provided_link);
-                $this_user_consent_provided_link = str_replace('\\', '', $this_user_consent_provided_link);
-
-                if (strpos($this_user_consent_provided_link, 'redacted') !== false) {
-                    $consentProvidedIs = 1;
-                    update_user_meta( $bpc_logged_in_user, 'has_provided_consent', 1 );
-                } else {
-                    $consentProvidedIs = 0;
-                    if(get_user_meta( $bpc_logged_in_user, 'has_provided_consent', $single )){
-                        delete_user_meta( $bpc_logged_in_user, 'has_provided_consent', $meta_value = 1 );
-                    }
-
-                }
-            }
-
-            if ($consentProvidedIs == 1) {
-                $consent_provided = 1;
-                if ($userIDis == 1) {
-                    $secondaryID = NULL;
-                    $priorityID = get_user_meta($bpc_logged_in_user, 'user_identification_number');
-                    $priorityConsent = $this_user_consent_provided_link;
-                } elseif ($billUserIDis == 1) {
-                    $secondaryID = NULL;
-                    $priorityID = get_user_meta($bpc_logged_in_user, 'billing_user_SAID');
-                    $priorityConsent = $this_user_consent_provided_link;
-                } elseif ($userOtherIDis == 1 && $userOtherIDtypeIs == 1 && $userOtherIDIssueIs == 1) {
-                    $priorityID = NULL;
-                    $secondaryID = get_user_meta($bpc_logged_in_user, 'other_identification_number');
-                    $secondaryType = get_user_meta($bpc_logged_in_user, 'other_identification_type');
-                    $secondaryIssue = get_user_meta($bpc_logged_in_user, 'other_identification_issue');
-                    $priorityConsent = $this_user_consent_provided_link;
-                } elseif ($billUserOtherIDis == 1 && $billUserOtherIDtypeIs == 1 && $billUserOtherIDIssueIs == 1) {
-                    $priorityID = NULL;
-                    $secondaryID = get_user_meta($bpc_logged_in_user, 'billing_user_OtherID');
-                    $secondaryType = get_user_meta($bpc_logged_in_user, 'billing_user_OIDT');
-                    $secondaryIssue = get_user_meta($bpc_logged_in_user, 'billing_user_OIDI');
-                    $priorityConsent = $this_user_consent_provided_link;
-                }
-            } else {
-                $consent_provided = 2;
-                if ($userIDis == 1) {
-                    $secondaryID = NULL;
-                    $priorityID = get_user_meta($bpc_logged_in_user, 'user_identification_number');
-                } elseif ($billUserIDis == 1) {
-                    $secondaryID = NULL;
-                    $priorityID = get_user_meta($bpc_logged_in_user, 'billing_user_SAID');
-                } elseif(isset($userOtherIDis) && ($userOtherIDis == 1 && $userOtherIDtypeIs == 1 && $userOtherIDIssueIs == 1)) {
-                    $priorityID = NULL;
-                    $secondaryID = get_user_meta($bpc_logged_in_user, 'other_identification_number');
-                    $secondaryType = get_user_meta($bpc_logged_in_user, 'other_identification_type');
-                    $secondaryIssue = get_user_meta($bpc_logged_in_user, 'other_identification_issue');
-                } elseif(isset($billUserOtherIDis) && ($billUserOtherIDis == 1 && $billUserOtherIDtypeIs == 1 && $billUserOtherIDIssueIs == 1)) {
-                    $priorityID = NULL;
-                    $secondaryID = get_user_meta($bpc_logged_in_user, 'billing_user_OtherID');
-                    $secondaryType = get_user_meta($bpc_logged_in_user, 'billing_user_OIDT');
-                    $secondaryIssue = get_user_meta($bpc_logged_in_user, 'billing_user_OIDI');
-                }
-            }
-
-            // if logged in and provided consent
-            if(isset($consent_provided)) { 
-                if(($consent_provided == 1)) {
-                    
-                } else {
-                // if logged in and not yet provided consent
-                }
-            }
-
-            if($bpc_logged_in_user> 0) {
+            if($bpc_logged_in_user > 0) {
                 $bpc_logged_in_user = intval($bpc_logged_in_user);
-                
-                if(isset($priorityID)) {
-                    $priorityID = json_encode($priorityID);
-                    $priorityID = str_replace(' ', '', $priorityID);
-                    $priorityID = str_replace('[', '', $priorityID);
-                    $priorityID = str_replace(']', '', $priorityID);
-                    $priorityID = str_replace('"', '', $priorityID);
-                    $priorityID = strval($priorityID);
-                }
-                
-                if(isset($secondaryID)) {
-                    $secondaryID = json_encode($secondaryID);
-                    $secondaryID = str_replace(' ', '', $secondaryID);
-                    $secondaryID = str_replace('[', '', $secondaryID);
-                    $secondaryID = str_replace(']', '', $secondaryID);
-                    $secondaryID = str_replace('"', '', $secondaryID);
-                    $secondaryID = strval($secondaryID);
-                }
-                
-                if(isset($priorityID)) {
-                    // THIS WORKS FINE BUT REPLACE $PRIOROTY id AND $SECONDARY id WITH RELEVANT OPTIONS
-                    // Update all fields
-                    update_user_meta( $bpc_logged_in_user, 'user_identification_number', $priorityID );
-                    update_user_meta( $bpc_logged_in_user, 'billing_user_SAID', $priorityID);
+
+                // check if consent was provided
+                $user_identification_number = get_user_meta($bpc_logged_in_user, 'user_identification_number');
+                    if($user_identification_number){
+                        if(intval($user_identification_number) > 0)  {
+                            $user_identification_number = implode('',$user_identification_number);
+                            if(strlen(strval($user_identification_number)) == 13)  {
+                                $id_verify = '' . $user_identification_number[0] . $user_identification_number[1] . $user_identification_number[2] . $user_identification_number[3] . $user_identification_number[4] . $user_identification_number[5] . '';
+                                if (str_contains(strval($id_verify), '000000')) {
+                                    $userIDis = 0;
+                                } else {
+                                    $userIDis = 1;
+                                }
+                            } else {
+                                $userIDis = 0;
+                            }
+                        } else {
+                            $userIDis = 0;
+                        }
+                    }
+
+                $other_identification_number = get_user_meta($bpc_logged_in_user, 'other_identification_number');
+                    if($other_identification_number){
+                        if(intval($other_identification_number) > 0)  {
+                            $other_identification_number = implode('',$other_identification_number);
+                            if(strlen(strval($other_identification_number)) > 6)  {
+                                    $userOtherIDis = 1;
+                                }
+                            } else {
+                                $userOtherIDis = 0;
+                            }
+                        } else {
+                            $userOtherIDis = 0;
+                        }
                     
-                    update_user_meta( $bpc_logged_in_user, 'other_identification_number', null );
-                    update_user_meta( $bpc_logged_in_user, 'billing_user_OtherID', null);
-
-                    update_user_meta( $bpc_logged_in_user, 'other_identification_type', null );
-                    update_user_meta( $bpc_logged_in_user, 'billing_user_OIDT', null);
-
-                    update_user_meta( $bpc_logged_in_user, 'other_identification_issue', null );
-                    update_user_meta( $bpc_logged_in_user, 'billing_user_OIDI', null);
-
-                } elseif(isset($secondaryID)) {
+                $other_identification_type = get_user_meta($bpc_logged_in_user, 'other_identification_type');
+                    if($other_identification_type){
+                        if(intval($other_identification_type) > 0)  {
+                            $other_identification_type = implode('',$other_identification_type);
+                            if(strlen(strval($other_identification_type)) > 8)  {
+                                    $userOtherIDtypeIs = 1;
+                                }
+                            } else {
+                                $userOtherIDtypeIs = 0;
+                            }
+                        } else {
+                            $userOtherIDtypeIs = 0;
+                        }
                     
-                    update_user_meta( $bpc_logged_in_user, 'user_identification_number', null );
-                    update_user_meta( $bpc_logged_in_user, 'billing_user_SAID', null );
+                $other_identification_issue = get_user_meta($bpc_logged_in_user, 'other_identification_issue');
+                    if($other_identification_issue){
+                        if(intval($other_identification_issue) > 0)  {
+                            $other_identification_issue = implode('',$other_identification_issue);
+                            if(strlen(strval($other_identification_issue)) > 3)  {
+                                    $userOtherIDIssueIs = 1;
+                                }
+                            } else {
+                                $userOtherIDIssueIs = 0;
+                            }
+                        } else {
+                            $userOtherIDIssueIs = 0;
+                        }
+            
+                $billing_user_SAID = get_user_meta($bpc_logged_in_user,'billing_user_SAID');
+                    if($billing_user_SAID){
+                        if(intval($billing_user_SAID) > 0)  {
+                            $billing_user_SAID = implode('',$billing_user_SAID);
+                            if(strlen(strval($billing_user_SAID)) == 13)  {
+                                $id_verify = '' . $billing_user_SAID[0] . $billing_user_SAID[1] . $billing_user_SAID[2] . $billing_user_SAID[3] . $billing_user_SAID[4] . $billing_user_SAID[5] . '';
+                                if (str_contains(strval($id_verify), '000000')) {
+                                    $billUserIDis = 0;
+                                } else {
+                                    $billUserIDis = 1;
+                                }
+                            } else {
+                                $billUserIDis = 0;
+                            }
+                        } else {
+                            $billUserIDis = 0;
+                        }
+                    }
+                
+                $billing_user_OtherID = get_user_meta($bpc_logged_in_user, 'billing_user_OtherID');
+                    if($billing_user_OtherID){
+                        if(intval($billing_user_OtherID) > 0)  {
+                            $billing_user_OtherID = implode('',$billing_user_OtherID);
+                            if(strlen(strval($billing_user_OtherID)) > 6)  {
+                                $billUserOtherIDis = 1;
+                            }
+                        } else {
+                            $billUserOtherIDis = 0;
+                        }
+                    } else {
+                        $billUserOtherIDis = 0;
+                    }
 
-                    update_user_meta( $bpc_logged_in_user, 'other_identification_number', $secondaryID);
-                    update_user_meta( $bpc_logged_in_user, 'billing_user_OtherID', $secondaryID);
-                    
+                $billing_user_OIDT = get_user_meta($bpc_logged_in_user, 'billing_user_OIDT');
+                    if($billing_user_OIDT){
+                        if(intval($billing_user_OIDT) > 0)  {
+                            $billing_user_OIDT = implode('',$billing_user_OIDT);
+                            if(strlen(strval($billing_user_OIDT)) > 8)  {
+                                $billUserOtherIDtypeIs = 1;
+                            }
+                        } else {
+                            $billUserOtherIDtypeIs = 0;
+                        }
+                    } else {
+                        $billUserOtherIDtypeIs = 0;
+                    }
 
-                    update_user_meta( $bpc_logged_in_user, 'other_identification_type', $secondaryType);
-                    update_user_meta( $bpc_logged_in_user, 'billing_user_OIDT', $secondaryType);
+                $billing_user_OIDI = get_user_meta($bpc_logged_in_user, 'billing_user_OIDI');
+                    if($billing_user_OIDI){
+                        if(intval($billing_user_OIDI) > 0)  {
+                            $billing_user_OIDI = implode('',$billing_user_OIDI);
+                            if(strlen(strval($billing_user_OIDI)) > 3)  {
+                                    $billUserOtherIDIssueIs = 1;
+                                }
+                            } else {
+                                $billUserOtherIDIssueIs = 0;
+                            }
+                        } else {
+                            $billUserOtherIDIssueIs = 0;
+                        }
 
-                    update_user_meta( $bpc_logged_in_user, 'other_identification_issue', $secondaryIssue );
-                    update_user_meta( $bpc_logged_in_user, 'billing_user_OIDI', $secondaryIssue);
+                $this_user_output = get_user_meta($bpc_logged_in_user, 'bpc_comms_market_consent');
+
+                if (!isset($this_user_output) || !is_array($this_user_output) || empty($this_user_output)) {
+                    $consentProvidedIs = 0;
+                } else {
+                    // echo "Set";
+                    $this_user_consent_provdided_link = $this_user_output[1];
+                    if (strpos($this_user_consent_provdided_link, 'redacted') !== false) {
+                    $consentProvidedIs = 1;
+                    } else {
+                        $consentProvidedIs = 0;
+                    }
                 }
+
+                if($consentProvidedIs == 1) {
+                    $consent_provided = 1;
+                    if($userIDis == 1) {
+                        $secondaryID = NULL;
+                        $priorityID = get_user_meta($bpc_logged_in_user, 'user_identification_number');
+                        $priorityConsent = $this_user_consent_provdided_link;
+                    } elseif($billUserIDis == 1) {
+                        $secondaryID = NULL;
+                        $priorityID = get_user_meta($bpc_logged_in_user, 'billing_user_SAID');
+                        $priorityConsent = $this_user_consent_provdided_link;
+                    } elseif($userOtherIDis == 1 && $userOtherIDtypeIs == 1 && $userOtherIDIssueIs == 1) {
+                        $priorityID = NULL;
+                        $secondaryID = get_user_meta($bpc_logged_in_user, 'other_identification_number');
+                        $secondaryType = get_user_meta($bpc_logged_in_user, 'other_identification_type');
+                        $secondaryIssue = get_user_meta($bpc_logged_in_user, 'other_identification_issue');
+                        $priorityConsent = $this_user_consent_provdided_link;
+                    } elseif($billUserOtherIDis == 1 && $billUserOtherIDtypeIs == 1 && $billUserOtherIDIssueIs == 1) {
+                        $priorityID = NULL;
+                        $secondaryID = get_user_meta($bpc_logged_in_user, 'billing_user_OtherID');
+                        $secondaryType = get_user_meta($bpc_logged_in_user, 'billing_user_OIDT');
+                        $secondaryIssue = get_user_meta($bpc_logged_in_user, 'billing_user_OIDI');
+                        $priorityConsent = $this_user_consent_provdided_link;
+                    } 
+                } else {
+                    $consent_provided = 2;
+                    if($userIDis == 1) {
+                        $secondaryID = NULL;
+                        $priorityID = get_user_meta($bpc_logged_in_user, 'user_identification_number');
+                    } elseif($billUserIDis == 1) {
+                        $secondaryID = NULL;
+                        $priorityID = get_user_meta($bpc_logged_in_user, 'billing_user_SAID');
+                    } elseif($userOtherIDis == 1 && $userOtherIDtypeIs == 1 && $userOtherIDIssueIs == 1) {
+                        $priorityID = NULL;
+                        $secondaryID = get_user_meta($bpc_logged_in_user, 'other_identification_number');
+                        $secondaryType = get_user_meta($bpc_logged_in_user, 'other_identification_type');
+                        $secondaryIssue = get_user_meta($bpc_logged_in_user, 'other_identification_issue');
+                    } elseif($billUserOtherIDis == 1 && $billUserOtherIDtypeIs == 1 && $billUserOtherIDIssueIs == 1) {
+                        $priorityID = NULL;
+                        $secondaryID = get_user_meta($bpc_logged_in_user, 'billing_user_OtherID');
+                        $secondaryType = get_user_meta($bpc_logged_in_user, 'billing_user_OIDT');
+                        $secondaryIssue = get_user_meta($bpc_logged_in_user, 'billing_user_OIDI');
+                    }
+                }
+                               
+
+                // if logged in and provided consent
+                if($has_provided_consent == 1){
+                    
+                } else {
+                    // if logged in and not yet provided consent
+                }
+
+                // if($bpc_logged_in_user> 0) {
+                //     $bpc_logged_in_user = intval($bpc_logged_in_user);
+                //     if(isset($priorityID)) {
+                //         $priorityID = intval($priorityID);
+                //         // Update all fields
+                //         if(get_user_meta( $bpc_logged_in_user, 'user_identification_number', true )) update_user_meta( $bpc_logged_in_user, 'user_identification_number', $priorityID );
+                //         if(get_user_meta( $bpc_logged_in_user, 'billing_user_SAID', true )) update_user_meta( $bpc_logged_in_user, 'billing_user_SAID', $priorityID );
+
+                //         if(get_user_meta( $bpc_logged_in_user, 'other_identification_number', true )) update_user_meta( $bpc_logged_in_user, 'other_identification_number', NULL );
+                //         if(get_user_meta( $bpc_logged_in_user, 'billing_user_OtherID', true )) update_user_meta( $bpc_logged_in_user, 'billing_user_OtherID', NULL );
+
+                //         if(get_user_meta( $bpc_logged_in_user, 'other_identification_type', true )) update_user_meta( $bpc_logged_in_user, 'other_identification_type', NULL );
+                //         if(get_user_meta( $bpc_logged_in_user, 'billing_user_OIDT', true )) update_user_meta( $bpc_logged_in_user, 'billing_user_OIDT', NULL );
+
+                //         if(get_user_meta( $bpc_logged_in_user, 'other_identification_issue', true )) update_user_meta( $bpc_logged_in_user, 'other_identification_issue', NULL );
+                //         if(get_user_meta( $bpc_logged_in_user, 'billing_user_OIDI', true )) update_user_meta( $bpc_logged_in_user, 'billing_user_OIDI', NULL );
+
+                //     } elseif(isset($secondaryID)) {
+                        
+                //         // Update all fields
+                //         if(get_user_meta( $bpc_logged_in_user, 'user_identification_number', true )) update_user_meta( $bpc_logged_in_user, 'user_identification_number', NULL );
+                //         if(get_user_meta( $bpc_logged_in_user, 'other_identification_number', true )) update_user_meta( $bpc_logged_in_user, 'other_identification_number', $secondaryID );
+                //         if(get_user_meta( $bpc_logged_in_user, 'billing_user_OtherID', true )) update_user_meta( $bpc_logged_in_user, 'billing_user_OtherID', $secondaryID );
+
+                //         if(get_user_meta( $bpc_logged_in_user, 'billing_user_SAID', true )) update_user_meta( $bpc_logged_in_user, 'billing_user_SAID', NULL );
+                //         if(get_user_meta( $bpc_logged_in_user, 'other_identification_type', true )) update_user_meta( $bpc_logged_in_user, 'other_identification_type', $secondaryType );
+                //         if(get_user_meta( $bpc_logged_in_user, 'billing_user_OIDT', true )) update_user_meta( $bpc_logged_in_user, 'billing_user_OIDT', $secondaryType );
+
+                //         if(get_user_meta( $bpc_logged_in_user, 'other_identification_issue', true )) update_user_meta( $bpc_logged_in_user, 'other_identification_issue', $secondaryIssue );
+                //         if(get_user_meta( $bpc_logged_in_user, 'billing_user_OIDI', true )) update_user_meta( $bpc_logged_in_user, 'billing_user_OIDI', $secondaryIssue );
+                //     }
+                // }
+
+                // unset($priorityID);
+                // unset($secondaryID);
+                // unset($secondaryType);
+                // unset($secondaryIssue);
+                // unset($userOtherIDis);
+                // unset($userOtherIDtypeIs);
+                // unset($userOtherIDIssueIs);
+                // unset($billUserOtherIDis);
+                // unset($billUserOtherIDtypeIs);
+                // unset($billUserOtherIDIssueIs);
+
+            } else {
+                // if not logged in
             }
-
-            if(isset($priorityID)) unset($priorityID);
-            if(isset($secondaryID)) unset($secondaryID);
-            if(isset($secondaryType)) unset($secondaryType);
-            if(isset($secondaryIssue)) unset($secondaryIssue);
-            if(isset($userOtherIDis)) unset($userOtherIDis);
-            if(isset($userOtherIDtypeIs)) unset($userOtherIDtypeIs);
-            if(isset($userOtherIDIssueIs)) unset($userOtherIDIssueIs);
-            if(isset($billUserOtherIDis)) unset($billUserOtherIDis);
-            if(isset($billUserOtherIDtypeIs)) unset($billUserOtherIDtypeIs);
-            if(isset($billUserOtherIDIssueIs)) unset($billUserOtherIDIssueIs);
-
-        } else {
-            // if not logged in
-        }
-    }
 
         add_action('woocommerce_checkout_process', 'be_popiaCompliant_check_if_selected');
 

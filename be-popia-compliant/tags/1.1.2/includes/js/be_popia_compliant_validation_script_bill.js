@@ -1,17 +1,21 @@
-jQuery(document).ready(function($){
-    function ValidateSAID() {
+if (typeof $ == 'undefined') {
+    var $ = jQuery;
+ }
+
+ jQuery(document).ready(function(){
+    function ValidateBillSAID() {
         // first clear any left over error messages
-        $('#saiderror p').remove();
+        $('#billsaiderror p').remove();
     
         // store the error div, to save typing
-        var error = $('#saiderror');
+        var error = $('#billsaiderror');
     
-        var idNumber = $('#user_identification_number').val();
+        var idNumber = $('#billing_user_SAID').val();
     
         // assume everything is correct and if it later turns out not to be, just set this to false
         var correct = true;
         
-            if (idNumber.length !== '') {
+            if (idNumber.length != '') {
             //Ref: http://www.sadev.co.za/content/what-south-african-id-number-made
             // SA ID Number have to be 13 digits, so check the length
             if (idNumber.length != 13 || !isNumber(idNumber)) {
@@ -38,7 +42,7 @@ jQuery(document).ready(function($){
             var gender = parseInt(genderCode) < 5000 ? "Female" : "Male";
     
             // get country ID for citzenship
-            var citzenship = parseInt(idNumber.substring(10, 11)) === 0 ? "Yes" : "No";
+            var citzenship = parseInt(idNumber.substring(10, 11)) == 0 ? "Yes" : "No";
     
             // apply Luhn formula for check-digits
             var tempTotal = 0;
@@ -50,12 +54,12 @@ jQuery(document).ready(function($){
                     tempTotal = parseInt(tempTotal.toString().charAt(0)) + parseInt(tempTotal.toString().charAt(1));
                 }
                 checkSum = checkSum + tempTotal;
-                multiplier = (multiplier % 2 === 0) ? 1 : 2;
+                multiplier = (multiplier % 2 == 0) ? 1 : 2;
             }
-            if ((checkSum % 10) !== 0) {
+            if ((checkSum % 10) != 0) {
                 error.append('<p>ID number does not appear to be authentic - check digit is not valid</p>');
                 correct = false;
-            }
+            };
     
     
             // if no error found, hide the error message
@@ -80,5 +84,5 @@ jQuery(document).ready(function($){
         }
     }
     
-    $('#user_identification_number').blur(ValidateSAID);
+    $('#billing_user_SAID').blur(ValidateBillSAID);
 });

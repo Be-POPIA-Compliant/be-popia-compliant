@@ -1,10 +1,11 @@
+# be-popia-compliant
 === Be POPIA Compliant ===
 Contributors: bepopiacompliant
 Tags: POPI, POPIA, POPI Act, BePOPIACompliant, Be POPIA Compliant, Be POPI Compliant, Manage, Consent, Manage Consent, Be, Be POPIA, Be POPI, POPIA Plugin, POPIA WordPress Plugin, POPIA WP Plugin, WP POPIA, WooCommerce, WooCommerse
 Requires at least: 5.4
 Tested up to: 5.9.1
 Requires PHP: 7.3
-Stable tag: 1.1.4
+Stable tag: 1.1.5
 License: License: GPLv2 or later
 
 The only POPIA Compliance plugin that is NOT JUST a Cookie Banner! For any site that operates in South Africa. *Get your site compliant in as little as 15 minutes (only by using PRO).
@@ -161,6 +162,7 @@ A20: If you have a website, that collects any data such as customer emails, tele
 
 = 1.1.3 =
 * Fixed unclosed '(' on line 1762...
+
 
 = 1.1.2 =
 * Fixed wrong location of closing bracket.
