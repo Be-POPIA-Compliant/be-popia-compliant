@@ -3,7 +3,7 @@
     Plugin Name: Be POPIA Compliant
     Plugin URI: https://bepopiacompliant.co.za
     Description: The only POPIA Compliance plugin, that is NOT JUST a Cookie Banner! That enables your clients to Manage Consent. Get your site compliant in as little as 15 minutes.
-    Version: 1.1.5
+    Version: 1.1.7
     Author: Web-X | For Everything Web | South Africa
     Author URI: https://web-x.co.za/
     License: GPLv2 or later
@@ -45,7 +45,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-$bpcV = '1.1.5';
+$bpcV = '1.1.6';
 update_option('bpc_v', $bpcV);
 
 /* Enqueue scripts*/
@@ -72,7 +72,7 @@ function add_action_links($actions)
 {
     if (get_option('bpc_hasPro') == 1) {
         $mylinks = array(
-            '<a href="' . admin_url('admin.php?page=privacy-policy') . '"><b>Cookie Banner</b></a>',
+            '<a href="' . admin_url('admin.php?page=privacy-policy') . '"><b>Banner & Cookie Settings</b></a>',
             '<a href="' . admin_url('admin.php?page=be_popia_compliant_checklist') . '"><b>POPIA Checklist</b></a>',
             '<a href="' . admin_url('users.php') . '"><b>Manage Consent</b></a>'
         );
@@ -617,6 +617,9 @@ if ((isset($result_api->value) && $result_api->value != '')) {
 } else {
     update_option('bpc_disable', '');
 }
+
+if(!get_option('be_popia_compliant_banner-field11-background-color')) update_option('be_popia_compliant_banner-field11-background-color', '#f5f5f5');
+if(!get_option('be_popia_compliant_banner-field12-text-color')) update_option('be_popia_compliant_banner-field12-text-color', '#B61F20');
 
 /* Back end registration */
 add_action('user_new_form', 'be_popiaCompliant_admin_registration_form');
@@ -1724,7 +1727,7 @@ function be_popia_compliant_dashboard()
         }
 
         echo '<label class="be_popia_compliant_p_label" for="be_popia_compliant_api_key_input">API Key:</label>
-                    <input class="be_popia_compliant_api_key_input widefat" type="text" id="be_popia_compliant_api_key_input" name="be_popia_compliant_api_key_input" value="' . $result->value . '">';
+                <input class="be_popia_compliant_api_key_input widefat" type="text" id="be_popia_compliant_api_key_input" name="be_popia_compliant_api_key_input" value="' . $result->value . '">';
         $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
         $result = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 2");
         echo '<label class="be_popia_compliant_p_label" for="be_popia_compliant_company_key_input">Domain Key:</label>
@@ -3385,9 +3388,9 @@ function be_popia_compliant_cookie_allowed_html()
 {
     return array(
         'a' => array(
-            'href' => array(),
-            'title' => array(),
-            'class' => array()
+        'href' => array(),
+        'title' => array(),
+        'class' => array()
         ),
         'br' => array(),
         'em' => array(),
@@ -3401,6 +3404,11 @@ function be_popia_compliant_cookie_allowed_html()
 // displaying cookie info on page
 function be_popia_compliant_cookie_display_cookie_info()
 {
+    if (get_option('bpc_hasPro') == 1) {
+        $background_color = get_option("be_popia_compliant_banner-field11-background-color", '#f5f5f5');
+        $text_color = get_option("be_popia_compliant_banner-field12-text-color", '#B61F20');
+    }
+
     $show_policy_privacy = get_option("be_popia_compliant_cookie-field9-disable-bpc-cookie-banner", false);
     $cookie_message = get_option("be_popia_compliant_cookie-field1-cookie-message", 'We use cookies to improve your experience on our website. By browsing this website, you agree to our use of cookies');
     $cookie_info_button = get_option("be_popia_compliant_cookie-field3-cookie-button-text", 'Accept Cookies');
@@ -3411,6 +3419,7 @@ function be_popia_compliant_cookie_display_cookie_info()
     $button_text_color = get_option("be_popia_compliant_cookie-field8-button-text-color", '#000000');
     $cookie_info_placemet = get_option("be_popia_compliant_cookie-field4-cookie-plugin-placement", 'bottom');
     $allowed_html = be_popia_compliant_cookie_allowed_html();
+
     ?>
     <div class="be_popia_compliant-cookie-info-container" style="<?php echo 'background-color: ' . esc_attr($background_color) . '; ' . esc_attr($cookie_info_placemet) . ': 0' ?>" id="be_popia_compliant-cookie-info-container">
         <form method="post" id="cookie-form">
@@ -3438,7 +3447,12 @@ function be_popia_compliant_admin_menus()
     add_menu_page('', 'POPIA Compliance', 'manage_options', 'be_popia_compliant', 'be_popia_compliant_dashboard', 'dashicons-yes');
     add_submenu_page($top_menu_item, '', 'POPIA Checklist', 'manage_options', 'be_popia_compliant_checklist', 'be_popia_compliant_dashboard_checklist');
     add_submenu_page($top_menu_item, '', '<a href="./users.php" style="font-weight: normal;margin: -13px 0px 0px 0px;">Manage Consent</a>', 'manage_options', 'manage-consent', 'be_popia_compliant_dashboard_go_pro');
-    add_submenu_page($top_menu_item, '', 'Cookie Settings', 'manage_options', 'privacy-policy', 'be_popia_compliant_cookie_page_html_content');
+    
+    if (get_option('bpc_hasPro') == 1) {
+        add_submenu_page($top_menu_item, '', 'Banner & Cookie Settings', 'manage_options', 'privacy-policy', 'be_popia_compliant_cookie_page_html_content');
+    } else {
+        add_submenu_page($top_menu_item, '', 'Cookie Settings', 'manage_options', 'privacy-policy', 'be_popia_compliant_cookie_page_html_content');
+    }
     if (get_option('bpc_hasPro') == 1) {
         add_submenu_page($top_menu_item, '', '<a href="https://bepopiacompliant.co.za" style="font-weight: normal;margin: -13px 0px 0px 0px;" target="_blank">Be POPIA Compliant Website</a>', 'manage_options', 'go-pro', 'be_popia_compliant_dashboard_go_pro');
     } else {
@@ -3460,6 +3474,25 @@ add_filter('menu_order', 'be_popia_compliant_menu_order', 10, 1);
 function be_popia_compliant_cookie_add_new_settings()
 {
     // register settings
+    if (get_option('bpc_hasPro') == 1) {
+        $configuration_settins_field10_arg = array(
+            'type' => 'string',
+            'sanitize_callback' => 'be_popia_compliant_cookie_sanitize_input_field',
+            'default' => 'colour'
+        );
+    
+        $layout_settins_field11_arg = array(
+            'type' => 'string',
+            'sanitize_callback' => 'be_popia_compliant_cookie_sanitize_color_input',
+            'default' => '#f5f5f5'
+        );
+        $layout_settins_field12_arg = array(
+            'type' => 'string',
+            'sanitize_callback' => 'be_popia_compliant_cookie_sanitize_color_input',
+            'default' => '#B61F20'
+        );
+    }
+
     $configuration_settins_field9_arg = array(
         'type' => 'boolean',
         'sanitize_callback' => 'be_popia_compliant_cookie_sanitize_checkbox',
@@ -3505,6 +3538,16 @@ function be_popia_compliant_cookie_add_new_settings()
         'sanitize_callback' => 'be_popia_compliant_cookie_sanitize_color_input',
         'default' => '#000000'
     );
+
+    if (get_option('bpc_hasPro') == 1) {
+        register_setting('jl_options', 'be_popia_compliant_cookie-field10-banner-logo-selector', $configuration_settins_field10_arg);       
+        register_setting('jl_options', 'be_popia_compliant_banner-field11-background-color', $layout_settins_field11_arg);
+        register_setting('jl_options', 'be_popia_compliant_banner-field12-text-color', $layout_settins_field12_arg);
+
+        add_settings_field('field-11-banner-background-color', 'Banner Background Color', 'be_popia_compliant_banner_field_11_callback', 'jl-slug', 'be_popia_compliant_cookie_section_1_configuration');
+        add_settings_field('field-12-banner-text-color', 'Banner Text Color', 'be_popia_compliant_banner_field_12_callback', 'jl-slug', 'be_popia_compliant_cookie_section_1_configuration');
+    }
+
     register_setting('jl_options', 'be_popia_compliant_cookie-field9-disable-bpc-cookie-banner', $configuration_settins_field9_arg);
     register_setting('jl_options', 'be_popia_compliant_cookie-field1-cookie-message', $configuration_settins_field1_arg);     // option group, option name, args
     register_setting('jl_options', 'be_popia_compliant_cookie-field2-checkbox-privacy-policy', $configuration_settins_field2_arg);
@@ -3518,8 +3561,10 @@ function be_popia_compliant_cookie_add_new_settings()
     add_settings_section('be_popia_compliant_cookie_section_1_configuration', 'Configuration', null, 'jl-slug');
     // id (Slug-name to identify the section), title, callback, page slug
     add_settings_section('be_popia_compliant_cookie_section_2_layout', 'Layout', null, 'jl-slug-2');
+    
     // adding fields for section
-    add_settings_field('field-9-privacy-policy-button', 'Disable Be POPIA Complaint Cookie Banner', 'be_popia_compliant_cookie_field_9_callback', 'jl-slug', 'be_popia_compliant_cookie_section_1_configuration');
+    add_settings_field('field-10-banner-logo-selector', 'Banner Logo Selection', 'be_popia_compliant_cookie_field_10_callback', 'jl-slug', 'be_popia_compliant_cookie_section_1_configuration');
+    add_settings_field('field-9-privacy-policy-button', '<hr style="margin-top:25px">Disable Be POPIA Complaint Cookie Banner', 'be_popia_compliant_cookie_field_9_callback', 'jl-slug', 'be_popia_compliant_cookie_section_1_configuration');
     add_settings_field('field-1-cookie-message', 'Cookie Message', 'be_popia_compliant_cookie_field_1_callback', 'jl-slug', 'be_popia_compliant_cookie_section_1_configuration');
     // id (Slug-name to identify the field), title, callback, slug-name of the settings page on which to show the section, section, args (attr for field)
     add_settings_field('field-2-privacy-policy-button', 'Display Privacy Policy Button', 'be_popia_compliant_cookie_field_2_callback', 'jl-slug', 'be_popia_compliant_cookie_section_1_configuration');
@@ -3533,10 +3578,36 @@ function be_popia_compliant_cookie_add_new_settings()
 
 add_action('admin_init', 'be_popia_compliant_cookie_add_new_settings');
 
+// field 10 - Banner Logo
+function be_popia_compliant_cookie_field_10_callback()
+{
+    $isChecked = get_option("be_popia_compliant_cookie-field10-banner-logo-selector", 'colour'); ?>
+    <input type="radio" name="be_popia_compliant_cookie-field10-banner-logo-selector" value="colour" <?php echo esc_html($isChecked) === 'colour' ? "checked" : null ?> /> Full Colour <br><br>
+    <input type="radio" name="be_popia_compliant_cookie-field10-banner-logo-selector" value="black" <?php echo esc_html($isChecked) === 'black' ? "checked" : null ?> /> Black (monochrome) <br><br>
+    <input type="radio" name="be_popia_compliant_cookie-field10-banner-logo-selector" value="grey" <?php echo esc_html($isChecked) === 'grey' ? "checked" : null ?> /> Grey (monochrome) <br><br>
+    <input type="radio" name="be_popia_compliant_cookie-field10-banner-logo-selector" value="white" <?php echo esc_html($isChecked) === 'white' ? "checked" : null ?> /> White (monochrome)
+    <?php
+}
+
+if (get_option('bpc_hasPro') == 1) {
+    // field 11 - background color
+    function be_popia_compliant_banner_field_11_callback()
+    {
+        echo '<input type="color" name="be_popia_compliant_banner-field11-background-color" value="' . esc_html(get_option("be_popia_compliant_banner-field11-background-color", '#f5f5f5')) . '" />';
+    }
+    // field 12 - text color
+    function be_popia_compliant_banner_field_12_callback()
+    {
+        echo '<input type="color" name="be_popia_compliant_banner-field12-text-color" value="' . esc_html(get_option("be_popia_compliant_banner-field12-text-color", '#B61F20')) . '" />';
+    }
+}
+
+
 // field 9 - deactivate POPIA Cookie Banner
 function be_popia_compliant_cookie_field_9_callback()
 {
     if (get_option("be_popia_compliant_cookie-field9-disable-bpc-cookie-banner", false)) {
+        echo '<hr>';
         echo '<input type="checkbox" name="be_popia_compliant_cookie-field9-disable-bpc-cookie-banner" checked />';
         echo '<span style="margin-left: 20px">Deselect this to use our Cookie Banner</span>';
     } else {
@@ -3633,7 +3704,7 @@ function be_popia_compliant_cookie_page_html_content()
     }
     ?>
     <div class="wrap">
-        <h2><?php echo esc_html('Be POPIA Compliant Cookie Settings') ?></h2>
+        <h2><?php echo esc_html('Be POPIA Compliant Banner & Cookie Settings') ?></h2>
         <form action="options.php" method="post">
             <?php
             // outpus settings fields (without this there is error after clicking save settings button)
@@ -3649,6 +3720,7 @@ function be_popia_compliant_cookie_page_html_content()
     </div>
 <?php
 }
+
 
 add_action('init', 'checkKeys');
 
@@ -3829,7 +3901,7 @@ function be_popia_compliant_echo_footer()
                                             <div class="be_popia_compliant_links">
                                                 <a href="' . esc_url($privacy) . '" target="_blank"><span style="white-space:nowrap">PRIVACY POLICY</span></a>  <a href="' . esc_url($data) . '"target="_blank"><span style="white-space:nowrap">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATA REQUESTS</span></a> &nbsp; <a href="' . esc_url($parties) . '" target="_blank"><span style="white-space:nowrap">&nbsp;RESPONSIBLE PARTIES</span></a> <a href="https://bepopiacompliant.co.za/#/regulator/' . $_SERVER['SERVER_NAME'] . '" target="_blank"><span style="white-space:nowrap">INFORMATION REGULATOR</span></a>
                                             </div>
-                                            <span style="font-size:0px">';
+                                            <span style="font-size:0px; position:absolute;">';
                                 update_option('bpc_report', '1');
                                 echo "BPC REPORT 1: " . get_option("bpc_v");
                                 $has_active_keys = get_option('has_active_keys');
@@ -3864,7 +3936,7 @@ function be_popia_compliant_echo_footer()
                                         </div>
                                     </div>';
                             } else {
-                                echo '<span style="font-size:0px">';
+                                echo '<span style="font-size:0px; position:absolute;">';
                                 update_option('bpc_report', '2');
                                 echo "BPC REPORT 2: " .  get_option("bpc_v");
                                 $has_active_keys = get_option('has_active_keys');
@@ -3899,7 +3971,7 @@ function be_popia_compliant_echo_footer()
                             }
                         }
                     } else {
-                        echo '<span style="font-size:0px">';
+                        echo '<span style="font-size:0px; position:absolute;">';
                         update_option('bpc_report', '3');
                         echo "BPC REPORT 3: " .  get_option("bpc_v");
                         $has_active_keys = get_option('has_active_keys');
@@ -3935,7 +4007,7 @@ function be_popia_compliant_echo_footer()
                 }
             } else {
                 echo '<div>
-                <span style="font-size:0px">';
+                <span style="font-size:0px; position:absolute;">';
                 update_option('bpc_report', '4');
                 echo "BPC REPORT 4: " .  get_option("bpc_v");
                 $has_active_keys = get_option('has_active_keys');
@@ -4090,7 +4162,7 @@ function be_popia_compliant_echo_footer()
                                             <div class="be_popia_compliant_links">
                                                 <a href="' . esc_url($privacy) . '" target="_blank"><span style="white-space:nowrap">PRIVACY POLICY</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url($data) . '"target="_blank"><span style="white-space:nowrap">DATA REQUESTS</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="' . esc_url($parties) . '" target="_blank"><span style="white-space:nowrap">RESPONSIBLE PARTIES</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://bepopiacompliant.co.za/#/regulator/' . $_SERVER['SERVER_NAME'] . '" target="_blank"><span style="white-space:nowrap">INFORMATION REGULATOR</span></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                             </div>
-                                            <span style="font-size:0px">';
+                                            <span style="font-size:0px; position:absolute;">';
                                 update_option('bpc_report', '5');
                                 echo "BPC REPORT 5: " .  get_option("bpc_v");
                                 $has_active_keys = get_option('has_active_keys');
@@ -4132,7 +4204,7 @@ function be_popia_compliant_echo_footer()
         }
     } else {
         echo '<div>
-                <span style="font-size:0px">';
+                <span style="font-size:0px; position:absolute;">';
         update_option('bpc_report', '6');
         echo "BPC REPORT 6: " .  get_option("bpc_v");
         $has_active_keys = get_option('has_active_keys');
@@ -4168,7 +4240,7 @@ function be_popia_compliant_echo_footer()
     }
 
     if (!get_option('bpc_report')) {
-        echo '<span style="font-size:0px">';
+        echo '<span style="font-size:0px; position:absolute;">';
         update_option('bpc_report', '7');
         echo "BPC REPORT 7: " .  get_option("bpc_v");
         $has_active_keys = get_option('has_active_keys');
@@ -4266,6 +4338,7 @@ function display_account_registration_field()
 <?php
 }
 
+// Remove (optional) from non-compulsory fields
 add_filter('woocommerce_form_field', 'be_popiaCompliant_remove_checkout_optional_text', 10, 4);
 function be_popiaCompliant_remove_checkout_optional_text($field, $key, $args, $value)
 {
@@ -4299,7 +4372,7 @@ function be_popia_compliant_checkout_style()
     }
 }
 
-//
+
 if (get_option('active_plugins')) {
     $array = get_option('active_plugins');
 
@@ -4815,6 +4888,17 @@ function WooCommerce_functions() {
             }
         }
     }
+    
+    // add_filter( 'default_checkout_billing_country', 'change_default_checkout_country' );
+    // add_filter( 'default_checkout_billing_state', 'change_default_checkout_state' );
+    
+    // function change_default_checkout_country() {
+    //   return 'South Africa'; // country code
+    // }
+    
+    // function change_default_checkout_state() {
+    //   return 'XX'; // state code
+    // }
 }
 
 // WooCommerce ends

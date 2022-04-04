@@ -156,6 +156,11 @@ A20: If you have a website, that collects any data such as customer emails, tele
 3. Be POPIA Compliant (BPC) | Cookie Settings - Customize your Cookie Notice Banner to match your brand.
 
 == Changelog ==
+= 1.1.5 =
+* Added functinality to capture ID Number and passing it over to Consent form for auto fill.
+* Added functionality to only request consent on checkout, if consent has not yet been provided.
+
+
 = 1.1.4 =
 * Refactored Reports
 
