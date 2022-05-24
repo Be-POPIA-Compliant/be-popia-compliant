@@ -387,14 +387,20 @@
 .be_popia_compliant_dashboard_go_pro{
     background: #B61F21;
     border: none;
-    padding: 6px 10px;
+    padding: 17px 10px;
+    padding-top: 17px;
+    padding-right: 10px;
+    padding-bottom: 17px;
+    padding-left: 10px;
     border-radius: 12px;
     text-decoration: none;
-    font-size: 16px;
+    font-size: 22px;
     color: white;
     font-weight: 700;
     float: right;
     margin-top: 20px;
+    text-align: center;
+    width: 50%;
 }
 .be_popia_compliant_dashboard_button{
     color: #B61F21;
@@ -404,6 +410,7 @@
     font-weight: 700;
 }
 .be_popia_compliant_dashboard_upgrade_heading{
+    font-size: 30px;
     text-align: center;
 }
 .be_popia_compliant_dashboard_three p, .be_popia_compliant_dashboard_main_about p{

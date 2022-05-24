@@ -2,8 +2,8 @@
 /*
     Plugin Name: Be POPIA Compliant
     Plugin URI: https://bepopiacompliant.co.za
-    Description: The only POPIA Compliance plugin, that is NOT JUST a Cookie Banner! That enables your clients to Manage Consent. Get your site compliant in as little as 15 minutes.
-    Version: 1.1.7
+    Description: The only POPIA Compliance plugin, that is <strong>MORE THAN just a MERE Cookie Banner!</strong> The BPC Plugin enables your clients to Manage Consent. Get your site compliant in as little as 15 minutes.
+    Version: 1.1.8
     Author: Web-X | For Everything Web | South Africa
     Author URI: https://web-x.co.za/
     License: GPLv2 or later
@@ -45,7 +45,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-$bpcV = '1.1.6';
+$bpcV = '1.1.8';
 update_option('bpc_v', $bpcV);
 
 /* Enqueue scripts*/
@@ -312,22 +312,21 @@ register_activation_hook(__FILE__, 'be_popia_compliant_insert_p_data');
 add_action('register_form', 'be_popiaCompliant_registration_form');
 function be_popiaCompliant_registration_form()
 {
-
     $identificationNumber = !empty($_POST['user_identification_number']) ? ($_POST['user_identification_number']) : '';
     if(!isset($identificationNumber)) {
-        $identificationNumber = get_user_meta( $user_id, 'user_identification_number', $single );
+        $identificationNumber = get_user_meta( $user_id, 'user_identification_number', true );
     }
     $otherIdNumber = !empty($_POST['other_identification_number']) ? ($_POST['other_identification_number']) : '';
     if(!isset($otherIdNumber)) {
-        $otherIdNumber = get_user_meta( $user_id, 'other_identification_number', $single );
+        $otherIdNumber = get_user_meta( $user_id, 'other_identification_number', true );
     }
     $otherIdType = !empty($_POST['other_identification_type']) ? ($_POST['other_identification_type']) : '';
     if(!isset($otherIdType)) {
-        $otherIdType = get_user_meta( $user_id, 'other_identification_type', $single );
+        $otherIdType = get_user_meta( $user_id, 'other_identification_type', true );
     }
     $otherIdIssue = !empty($_POST['other_identification_issue']) ? ($_POST['other_identification_issue']) : '';
     if(!isset($otherIdIssue)) {
-        $otherIdIssue = get_user_meta( $user_id, 'other_identification_issue', $single );
+        $otherIdIssue = get_user_meta( $user_id, 'other_identification_issue', true );
     }
 ?>
     <p>
@@ -341,21 +340,21 @@ function be_popiaCompliant_registration_form()
     <center><span><b>OR</b><br>(If not South African ID Number)<br><br></span></center>
     <p>
         <label for="other_identification_number"><?php esc_html_e('Passport, Social Security or other Identification Number', 'be_popiaCompliant') ?><br />
-            <input type="text" id="other_identification_number" name="other_identification_number" value="<?php echo esc_attr($otherIdNumber); ?>" class="input" />
+            <input type="text" id="other_identification_number" name="other_identification_number" value="<?php echo esc_attr($otherIdNumber); ?>" class="input" placeholder="If not SA ID Number"/>
         </label>
     </p>
     <p>
         <label for="other_identification_type"><?php esc_html_e('What type of Identification Number is this?', 'be_popiaCompliant') ?><br />
-            <input type="text" id="other_identification_type" name="other_identification_type" value="<?php echo esc_attr($otherIdType); ?>" class="input" />
+            <input type="text" id="other_identification_type" name="other_identification_type" value="<?php echo esc_attr($otherIdType); ?>" class="input" placeholder="If not SA ID Number"/>
         </label>
     </p>
     <p>
         <label for="other_identification_issue"><?php esc_html_e('What Country issued this Identification Number?', 'be_popiaCompliant') ?><br />
-            <input type="text" id="other_identification_issue" name="other_identification_issue" value="<?php echo esc_attr($otherIdIssue); ?>" class="input" />
+            <input type="text" id="other_identification_issue" name="other_identification_issue" value="<?php echo esc_attr($otherIdIssue); ?>" class="input" placeholder="If not SA ID Number"/>
         </label>
         <br><br>
     </p>
-<?php
+    <?php
 }
 
 // registration Field validation
@@ -405,7 +404,6 @@ function be_popiaCompliant_registration_errors($errors, $sanitized_user_login, $
 add_action('user_register', 'be_popiaCompliant_user_register');
 function be_popiaCompliant_user_register($user_id)
 {
-
     if (!empty($_POST['user_identification_number'])) {
         if (strlen($_POST['user_identification_number']) == 13) {
             update_user_meta($user_id, 'user_identification_number', $_POST['user_identification_number']);
@@ -430,7 +428,7 @@ function be_popia_compliant_add_user_details_to_py($user_id)
 {
     $new_user = get_userdata($user_id);
 
-    if(!get_user_meta( $user_id, 'has_provided_consent', $single )){
+    if(!get_user_meta( $user_id, 'has_provided_consent', true )){
 
         $user_email = $new_user->user_email;
         $domain = $_SERVER['SERVER_NAME'];
@@ -1773,7 +1771,7 @@ function be_popia_compliant_dashboard()
                         <li>We delete, update and send data on your behalf</li>
                         <li>Cookie notice included free of charge</li>
                     </ul>
-                    <a href="https://bepopiacompliant.co.za" class="be_popia_compliant_dashboard_go_pro" target="_blank">Go Pro</a>';
+            <a href="https://bepopiacompliant.co.za" class="be_popia_compliant_dashboard_go_pro" target="_blank">Go Pro</a>';
     }
     echo '</div>
             <div class="be_popia_compliant_dashboard_three">
@@ -1844,21 +1842,21 @@ function be_popia_compliant_notice()
         }
     }
 
-    // if (isset($server_message) && ($server_message != 'null')) {
-    //     if (in_array($pagenow, $admin_pages)) {
-    //         if (isset($server_message)) {
+    if (isset($server_message) && ($server_message != 'null')) {
+        if (in_array($pagenow, $admin_pages)) {
+            if (isset($server_message)) {
 ?>
-    <!--             <div class="notice notice-warning is-dismissible">
-                     <p> -->
+                 <div class="notice notice-warning is-dismissible">
+                     <p>
     <?php
-    //                     echo esc_html($server_message);
+                        echo esc_html($server_message);
     ?>
-    <!--                 </p>
-                 </div> -->
+                     </p>
+                 </div>
     <?
-    //         }
-    //     }
-    // }
+            }
+        }
+    }
 
     $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME']);
     $args = array(
@@ -2706,7 +2704,7 @@ function bpc_popia_data_processing()
     $result = wp_remote_request(wp_http_validate_url($url), $args);
     if (get_option('bpc_hasPro') == 1) {
         /* Data Consent Processing Starts*/
-        $ids =  get_option('bpc_consent_to_update');
+        $ids = get_option('bpc_consent_to_update');
         if (isset($ids) && $ids != '') {
             foreach ($ids as $id) {
                 $id = str_replace(' ', '', $id);
@@ -2773,12 +2771,13 @@ function bpc_popia_data_processing()
                 $data_to_send = '[domain_id]' . get_option('bpc_refference') . '[/domain_id][user_id]' . $id . '[/user_id]';
                 $id = str_replace(' ', '', $id);
                 if (get_userdata($id) !== null) {
-                    $tb_name = 'wp_users';
+                    $tb_name = $wpdb->base_prefix . 'users';
                     $r_count = 0;
                     $tb_count++;
                     $data_to_send = '[t' . $tb_count . '][tn]' . $tb_name . '[/tn][dbs]1[/dbs][pk]ID[/pk]';
                     $data = get_userdata($id);
                     $ID = $data->ID;
+                    //Get Personal Data from Basic WordPress Data via wp_users
                     if ($ID != '') {
                         $r_count++;
                         $data_to_send = $data_to_send . '[r' . $r_count . ']ID,' . $ID . ',n,s[/r' . $r_count . ']';
@@ -2826,8 +2825,10 @@ function bpc_popia_data_processing()
                     $data_to_send = $data_to_send . '[rc]' . $r_count . '[/rc]';
                     $data_to_send = $data_to_send . '[/t' . $tb_count . ']';
                 }
+                
                 if (get_user_meta($id) !== null) {
-                    $tb_name = 'wp_usermeta';
+                    //Get Personal Data from Basic WordPress Data via wp_usermeta -> non array values
+                    $tb_name = $wpdb->base_prefix . 'usermeta';
                     $mk_count = 0;
                     $tb_count++;
                     $data_to_send = $data_to_send . '[t' . $tb_count . '][tn]' . $tb_name . '[/tn][dbs]2[/dbs]';
@@ -2846,9 +2847,10 @@ function bpc_popia_data_processing()
                     $data_to_send = $data_to_send . '[mkc]' . $mk_count . '[/mkc]';
                     $data_to_send = $data_to_send . '[/t' . $tb_count . ']';
                 }
+
                 if (get_user_meta($id) !== null) {
-                    // $tb_name = 'bpc_comms_market';
-                    $tb_name = 'bpc_comms_market_consent';
+                    //Get Personal Data from Basic WordPress Data via wp_usermeta -> bpc_comms_market_consent
+                    $tb_name = $wpdb->base_prefix . 'bpc_comms_market_consent';
                     $bpc_count = 0;
                     $tb_count++;
                     $data_to_send = $data_to_send . '[t' . $tb_count . '][tn]' . $tb_name . '[/tn][dbs]3[/dbs]';
@@ -2860,6 +2862,7 @@ function bpc_popia_data_processing()
                         if ($value != [""] && $value != ["true"] && $value != ["false"] && $value != ["0"] && $value != ["1"]) {
                             if (date($time_format, intval($value[0])) == "00:00") {
                                 $friendly_date = date($date_format, intval($value[0]));
+                                $bpc_count++; // This was not included pre DSTV CCA Support
                             } else {
                                 $friendly_date = date($date_time_format, intval($value[0]));
                                 $bpc_count++;
@@ -2998,6 +3001,136 @@ function bpc_popia_data_processing()
                     $data_to_send = $data_to_send . '[bpc]' . $bpc_count . '[/bpc]';
                     $data_to_send = $data_to_send . '[/t' . $tb_count . ']';
                 }
+
+
+                global $wpdb;
+                $table_name = $wpdb->base_prefix . 'arf_payfast_order';
+                $query = $wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table_name));
+
+                if ($wpdb->get_var($query) == $table_name) {
+                    $table_name = $wpdb->prefix . 'arf_payfast_order';
+                    $wpdb->show_errors(); 
+                    $result = $wpdb->get_results("SELECT * FROM $table_name WHERE `payer_email` = '$user_email'");
+                    //Get Personal Data from arf_payfast_order multiple rows possible
+                    update_option('multi_result', $result);
+                    if (count($result) > 0) {
+                        foreach($result as $theResult) {
+                            $tb_count++;
+                            $tb_name = $wpdb->base_prefix . 'arf_payfast_order';
+                            $data_to_send = $data_to_send . '[t' . $tb_count . '][tn]' . $tb_name . '[/tn][dbs]1[/dbs][pk]id[/pk]';
+
+                        
+                            $r_count = 0;
+
+                            $id = $theResult->id;
+                            if(isset($id)) {
+                                $r_count++;
+                                $data_to_send = $data_to_send . '[r' . $r_count . ']id,' . $id . ',n,i,11[/r' . $r_count . ']';
+                            }
+
+                            $item_name = $theResult->item_name;
+                            if(isset($item_name)) {
+                                $r_count++;
+                                $data_to_send = $data_to_send . '[r' . $r_count . ']item_name,' . $item_name . ',n,v,255[/r' . $r_count . ']';
+                            }
+                            
+                            $txn_id = $theResult->txn_id;
+                            if(isset($txn_id)) {
+                                $r_count++;
+                                $data_to_send = $data_to_send . '[r' . $r_count . ']txn_id,' . $txn_id . ',n,v,255[/r' . $r_count . ']';
+                            }
+                                
+                            $payment_status = $theResult->payment_status;
+                            if(isset($payment_status)) {
+                                $r_count++;
+                                $data_to_send = $data_to_send . '[r' . $r_count . ']payment_status,' . $payment_status . ',n,v,225[/r' . $r_count . ']';
+                            }
+
+                            $mc_gross = $theResult->mc_gross;
+                            if(isset($mc_gross)) {
+                                $r_count++;
+                                $data_to_send = $data_to_send . '[r' . $r_count . ']mc_gross,' . $mc_gross . ',n,f,11.2[/r' . $r_count . ']';
+                            }
+
+                            $mc_currency = $theResult->mc_currency;
+                            if(isset($mc_currency)) {
+                                $r_count++;
+                                $data_to_send = $data_to_send . '[r' . $r_count . ']mc_currency,' . $mc_currency . ',n,v,255[/r' . $r_count . ']';
+                            }
+
+                            $quantity = $theResult->quantity;
+                            if($quantity != '') {
+                                $r_count++;
+                                $data_to_send = $data_to_send . '[r' . $r_count . ']quantity,' . $quantity . ',n,v,255[/r' . $r_count . ']';
+                            }
+
+                            $payer_email = $theResult->payer_email;
+                            if(isset($payer_email)) {
+                                $r_count++;
+                                $data_to_send = $data_to_send . '[r' . $r_count . ']payer_email,' . $payer_email . ',y,v,255[/r' . $r_count . ']';
+                            }
+
+                            $payer_name = $theResult->payer_name;
+                            if(isset($payer_name)) {
+                                $r_count++;
+                                $data_to_send = $data_to_send . '[r' . $r_count . ']payer_name,' . $payer_name . ',y,v,255[/r' . $r_count . ']';
+                            }
+
+                            $payment_type = $theResult->payment_type;
+                            if($payment_type != 0) {
+                                $r_count++;
+                                $data_to_send = $data_to_send . '[r' . $r_count . ']payment_type,' . $payment_type . ',n,v,255[/r' . $r_count . ']';
+                            }
+                            
+                            $user_id = $theResult->user_id;
+                            if($user_id != 0) {
+                                $r_count++;
+                                $data_to_send = $data_to_send . '[r' . $r_count . ']user_id,' . $user_id . ',n,i,11[/r' . $r_count . ']';
+                            }
+
+                            $entry_id = $theResult->entry_id;
+                            if(isset($entry_id)) {
+                                $r_count++;
+                                $data_to_send = $data_to_send . '[r' . $r_count . ']entry_id,' . $entry_id . ',n,i,11[/r' . $r_count . ']';
+                            }
+
+                            $form_id = $theResult->form_id;
+                            if(isset($form_id)) {
+                                $r_count++;
+                                $data_to_send = $data_to_send . '[r' . $r_count . ']form_id,' . $form_id . ',n,i,11[/r' . $r_count . ']';
+                            }
+
+                            $payment_date = $theResult->payment_date;
+                            if(isset($payment_date)) {
+                                $r_count++;
+                                $data_to_send = $data_to_send . '[r' . $r_count . ']payment_date,' . $payment_date . ',n,v,255[/r' . $r_count . ']';
+                            }
+
+                            $created_at = $theResult->created_at;
+                            if(isset($created_at)) {
+                                $r_count++;
+                                $data_to_send = $data_to_send . '[r' . $r_count . ']created_at,' . $created_at . ',n,D[/r' . $r_count . ']';
+                            }
+
+                            $is_verified = $theResult->is_verified;
+                            if(isset($is_verified)) {
+                                $r_count++;
+                                $data_to_send = $data_to_send . '[r' . $r_count . ']is_verified,' . $is_verified . ',n,i,1[/r' . $r_count . ']';
+                            }
+
+                            $token = $theResult->token;
+                            if($token != '') {
+                                $r_count++;
+                                $data_to_send = $data_to_send . '[r' . $r_count . ']token,' . $token . ',n,v,255[/r' . $r_count . ']';
+                            }
+                            $data_to_send = $data_to_send . '[rc]' . $r_count . '[/rc]';
+                            $data_to_send = $data_to_send . '[/t' . $tb_count . ']';
+                        }
+                    }
+                }
+
+
+                
                 $bpc_ref = get_option('bpc_refference');
                 $bpc_company_ref = get_option('this_domain_identity');
                 $data_to_send = $data_to_send . '[tc]' . $tb_count . '[/tc][user_email]' . $user_email . '[/user_email][cid]' . $bpc_company_ref . '[/cid][did]' . $bpc_ref . '[/did]';
@@ -3047,7 +3180,7 @@ function bpc_popia_data_processing()
         /* Data Request Processing Approved Ends */
         /* --------------------------------------------------------------------------------------------------------------------------*/
         /* Data Request Processing Requests Starts*/
-        $ids =  get_option('bpc_data_request');
+        $ids = get_option('bpc_data_request');
         if (isset($ids) && $ids != '') {
             $data_to_send = '';
             foreach ($ids as $id) {
@@ -3544,6 +3677,7 @@ function be_popia_compliant_cookie_add_new_settings()
         register_setting('jl_options', 'be_popia_compliant_banner-field11-background-color', $layout_settins_field11_arg);
         register_setting('jl_options', 'be_popia_compliant_banner-field12-text-color', $layout_settins_field12_arg);
 
+        add_settings_field('field-10-banner-logo-selector', 'Banner Logo Selection', 'be_popia_compliant_cookie_field_10_callback', 'jl-slug', 'be_popia_compliant_cookie_section_1_configuration');
         add_settings_field('field-11-banner-background-color', 'Banner Background Color', 'be_popia_compliant_banner_field_11_callback', 'jl-slug', 'be_popia_compliant_cookie_section_1_configuration');
         add_settings_field('field-12-banner-text-color', 'Banner Text Color', 'be_popia_compliant_banner_field_12_callback', 'jl-slug', 'be_popia_compliant_cookie_section_1_configuration');
     }
@@ -3563,7 +3697,6 @@ function be_popia_compliant_cookie_add_new_settings()
     add_settings_section('be_popia_compliant_cookie_section_2_layout', 'Layout', null, 'jl-slug-2');
     
     // adding fields for section
-    add_settings_field('field-10-banner-logo-selector', 'Banner Logo Selection', 'be_popia_compliant_cookie_field_10_callback', 'jl-slug', 'be_popia_compliant_cookie_section_1_configuration');
     add_settings_field('field-9-privacy-policy-button', '<hr style="margin-top:25px">Disable Be POPIA Complaint Cookie Banner', 'be_popia_compliant_cookie_field_9_callback', 'jl-slug', 'be_popia_compliant_cookie_section_1_configuration');
     add_settings_field('field-1-cookie-message', 'Cookie Message', 'be_popia_compliant_cookie_field_1_callback', 'jl-slug', 'be_popia_compliant_cookie_section_1_configuration');
     // id (Slug-name to identify the field), title, callback, slug-name of the settings page on which to show the section, section, args (attr for field)
@@ -3578,15 +3711,17 @@ function be_popia_compliant_cookie_add_new_settings()
 
 add_action('admin_init', 'be_popia_compliant_cookie_add_new_settings');
 
-// field 10 - Banner Logo
-function be_popia_compliant_cookie_field_10_callback()
-{
-    $isChecked = get_option("be_popia_compliant_cookie-field10-banner-logo-selector", 'colour'); ?>
-    <input type="radio" name="be_popia_compliant_cookie-field10-banner-logo-selector" value="colour" <?php echo esc_html($isChecked) === 'colour' ? "checked" : null ?> /> Full Colour <br><br>
-    <input type="radio" name="be_popia_compliant_cookie-field10-banner-logo-selector" value="black" <?php echo esc_html($isChecked) === 'black' ? "checked" : null ?> /> Black (monochrome) <br><br>
-    <input type="radio" name="be_popia_compliant_cookie-field10-banner-logo-selector" value="grey" <?php echo esc_html($isChecked) === 'grey' ? "checked" : null ?> /> Grey (monochrome) <br><br>
-    <input type="radio" name="be_popia_compliant_cookie-field10-banner-logo-selector" value="white" <?php echo esc_html($isChecked) === 'white' ? "checked" : null ?> /> White (monochrome)
-    <?php
+if (get_option('bpc_hasPro') == 1) {
+    // field 10 - Banner Logo
+    function be_popia_compliant_cookie_field_10_callback()
+    {
+        $isChecked = get_option("be_popia_compliant_cookie-field10-banner-logo-selector", 'colour'); ?>
+        <input type="radio" name="be_popia_compliant_cookie-field10-banner-logo-selector" value="colour" <?php echo esc_html($isChecked) === 'colour' ? "checked" : null ?> /> Full Colour <br><br>
+        <input type="radio" name="be_popia_compliant_cookie-field10-banner-logo-selector" value="black" <?php echo esc_html($isChecked) === 'black' ? "checked" : null ?> /> Black (monochrome) <br><br>
+        <input type="radio" name="be_popia_compliant_cookie-field10-banner-logo-selector" value="grey" <?php echo esc_html($isChecked) === 'grey' ? "checked" : null ?> /> Grey (monochrome) <br><br>
+        <input type="radio" name="be_popia_compliant_cookie-field10-banner-logo-selector" value="white" <?php echo esc_html($isChecked) === 'white' ? "checked" : null ?> /> White (monochrome)
+        <?php
+    }
 }
 
 if (get_option('bpc_hasPro') == 1) {
@@ -3612,7 +3747,7 @@ function be_popia_compliant_cookie_field_9_callback()
         echo '<span style="margin-left: 20px">Deselect this to use our Cookie Banner</span>';
     } else {
         echo '<input type="checkbox" name="be_popia_compliant_cookie-field9-disable-bpc-cookie-banner" />';
-        echo '<span style="margin-left: 20px">Select this if you preffer to use a diffirent Cookie Banner Plugin</span>';
+        echo '<span style="margin-left: 20px">Select this if you preffer to use a diffirent Cookie Banner Plugin (This will void all below settings while selected)<br><br><br>Remeber that a cookie policy is not required for POPIA. This is a requirement of GDPR in Europe and some other countries. <b>POPIA entails much more than a simple cookie banner.</b></span>';
     }
 }
 // field 1 - cookie message
@@ -3780,7 +3915,6 @@ function be_popia_compliant_echo_footer()
     $result_company = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 2");
     $result_suspended = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 3");
 
-    // if ( isset( $_COOKIE['cookie-accepted'] ) ) {
     if (isset($_COOKIE['cookie-accepted']) || (get_option("be_popia_compliant_cookie-field9-disable-bpc-cookie-banner", true))) {
         if (is_ssl()) {
             $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/domaincompletecheck/" . $_SERVER['SERVER_NAME']);
@@ -3970,7 +4104,7 @@ function be_popia_compliant_echo_footer()
                                 echo '</span>';
                             }
                         }
-                    } else {
+                     }else {
                         echo '<span style="font-size:0px; position:absolute;">';
                         update_option('bpc_report', '3');
                         echo "BPC REPORT 3: " .  get_option("bpc_v");
@@ -4006,8 +4140,7 @@ function be_popia_compliant_echo_footer()
                     }
                 }
             } else {
-                echo '<div>
-                <span style="font-size:0px; position:absolute;">';
+                echo '<span style="font-size:0px; position:absolute;">';
                 update_option('bpc_report', '4');
                 echo "BPC REPORT 4: " .  get_option("bpc_v");
                 $has_active_keys = get_option('has_active_keys');
@@ -4038,8 +4171,7 @@ function be_popia_compliant_echo_footer()
                 } else {
                     echo ' Checklist Table Built';
                 }
-                echo'</span>
-                </div>';
+                echo'</span>';
             }
         } //isSSL
         else {
@@ -4203,8 +4335,7 @@ function be_popia_compliant_echo_footer()
             }
         }
     } else {
-        echo '<div>
-                <span style="font-size:0px; position:absolute;">';
+        echo '<span style="font-size:0px; position:absolute;">';
         update_option('bpc_report', '6');
         echo "BPC REPORT 6: " .  get_option("bpc_v");
         $has_active_keys = get_option('has_active_keys');
@@ -4235,8 +4366,7 @@ function be_popia_compliant_echo_footer()
         } else {
             echo ' Checklist Table Built';
         }
-        echo '</span>
-    </div>';
+        echo '</span>';
     }
 
     if (!get_option('bpc_report')) {
@@ -4290,19 +4420,19 @@ function display_account_registration_field()
 {
     $identificationNumber = !empty($_POST['user_identification_number']) ? ($_POST['user_identification_number']) : '';
     if(!isset($identificationNumber)) {
-        $identificationNumber = get_user_meta( $user_id, 'user_identification_number', $single );
+        $identificationNumber = get_user_meta( $user_id, 'user_identification_number', true );
     }
     $otherIdNumber = !empty($_POST['other_identification_number']) ? ($_POST['other_identification_number']) : '';
     if(!isset($otherIdNumber)) {
-        $otherIdNumber = get_user_meta( $user_id, 'other_identification_number', $single );
+        $otherIdNumber = get_user_meta( $user_id, 'other_identification_number', true );
     }
     $otherIdType = !empty($_POST['other_identification_type']) ? ($_POST['other_identification_type']) : '';
     if(!isset($otherIdType)) {
-        $otherIdType = get_user_meta( $user_id, 'other_identification_type', $single );
+        $otherIdType = get_user_meta( $user_id, 'other_identification_type', true );
     }
     $otherIdIssue = !empty($_POST['other_identification_issue']) ? ($_POST['other_identification_issue']) : '';
     if(!isset($otherIdIssue)) {
-        $otherIdIssue = get_user_meta( $user_id, 'other_identification_issue', $single );
+        $otherIdIssue = get_user_meta( $user_id, 'other_identification_issue', true );
     }
 ?>
 
@@ -4477,8 +4607,8 @@ if (get_option('active_plugins')) {
         }
 
 
-add_action('init', 'WooCommerce_functions');
-function WooCommerce_functions() {
+    add_action('init', 'WooCommerce_functions');
+    function WooCommerce_functions() {
         $bpc_logged_in_user = get_option('bpc_logged_in_user');
         if ($bpc_logged_in_user > 0) {
             $bpc_logged_in_user = intval($bpc_logged_in_user);
@@ -4649,7 +4779,7 @@ function WooCommerce_functions() {
                     update_user_meta( $bpc_logged_in_user, 'has_provided_consent', 1 );
                 } else {
                     $consentProvidedIs = 0;
-                    if(get_user_meta( $bpc_logged_in_user, 'has_provided_consent', $single )){
+                    if(get_user_meta( $bpc_logged_in_user, 'has_provided_consent', true )){
                         delete_user_meta( $bpc_logged_in_user, 'has_provided_consent', $meta_value = 1 );
                     }
 
@@ -4899,6 +5029,134 @@ function WooCommerce_functions() {
     // function change_default_checkout_state() {
     //   return 'XX'; // state code
     // }
+
+
+    // WooCommerce ends
 }
 
-// WooCommerce ends
+function on_footer() {
+
+    // $user_email = 'john@email.com';
+
+    // global $wpdb;
+    // $table_name = $wpdb->prefix . 'arf_payfast_order';
+    // $wpdb->show_errors(); 
+    // $result = $wpdb->get_results("SELECT * FROM $table_name WHERE `payer_email` = '$user_email'");
+    // //Get Personal Data from arf_payfast_order multiple rows possible
+    // if (count($result) > 0) {
+    //     $tb_count++;
+    //     $tb_name = $wpdb->base_prefix . 'arf_payfast_order';
+    //     $data_to_send = $data_to_send . '[t' . $tb_count . '][tn]' . $tb_name . '[/tn][dbs]1[/dbs][pk]id[/pk]';
+
+    //     foreach($result as $theResult) {
+    //         $r_count = 0;
+
+    //         $id = $theResult->id;
+    //         if(isset($id)) {
+    //             $r_count++;
+    //             $data_to_send = $data_to_send . '[r' . $r_count . ']id,' . $id . ',n,i,11[/r' . $r_count . ']';
+    //         }
+
+    //         $item_name = $theResult->id;
+    //         if(isset($item_name)) {
+    //             $r_count++;
+    //             $data_to_send = $data_to_send . '[r' . $r_count . ']item_name,' . $item_name . ',n,v,255[/r' . $r_count . ']';
+    //         }
+            
+    //         $txn_id = $theResult->txn_id;
+    //         if(isset($txn_id)) {
+    //             $r_count++;
+    //             $data_to_send = $data_to_send . '[r' . $r_count . ']txn_id,' . $txn_id . ',n,v,255[/r' . $r_count . ']';
+    //         }
+                
+    //         $payment_status = $theResult->payment_status;
+    //         if(isset($payment_status)) {
+    //             $r_count++;
+    //             $data_to_send = $data_to_send . '[r' . $r_count . ']payment_status,' . $payment_status . ',n,v,225[/r' . $r_count . ']';
+    //         }
+
+    //         $mc_gross = $theResult->mc_gross;
+    //         if(isset($mc_gross)) {
+    //             $r_count++;
+    //             $data_to_send = $data_to_send . '[r' . $r_count . ']mc_gross,' . $mc_gross . ',n,f,11.2[/r' . $r_count . ']';
+    //         }
+
+    //         $mc_currency = $theResult->mc_currency;
+    //         if(isset($mc_currency)) {
+    //             $r_count++;
+    //             $data_to_send = $data_to_send . '[r' . $r_count . ']mc_currency,' . $mc_currency . ',n,v,255[/r' . $r_count . ']';
+    //         }
+
+    //         $quantity = $theResult->quantity;
+    //         if($quantity != '') {
+    //             $r_count++;
+    //             $data_to_send = $data_to_send . '[r' . $r_count . ']quantity,' . $quantity . ',n,v,255[/r' . $r_count . ']';
+    //         }
+
+    //         $payer_email = $theResult->payer_email;
+    //         if(isset($payer_email)) {
+    //             $r_count++;
+    //             $data_to_send = $data_to_send . '[r' . $r_count . ']payer_email,' . $payer_email . ',y,v,255[/r' . $r_count . ']';
+    //         }
+
+    //         $payer_name = $theResult->payer_name;
+    //         if(isset($payer_name)) {
+    //             $r_count++;
+    //             $data_to_send = $data_to_send . '[r' . $r_count . ']payer_name,' . $payer_name . ',y,v,255[/r' . $r_count . ']';
+    //         }
+
+    //         $payment_type = $theResult->payment_type;
+    //         if($payment_type != 0) {
+    //             $r_count++;
+    //             $data_to_send = $data_to_send . '[r' . $r_count . ']payment_type,' . $payment_type . ',n,v,255[/r' . $r_count . ']';
+    //         }
+            
+    //         $user_id = $theResult->user_id;
+    //         if($user_id != 0) {
+    //             $r_count++;
+    //             $data_to_send = $data_to_send . '[r' . $r_count . ']user_id,' . $user_id . ',n,i,11[/r' . $r_count . ']';
+    //         }
+
+    //         $entry_id = $theResult->entry_id;
+    //         if(isset($entry_id)) {
+    //             $r_count++;
+    //             $data_to_send = $data_to_send . '[r' . $r_count . ']entry_id,' . $entry_id . ',n,i,11[/r' . $r_count . ']';
+    //         }
+
+    //         $form_id = $theResult->form_id;
+    //         if(isset($form_id)) {
+    //             $r_count++;
+    //             $data_to_send = $data_to_send . '[r' . $r_count . ']form_id,' . $form_id . ',n,i,11[/r' . $r_count . ']';
+    //         }
+
+    //         $payment_date = $theResult->payment_date;
+    //         if(isset($payment_date)) {
+    //             $r_count++;
+    //             $data_to_send = $data_to_send . '[r' . $r_count . ']payment_date,' . $payment_date . ',n,v,255[/r' . $r_count . ']';
+    //         }
+
+    //         $created_at = $theResult->created_at;
+    //         if(isset($created_at)) {
+    //             $r_count++;
+    //             $data_to_send = $data_to_send . '[r' . $r_count . ']created_at,' . $created_at . ',n,D[/r' . $r_count . ']';
+    //         }
+
+    //         $is_verified = $theResult->is_verified;
+    //         if(isset($is_verified)) {
+    //             $r_count++;
+    //             $data_to_send = $data_to_send . '[r' . $r_count . ']is_verified,' . $is_verified . ',n,i,1[/r' . $r_count . ']';
+    //         }
+
+    //         $token = $theResult->token;
+    //         if($token != '') {
+    //             $r_count++;
+    //             $data_to_send = $data_to_send . '[r' . $r_count . ']token,' . $token . ',n,v,255[/r' . $r_count . ']';
+    //         }
+    //     $data_to_send = $data_to_send . '[rc]' . $r_count . '[/rc]';
+        
+    //     }
+    //     $data_to_send = $data_to_send . '[/t' . $tb_count . ']';
+    // } echo $data_to_send;
+}
+            
+add_action( 'admin_footer', 'on_footer');

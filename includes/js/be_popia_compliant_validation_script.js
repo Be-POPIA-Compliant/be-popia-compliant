@@ -11,7 +11,8 @@ jQuery(document).ready(function($){
         // assume everything is correct and if it later turns out not to be, just set this to false
         var correct = true;
         
-            if (idNumber.length !== '') {
+            if (idNumber.length != '') {
+                
             //Ref: http://www.sadev.co.za/content/what-south-african-id-number-made
             // SA ID Number have to be 13 digits, so check the length
             if (idNumber.length != 13 || !isNumber(idNumber)) {
@@ -56,6 +57,7 @@ jQuery(document).ready(function($){
                 error.append('<p>ID number does not appear to be authentic - check digit is not valid</p>');
                 correct = false;
             }
+            console.log(idNumber.length);
     
     
             // if no error found, hide the error message
