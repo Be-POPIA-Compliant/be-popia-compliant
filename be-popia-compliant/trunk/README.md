@@ -5,7 +5,7 @@ Tags: POPI, POPIA, POPI Act, BePOPIACompliant, Be POPIA Compliant, Be POPI Compl
 Requires at least: 5.4
 Tested up to: 5.9.1
 Requires PHP: 7.3
-Stable tag: 1.1.5
+Stable tag: 1.1.7
 License: License: GPLv2 or later
 
 The only POPIA Compliance plugin that is NOT JUST a Cookie Banner! For any site that operates in South Africa. *Get your site compliant in as little as 15 minutes (only by using PRO).
@@ -156,12 +156,25 @@ A20: If you have a website, that collects any data such as customer emails, tele
 3. Be POPIA Compliant (BPC) | Cookie Settings - Customize your Cookie Notice Banner to match your brand.
 
 == Changelog ==
+<<<<<<< .mine
 = 1.1.6 =
 * Added settings (now Banner & Cookie Settings) for PRO version to customize the POPIA Compliant Banner for a more allegiant look.
 * Fixed blank space at bottom of the page in some instances.
 * Fixed a vulnerability that exposed email addresses when a specific link was followed.
 
 
+=======
+= 1.1.7 =
+    * Fixed a bug where cookie settings tab was not displaying settings.
+    
+
+= 1.1.6 =
+* Added settings (now Banner & Cookie Settings) for PRO version to customize the POPIA Compliant Banner for a more elegant look.
+* Fixed blank space at bottom of the page in some instances.
+* Fixed a vulnerability that exposed email addresses when a specific link was followed.
+
+
+>>>>>>> .r2729141
 = 1.1.5 =
 * Added functionality to capture ID Number and passing it over to Consent form for autofill.
 * Added functionality to only request consent on checkout, if consent has not yet been provided.

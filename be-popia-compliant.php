@@ -5034,7 +5034,7 @@ if (get_option('active_plugins')) {
     // WooCommerce ends
 }
 
-function on_footer() {
+// function on_footer() {
 
     // $user_email = 'john@email.com';
 
@@ -5157,6 +5157,6 @@ function on_footer() {
     //     }
     //     $data_to_send = $data_to_send . '[/t' . $tb_count . ']';
     // } echo $data_to_send;
-}
+// }
             
-add_action( 'admin_footer', 'on_footer');
+// add_action( 'admin_footer', 'on_footer');

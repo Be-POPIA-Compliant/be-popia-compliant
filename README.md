@@ -157,8 +157,9 @@ A20: If you have a website, that collects any data such as customer emails, tele
 
 == Changelog ==
 = 1.1.8 =
-* Added support to PRO version for data processing via ARForms - PayFast Addon Plugin
-* Data deletion via PRO Version can now be delayed for any predefined period as per requirements of superseding laws and regulations such as FICA and more.  
+* Added support to PRO version for data processing via ARForms - PayFast Addon Plugin.
+* Data deletion via PRO Version can now be delayed for any predefined period as per requirements of superseding laws and regulations such as FICA and more.
+* Tested compatibility with WordPress 6.
 
 
 = 1.1.7 =
