@@ -156,6 +156,10 @@ A20: If you have a website, that collects any data such as customer emails, tele
 3. Be POPIA Compliant (BPC) | Cookie Settings - Customize your Cookie Notice Banner to match your brand.
 
 == Changelog ==
+= 1.1.9 =
+* Changed Consent related calls to call from manage Consent, rather than from Be POPIA Compliant.
+
+
 = 1.1.8 =
 * Added support to PRO version for data processing via ARForms - PayFast Addon Plugin.
 * Data deletion via PRO Version can now be delayed for any predefined period as per requirements of superseding laws and regulations such as FICA and more.
