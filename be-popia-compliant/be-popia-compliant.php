@@ -436,7 +436,7 @@ function be_popia_compliant_add_user_details_to_py($user_id)
         $domain = $_SERVER['SERVER_NAME'];
         $first_name = '';
         $surname = '';
-        $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/getuserid/" . $user_email);
+        $url = wp_http_validate_url("https://py.manageconsent.co.za/api/getuserid/" . $user_email);
         $args = array(
             'headers' => array(
                 'Content-Type' => 'application/json',
@@ -463,7 +463,7 @@ function be_popia_compliant_add_user_details_to_py($user_id)
         }
 
         if (isset($py_user_id)) {
-            $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/getwpname/" . $py_user_id);
+            $url = wp_http_validate_url("https://py.manageconsent.co.za/api/getwpname/" . $py_user_id);
             $args = array(
                 'headers' => array(
                     'Content-Type' => 'application/json',
@@ -495,7 +495,7 @@ function be_popia_compliant_add_user_details_to_py($user_id)
         }
 
         
-        $url  = wp_http_validate_url('https://py.bepopiacompliant.co.za/api/newusercreated/');
+        $url  = wp_http_validate_url('https://py.manageconsent.co.za/api/newusercreated/');
         $body = array(
             'domain' => $domain,
             'email' => $user_email,
@@ -529,7 +529,7 @@ function be_popia_compliant_add_user_details_to_py($user_id)
             for ($i = 0; $i < 8; $i++) {
                 $randomString .= $characters[rand(0, $charactersLength - 1)];
             }
-            $url  = wp_http_validate_url('https://py.bepopiacompliant.co.za/api/users/');
+            $url  = wp_http_validate_url('https://py.manageconsent.co.za/api/users/');
             
             update_option('the_format', $user_id);
 
@@ -581,7 +581,7 @@ function be_popia_compliant_add_user_details_to_py($user_id)
                         update_option( 'test_got_id' , $id);
                     // }
 
-                $url  = wp_http_validate_url('https://py.bepopiacompliant.co.za/api/newuserprofile/');
+                $url  = wp_http_validate_url('https://py.manageconsent.co.za/api/newuserprofile/');
                 $body = array(
                     'user' => $id,
                     'data_officer_direct_email' => $email,
@@ -4303,7 +4303,7 @@ function display_account_registration_field()
     if(!isset($otherIdIssue)) {
         $otherIdIssue = get_user_meta( $user_id, 'other_identification_issue', $single );
     }
-?>
+ ?>
 
     <p>
         <center><span><b>For POPIA Purposes</b><br>

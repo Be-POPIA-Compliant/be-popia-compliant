@@ -295,7 +295,7 @@
 
 .be_popia_compliant_wrap_dashboard {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 33% 33% 33%;
     gap: 10px;
     grid-auto-rows: minmax(100px, auto);
     margin-right: 2%;
@@ -344,7 +344,7 @@
 
 .be_popia_compliant_dashboard_main_content{
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 33% 33% 33%;
     margin-bottom: 20px;
     padding: 10px;
 }
