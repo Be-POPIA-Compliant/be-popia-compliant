@@ -2,9 +2,9 @@
 Contributors: bepopiacompliant
 Tags: POPI, POPIA, POPI Act, BePOPIACompliant, Be POPIA Compliant, Be POPI Compliant, Manage, Consent, Manage Consent, Be, Be POPIA, Be POPI, POPIA Plugin, POPIA WordPress Plugin, POPIA WP Plugin, WP POPIA, WooCommerce, WooCommerse
 Requires at least: 5.4
-Tested up to: 6.0.2
+Tested up to: 6.0.0
 Requires PHP: 7.3
-Stable tag: 1.1.9
+Stable tag: 1.1.8
 License: License: GPLv2 or later
 
 The only POPIA Compliance plugin that is NOT JUST a Cookie Banner! For any site that operates in South Africa. *Get your site compliant in as little as 15 minutes (only by using PRO).
@@ -155,14 +155,10 @@ A20: If you have a website, that collects any data such as customer emails, tele
 3. Be POPIA Compliant (BPC) | Cookie Settings - Customize your Cookie Notice Banner to match your brand.
 
 == Changelog ==
-= 1.1.9 =
-    * Changed Manage Consent Endpoints for Consent related workings.
-
-
 = 1.1.8 =
-    * Added support to PRO version for data processing via ARForms - PayFast Addon Plugin.
-    * Data deletion via PRO Version can now be delayed for any predefined period as per requirements of superseding laws and regulations such as FICA and more.
-    * Tested compatibility with WordPress 6.
+* Added support to PRO version for data processing via ARForms - PayFast Addon Plugin.
+* Data deletion via PRO Version can now be delayed for any predefined period as per requirements of superseding laws and regulations such as FICA and more.
+* Tested compatibility with WordPress 6.
 
 
 = 1.1.7 =
@@ -170,80 +166,80 @@ A20: If you have a website, that collects any data such as customer emails, tele
 
 
 = 1.1.6 =
-    * Added settings (now Banner & Cookie Settings) for PRO version to customize the POPIA Compliant Banner for a more elegant look.
-    * Fixed blank space at bottom of the page in some instances.
-    * Fixed a vulnerability that exposed email addresses when a specific link was followed.
+* Added settings (now Banner & Cookie Settings) for PRO version to customize the POPIA Compliant Banner for a more elegant look.
+* Fixed blank space at bottom of the page in some instances.
+* Fixed a vulnerability that exposed email addresses when a specific link was followed.
 
 
 = 1.1.5 =
-    * Added functionality to capture ID Number and passing it over to Consent form for autofill.
-    * Added functionality to only request consent on checkout, if consent has not yet been provided.
+* Added functionality to capture ID Number and passing it over to Consent form for autofill.
+* Added functionality to only request consent on checkout, if consent has not yet been provided.
 
 
 = 1.1.4 =
-    * Refactored Reports
+* Refactored Reports
 
 
 = 1.1.3 =
-    * Fixed unclosed '(' on line 1762...
+* Fixed unclosed '(' on line 1762...
 
 
 = 1.1.2 =
-    * Fixed wrong location of closing bracket.
-    * Added ID Validation on WordPress Registration.
+* Fixed wrong location of closing bracket.
+* Added ID Validation on WordPress Registration.
 
 
 = 1.1.1 =
-    * Fixed wrong version number.
+* Fixed wrong version number.
 
 
 = 1.1.0 =
-    * Added the following functionality:
-    *   For free plugin users: 
-        *  To be able to add their user preferences to each user.
-        *  To upload consent forms and then save the generated link for each user in the user settings.
-        *  To also add the Identification Number.
-        *  Also the Type of Identification used and the Country of Issue if this is not a South African ID Number.
-    *   For PRO Be POPIA Plugin users:
-        *  To display all the above details in the users' table. (This is all managed automatically by the PRO Be POPIA Compliant Plugin).
-        *  Programmatically handle Data Requests.
-        *  Authenticate users, then send data to authenticated users (with no action by you).
-        *  Programmatically handle Data Deletion Requests.
-        *  Authenticate users, then Redact all personal data for that authenticated user in your database (with no action by you).
-        *  Added basic support for WooCommerce - to request consent when registering, or on checkout.
+* Added the following functionality:
+*   For free plugin users: 
+    *  To be able to add their user preferences to each user.
+    *  To upload consent forms and then save the generated link for each user in the user settings.
+    *  To also add the Identification Number.
+    *  Also the Type of Identification used and the Country of Issue if this is not a South African ID Number.
+*   For PRO Be POPIA Plugin users:
+    *  To display all the above details in the users' table. (This is all managed automatically by the PRO Be POPIA Compliant Plugin).
+    *  Programmatically handle Data Requests.
+    *  Authenticate users, then send data to authenticated users (with no action by you).
+    *  Programmatically handle Data Deletion Requests.
+    *  Authenticate users, then Redact all personal data for that authenticated user in your database (with no action by you).
+    *  Added basic support for WooCommerce - to request consent when registering, or on checkout.
 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
 = 1.0.17 =
-    * Fixed - Free banner disappears when registering on BPC Website without company info.
+* Fixed - Free banner disappears when registering on BPC Website without company info.
 
 
 = 1.0.16 =
-    * Fixed Calculation proplem on Checklist.
+* Fixed Calculation proplem on Checklist.
 
 
 = 1.0.15 =
-    * Added Hidden Version number for easier debugging.
+* Added Hidden Version number for easier debugging.
 
 
 = 1.0.14 =
-    * Fixed file not found in some instances
+* Fixed file not found in some instances
 
 
 = 1.0.13 =
-    * Tested compatibility for WordPress 5.9.
-    * Added Links to Main Plugin Menu for ease of navigation.
+* Tested compatibility for WordPress 5.9.
+* Added Links to Main Plugin Menu for ease of navigation.
 
 
 = 1.0.12 =
-    * Fix - Error in pinging API.
-    * Fix - Can’t activate plugin: Fatal Error
-    * Fix - Simplified API Call to improve performance
+* Fix - Error in pinging API.
+* Fix - Can’t activate plugin: Fatal Error
+* Fix - Simplified API Call to improve performance
 
 
 = 1.0.1 =
-    * Added functionality on PRO for emails to be sent for collecting consent once a user registers on your site (Ensure you ask for email as usernames)
+* Added functionality on PRO for emails to be sent for collecting consent once a user registers on your site (Ensure you ask for email as usernames)
 
 
 = 1.0.0 =
-    * Initial Be POPIA Compliant Plugin
+* Initial Be POPIA Compliant Plugin

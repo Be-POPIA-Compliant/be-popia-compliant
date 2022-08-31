@@ -1,4 +1,4 @@
-if (typeof $ === 'undefined') {
+if (typeof $ == 'undefined') {
     var $ = jQuery;
  }
  
