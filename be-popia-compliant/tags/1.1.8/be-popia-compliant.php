@@ -2,8 +2,8 @@
 /*
     Plugin Name: Be POPIA Compliant
     Plugin URI: https://bepopiacompliant.co.za
-    Description: Cookie banners does not make you POPIA Compliant, there is <strong>MUCH MORE TO POPIA THAN just adding a Cookie Banner to your site!</strong> The BPC Plugin enables your clients to Manage Consent. Get your site compliant in as little as 15 minutes.
-    Version: 1.1.9
+    Description: The only POPIA Compliance plugin, that is <strong>MORE THAN just a MERE Cookie Banner!</strong> The BPC Plugin enables your clients to Manage Consent. Get your site compliant in as little as 15 minutes.
+    Version: 1.1.8
     Author: Web-X | For Everything Web | South Africa
     Author URI: https://web-x.co.za/
     License: GPLv2 or later
@@ -24,8 +24,9 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
     
-    Copyright 2022 Automatic, Inc.
-    Be POPIA Compliant, Copyright (C) 2022, comes with ABSOLUTELY NO WARRANTY; This is free software,and you are welcome
+    Copyright 2021 Automatic, Inc.
+    Be POPIA Compliant, Copyright (C) 2021, name of author Be POPIA Compliant
+    comes with ABSOLUTELY NO WARRANTY; This is free software,and you are welcome
     to redistribute it under certain conditions;
     1145 Combrinck Street, Villieria, Pretoria, South Africa.
     wpplugin@bepopiacompliant.co.za
@@ -4237,8 +4238,6 @@ function be_popia_compliant_echo_footer()
                                             color: #000;
                                             text-align: center;
                                             box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-                                            position: sticky;
-                                            width: auto;
                                         }
                                         .cont1 {
                                             margin: auto;
@@ -5035,7 +5034,7 @@ if (get_option('active_plugins')) {
     // WooCommerce ends
 }
 
-// function on_footer() {
+function on_footer() {
 
     // $user_email = 'john@email.com';
 
@@ -5158,6 +5157,6 @@ if (get_option('active_plugins')) {
     //     }
     //     $data_to_send = $data_to_send . '[/t' . $tb_count . ']';
     // } echo $data_to_send;
-// }
+}
             
-// add_action( 'admin_footer', 'on_footer');
+add_action( 'admin_footer', 'on_footer');
