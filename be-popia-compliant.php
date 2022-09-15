@@ -3,7 +3,7 @@
     Plugin Name: Be POPIA Compliant
     Plugin URI: https://bepopiacompliant.co.za
     Description: Cookie banners does not make you POPIA Compliant, there is <strong>MUCH MORE TO POPIA THAN just adding a Cookie Banner to your site!</strong> The BPC Plugin enables your clients to Manage Consent. Get your site compliant in as little as 15 minutes.
-    Version: 1.1.9
+    Version: 1.1.10
     Author: Web-X | For Everything Web | South Africa
     Author URI: https://web-x.co.za/
     License: GPLv2 or later
@@ -4915,7 +4915,7 @@ if (get_option('active_plugins')) {
         {
 
             if (empty($_POST['billing_user_SAID']) && empty($_POST['billing_user_OtherID'])) {
-                wc_add_notice('<strong>We require some form of Identificatin for POPIA (Without an authentication identifier, you will never be able to <a href="https://www.manageconsent.co.za" target="blank">Manage Your Consent</a></strong>:<br>Please enter your South African ID Number (if South African) <br>OR<br>Passport, Social Security or other Identification Number (if not using South African ID Number).<br>', 'error');
+                wc_add_notice('<strong>3 (Without an authentication identifier, you will never be able to <a href="https://www.manageconsent.co.za" target="blank">Manage Your Consent</a></strong>:<br>Please enter your South African ID Number (if South African) <br>OR<br>Passport, Social Security or other Identification Number (if not using South African ID Number).<br>', 'error');
             }
 
             if (!empty($_POST['billing_user_SAID']) && empty(!$_POST['billing_user_OtherID'])) {
@@ -4959,7 +4959,7 @@ if (get_option('active_plugins')) {
         function account_registration_field_validation($errors, $username, $email)
         {
 
-            if (empty($_POST['user_identification_number']) && empty($_POST['other_identification_number'])) {
+            if (empty($_POST['user_identification_number']) && empty($_POST['other_identification_number']) && empty($_POST['billing_user_SAID']) && empty($_POST['billing_user_OIDI']) ) {
                 $errors->add('user_identification_number', __('<strong>We require some form of Identificatin for POPIA (Without an authentication identifier, you will never be able to <a href="https://www.manageconsent.co.za" target="blank">Manage Your Consent</a></strong>:<br><br>Please enter your South African ID Number (if South African) <br><br>OR<br><br>Passport, Social Security or other Identification Number (if not using South African ID Number).<br><br>', 'woocommerce'));
             }
 
@@ -4998,7 +4998,7 @@ if (get_option('active_plugins')) {
         }
 
 
-        // save WooCommerce Fields
+        // save WooCommerce Fields when user is created
         add_action('woocommerce_created_customer', 'account_registration_field_save');
 
         function account_registration_field_save($customer_id)
@@ -5019,6 +5019,9 @@ if (get_option('active_plugins')) {
             }
         }
     }
+
+    
+
     
     // add_filter( 'default_checkout_billing_country', 'change_default_checkout_country' );
     // add_filter( 'default_checkout_billing_state', 'change_default_checkout_state' );
