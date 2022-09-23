@@ -57,7 +57,7 @@ jQuery(document).ready(function($){
                 error.append('<p>ID number does not appear to be authentic - check digit is not valid</p>');
                 correct = false;
             }
-            console.log(idNumber.length);
+            // console.log(idNumber.length);
     
     
             // if no error found, hide the error message

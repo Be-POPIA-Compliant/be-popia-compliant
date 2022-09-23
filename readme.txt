@@ -4,7 +4,7 @@ Tags: POPI, POPIA, POPI Act, BePOPIACompliant, Be POPIA Compliant, Be POPI Compl
 Requires at least: 5.4
 Tested up to: 6.0.2
 Requires PHP: 7.3
-Stable tag: 1.1.10
+Stable tag: 1.1.11
 License: License: GPLv2 or later
 
 The only POPIA Compliance plugin that is NOT JUST a Cookie Banner! For any site that operates in South Africa. *Get your site compliant in as little as 15 minutes (only by using PRO).
@@ -155,6 +155,10 @@ A20: If you have a website, that collects any data such as customer emails, tele
 3. Be POPIA Compliant (BPC) | Cookie Settings - Customize your Cookie Notice Banner to match your brand.
 
 == Changelog ==
+= 1.1.11 =
+    * All WooCommerce Privacy Policies is now being overwritten by BPC in PRO
+
+
 = 1.1.10 =
     * Fixed error not detecting ID Number on Checkout
 

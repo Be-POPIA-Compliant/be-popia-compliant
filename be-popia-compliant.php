@@ -3,7 +3,7 @@
     Plugin Name: Be POPIA Compliant
     Plugin URI: https://bepopiacompliant.co.za
     Description: Cookie banners does not make you POPIA Compliant, there is <strong>MUCH MORE TO POPIA THAN just adding a Cookie Banner to your site!</strong> The BPC Plugin enables your clients to Manage Consent. Get your site compliant in as little as 15 minutes.
-    Version: 1.1.10
+    Version: 1.1.11
     Author: Web-X | For Everything Web | South Africa
     Author URI: https://web-x.co.za/
     License: GPLv2 or later
@@ -44,7 +44,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-$bpcV = '1.1.8';
+$bpcV = '1.1.11';
 update_option('bpc_v', $bpcV);
 
 /* Enqueue scripts*/
@@ -1249,6 +1249,7 @@ function be_popia_compliant_modify_user_table_row($row_output, $column_id_attr, 
             } else {
                 return '';
             }
+            
             break;
         case 'user_identification_type':
             $user_SAID = get_user_meta($user, 'user_identification_number', true);
@@ -4499,6 +4500,29 @@ function be_popia_compliant_checkout_style()
                     echo "is Checkout and not logged in";
                 }
             }
+
+            global $wpdb;
+            $policy = '<a href="' . esc_url('https://bepopiacompliant.co.za/#/privacy/' . $_SERVER['SERVER_NAME']) . '" target="_blank">privacy policy</a>';
+
+            $bpc_wc_privacy_policy_checkout = get_option('woocommerce_checkout_privacy_policy_text');
+            echo $bpc_wc_privacy_policy_checkout;    
+
+            if (str_contains($bpc_wc_privacy_policy_checkout, '[privacy_policy]')) {
+                // echo "<br>It has the defaults privacy policy set for Checkout<br>";
+                $bpc_wc_privacy_policy_checkout = str_replace("[privacy_policy]",$policy,$bpc_wc_privacy_policy_checkout);
+                // echo $bpc_wc_privacy_policy_checkout;
+                update_option("woocommerce_checkout_privacy_policy_text", $bpc_wc_privacy_policy_checkout);
+            }
+
+            $bpc_wc_privacy_policy_registration = get_option('woocommerce_registration_privacy_policy_text');
+            echo $bpc_wc_privacy_policy_registration;   
+
+            if (str_contains($bpc_wc_privacy_policy_registration, '[privacy_policy]')) {
+                // echo "It has the defaults privacy policy set for Registration";
+                $bpc_wc_privacy_policy_registration = str_replace("[privacy_policy]",$policy,$bpc_wc_privacy_policy_registration);
+                // echo $bpc_wc_privacy_policy_registration;
+                update_option("woocommerce_registration_privacy_policy_text", $bpc_wc_privacy_policy_registration);
+            }
         }
     }
 }
@@ -4915,7 +4939,7 @@ if (get_option('active_plugins')) {
         {
 
             if (empty($_POST['billing_user_SAID']) && empty($_POST['billing_user_OtherID'])) {
-                wc_add_notice('<strong>3 (Without an authentication identifier, you will never be able to <a href="https://www.manageconsent.co.za" target="blank">Manage Your Consent</a></strong>:<br>Please enter your South African ID Number (if South African) <br>OR<br>Passport, Social Security or other Identification Number (if not using South African ID Number).<br>', 'error');
+                wc_add_notice('<strong>(Without an authentication identifier, you will never be able to <a href="https://www.manageconsent.co.za" target="blank">Manage Your Consent</a></strong>:<br>Please enter your South African ID Number (if South African) <br>OR<br>Passport, Social Security or other Identification Number (if not using South African ID Number).<br>', 'error');
             }
 
             if (!empty($_POST['billing_user_SAID']) && empty(!$_POST['billing_user_OtherID'])) {
