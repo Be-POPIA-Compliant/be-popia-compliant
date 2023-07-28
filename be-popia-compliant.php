@@ -2537,7 +2537,6 @@ add_action('wp_ajax_be_popia_compliant_checklist_update', 'be_popia_compliant_ch
 
 function be_popia_compliant_checklist_update_url()
 {
-
     if (isset($_REQUEST)) {
         global $wpdb;
         $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
@@ -4108,13 +4107,6 @@ function be_popia_compliant_echo_footer()
                                 } else {
                                     echo "No SSL";
                                 }
-                                $table_name = $wpdb->base_prefix . 'be_popia_compliant_checklist';
-                                $query = $wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table_name));
-                                if (!$wpdb->get_var($query) == $table_name) {
-                                    echo ' Checklist Table Not Built';
-                                } else {
-                                    echo ' Checklist Table Built';
-                                }
                                 echo '</span>
                                         </div>
                                     </div>';
@@ -4142,13 +4134,6 @@ function be_popia_compliant_echo_footer()
                                     echo "Has SSL";
                                 } else {
                                     echo "No SSL";
-                                }
-                                $table_name = $wpdb->base_prefix . 'be_popia_compliant_checklist';
-                                $query = $wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table_name));
-                                if (!$wpdb->get_var($query) == $table_name) {
-                                    echo ' Checklist Table Not Built';
-                                } else {
-                                    echo ' Checklist Table Built';
                                 }
                                 echo '</span>';
                             }
@@ -4178,13 +4163,6 @@ function be_popia_compliant_echo_footer()
                         } else {
                             echo "No SSL";
                         }
-                        $table_name = $wpdb->base_prefix . 'be_popia_compliant_checklist';
-                        $query = $wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table_name));
-                        if (!$wpdb->get_var($query) == $table_name) {
-                            echo ' Checklist Table Not Built';
-                        } else {
-                            echo ' Checklist Table Built';
-                        }
                         echo '</span>';
                     }
                 }
@@ -4212,13 +4190,6 @@ function be_popia_compliant_echo_footer()
                     echo "Has SSL";
                 } else {
                     echo "No SSL";
-                }
-                $table_name = $wpdb->base_prefix . 'be_popia_compliant_checklist';
-                $query = $wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table_name));
-                if (!$wpdb->get_var($query) == $table_name) {
-                    echo ' Checklist Table Not Built';
-                } else {
-                    echo ' Checklist Table Built';
                 }
                 echo'</span>';
             }
@@ -4369,13 +4340,6 @@ function be_popia_compliant_echo_footer()
                                 } else {
                                     echo "No SSL";
                                 }
-                                $table_name = $wpdb->base_prefix . 'be_popia_compliant_checklist';
-                                $query = $wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table_name));
-                                if (!$wpdb->get_var($query) == $table_name) {
-                                    echo ' Checklist Table Not Built';
-                                } else {
-                                    echo ' Checklist Table Built';
-                                }
                                 echo '</span>
                                 </div>
                             </div>';
@@ -4410,13 +4374,6 @@ function be_popia_compliant_echo_footer()
         } else {
             echo "No SSL";
         }
-        $table_name = $wpdb->base_prefix . 'be_popia_compliant_checklist';
-        $query = $wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table_name));
-        if (!$wpdb->get_var($query) == $table_name) {
-            echo ' Checklist Table Not Built';
-        } else {
-            echo ' Checklist Table Built';
-        }
         echo '</span>';
     }
 
@@ -4444,13 +4401,6 @@ function be_popia_compliant_echo_footer()
             echo "Has SSL";
         } else {
             echo "No SSL";
-        }
-        $table_name = $wpdb->base_prefix . 'be_popia_compliant_checklist';
-        $query = $wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table_name));
-        if (!$wpdb->get_var($query) == $table_name) {
-            echo ' Checklist Table Not Built';
-        } else {
-            echo ' Checklist Table Built';
         }
         echo '</span>';
     }
