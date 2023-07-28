@@ -44,7 +44,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-$bpcV = '1.2.0';
+$bpcV = '1.3.0';
 update_option('bpc_v', $bpcV);
 
 /* Enqueue scripts*/
