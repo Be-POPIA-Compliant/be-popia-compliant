@@ -3,7 +3,7 @@
 Contributors: bepopiacompliant
 Tags: POPI, POPIA, POPI Act, BePOPIACompliant, Be POPIA Compliant, Be POPI Compliant, Manage, Consent, Manage Consent, Be, Be POPIA, Be POPI, POPIA Plugin, POPIA WordPress Plugin, POPIA WP Plugin, WP POPIA, WooCommerce, WooCommerse
 Requires at least: 5.4
-Tested up to: 6.1.1
+Tested up to: 6.3
 Requires PHP: 7.3
 Stable tag: 1.3.0
 License: License: GPLv2 or later

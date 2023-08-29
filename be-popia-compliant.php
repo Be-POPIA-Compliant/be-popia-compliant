@@ -61,6 +61,10 @@ function be_popia_compliant_scripts()
     $plugin_url = wp_http_validate_url(plugin_dir_url(__FILE__));
     wp_enqueue_script('ValidateSAID', $plugin_url . 'includes/js/be_popia_compliant_validation_script.js', array('jquery'), get_option('bpc_v'), true);
     wp_enqueue_script('ValidateBillSAID', $plugin_url . 'includes/js/be_popia_compliant_validation_script_bill.js', array('jquery'), get_option('bpc_v'), true);
+    // Generate and localize the nonce
+    $ajax_nonce = wp_create_nonce('be_popia_compliant_nonce');
+    wp_localize_script('bpc-nonce', 'be_popia_nonce_object', ['nonce' => $ajax_nonce]);
+    ?> <script>console.log('<?php echo "NONCE => " . $ajax_nonce;?>') </script> <?php
 }
 
 add_action('wp_enqueue_scripts', 'be_popia_compliant_scripts');
@@ -1779,7 +1783,8 @@ function be_popia_compliant_dashboard()
         $result = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 2");
         echo '<label class="be_popia_compliant_p_label" for="be_popia_compliant_company_key_input">Domain Key:</label>
                     <input class="be_popia_compliant_company_key_input widefat" type="text" id="be_popia_compliant_company_key_input" name="be_popia_compliant_company_key_input" value="' . $result->value . '">
-                    <button id="url_button" onclick="save_keys(); location.reload();">Save</button>                        
+                    <button id="url_button" onclick="save_keys(); location.reload();">Save</button>
+                                         
                     
                     <script>                                                    
                         function save_keys() {
@@ -2158,7 +2163,8 @@ function be_popia_compliant_dashboard_checklist()
                         if ($result->does_comply == 1) {
                             echo 'checked';
                         }
-                        echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(be_popia_compliant_checkbox,' . esc_attr($result->id) . ')">';
+                        // echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(be_popia_compliant_checkbox,' . esc_attr($result->id) . ')">';
+                           echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(this, ' . esc_attr($result->id) . ')">';
                     }
                     echo '
                                                 </div>
@@ -2194,7 +2200,8 @@ function be_popia_compliant_dashboard_checklist()
                             if ($result->does_comply == 1) {
                                 echo 'checked';
                             }
-                            echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(be_popia_compliant_checkbox,' . esc_attr($result->id) . ')">';
+                            // echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(be_popia_compliant_checkbox,' . esc_attr($result->id) . ')">';
+                               echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(this, ' . esc_attr($result->id) . ')">';
                         }
                         echo '</div>
                                                 </div>';
@@ -2218,7 +2225,8 @@ function be_popia_compliant_dashboard_checklist()
                             if ($result->does_comply == 1) {
                                 echo 'checked';
                             }
-                            echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(be_popia_compliant_checkbox,' . esc_attr($result->id) . ')">';
+                            // echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(be_popia_compliant_checkbox,' . esc_attr($result->id) . ')">';
+                               echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(this, ' . esc_attr($result->id) . ')">';
                         }
                         echo '</div>
                                                 </div>';
@@ -2248,7 +2256,8 @@ function be_popia_compliant_dashboard_checklist()
                         if ($result->does_comply == 1) {
                             echo 'checked';
                         }
-                        echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(be_popia_compliant_checkbox,' . esc_attr($result->id) . ')">';
+                        // echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(be_popia_compliant_checkbox,' . esc_attr($result->id) . ')">';
+                           echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(this, ' . esc_attr($result->id) . ')">';
                     } elseif ($result->type == 2) {
                         echo '
                                                                     <input type="hidden" id="be_popia_compliant_id_url" name="be_popia_compliant_id_url" value="' . esc_attr($result->id) . '">
@@ -2258,9 +2267,10 @@ function be_popia_compliant_dashboard_checklist()
                         }
                         echo '>
                                                                     <button id="url_button" onclick="save_field(' . esc_attr($result->id) . ')">Save</button>
+                                                                    
                                                                     <script>                                                    
                                                                         function save_field(check_id) {
-                                                                            alert("Saved");
+                                                                            alert("Saved1");
                                                                             var result_id = "input_field" + check_id;
                                                                             var input = document.getElementById(result_id).value;
                                                                             var input_id = document.getElementById("be_popia_compliant_id_url").value;                        
@@ -2272,6 +2282,7 @@ function be_popia_compliant_dashboard_checklist()
                                                                                 data: {
                                                                                     "action":"be_popia_compliant_checklist_update_url",
                                                                                     "check_id" : check_id,
+                                                                                    "_wpnonce": be_popia_nonce_object.nonce,
                                                                                     "input" : input
                                                                                 },
                                                                                 success:function(data) {
@@ -2293,7 +2304,8 @@ function be_popia_compliant_dashboard_checklist()
                                                                 url: ajaxurl,
                                                                 data: {
                                                                     "action":"be_popia_compliant_checklist_update",
-                                                                    "check_id" : check_id
+                                                                    "check_id" : check_id,
+                                                                    "_wpnonce": be_popia_nonce_object.nonce
                                                                 },
                                                                 success:function(data) {
                                                                     document.getElementById(label_id).style.background = "#B7191A";
@@ -2307,7 +2319,8 @@ function be_popia_compliant_dashboard_checklist()
                                                                 url: ajaxurl,
                                                                 data: {
                                                                     "action":"be_popia_compliant_checklist_update",
-                                                                    "check_id" : check_id
+                                                                    "check_id" : check_id,
+                                                                    "_wpnonce": be_popia_nonce_object.nonce
                                                                 },
                                                                 success:function(data) {
                                                                     document.getElementById(label_id).style.background = "#1D2327";
@@ -2339,7 +2352,8 @@ function be_popia_compliant_dashboard_checklist()
                         if ($result->does_comply == 1) {
                             echo 'checked';
                         }
-                        echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(be_popia_compliant_checkbox,' . esc_attr($result->id) . ')">';
+                        // echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(be_popia_compliant_checkbox,' . esc_attr($result->id) . ')">';
+                           echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(this, ' . esc_attr($result->id) . ')">';
                     } elseif ($result->type == 2) {
                         echo '<input type="hidden" id="be_popia_compliant_id_url" name="be_popia_compliant_id_url" value="' . esc_attr($result->id) . '">
                                                         <input type="text" id="input_field' . esc_attr($result->id) . '" name="input_field' . esc_attr($result->id) . '" placeholder="eg. https://' . $_SERVER['SERVER_NAME'] . '/?page_id=3" class="widefat"';
@@ -2348,9 +2362,10 @@ function be_popia_compliant_dashboard_checklist()
                         }
                         echo '>
                                                         <button id="url_button" onclick="save_field(' . esc_attr($result->id) . ')">Save</button>
+                                                        
                                                         <script>                                                    
                                                             function save_field(check_id) {
-                                                                alert("Saved");
+                                                                alert("Saved2");
                                                                 var result_id = "input_field" + check_id;
                                                                 var input = document.getElementById(result_id).value;
                                                                 var input_id = document.getElementById("be_popia_compliant_id_url").value;
@@ -2363,6 +2378,7 @@ function be_popia_compliant_dashboard_checklist()
                                                                     data: {
                                                                         "action":"be_popia_compliant_checklist_update_url",
                                                                         "check_id" : check_id,
+                                                                        "_wpnonce": be_popia_nonce_object.nonce,
                                                                         "input" : input
                                                                     },
                                                                     success:function(data) {
@@ -2384,7 +2400,8 @@ function be_popia_compliant_dashboard_checklist()
                                                     url: ajaxurl,
                                                     data: {
                                                         "action":"be_popia_compliant_checklist_update",
-                                                        "check_id" : check_id
+                                                        "check_id" : check_id,
+                                                        "_wpnonce": be_popia_nonce_object.nonce
                                                     },
                                                     success:function(data) {
                                                         document.getElementById(label_id).style.background = "#B7191A";
@@ -2398,7 +2415,8 @@ function be_popia_compliant_dashboard_checklist()
                                                     url: ajaxurl,
                                                     data: {
                                                         "action":"be_popia_compliant_checklist_update",
-                                                        "check_id" : check_id
+                                                        "check_id" : check_id,
+                                                        "_wpnonce": be_popia_nonce_object.nonce
                                                     },
                                                     success:function(data) {
                                                         document.getElementById(label_id).style.background = "#1D2327";
@@ -2433,7 +2451,8 @@ function be_popia_compliant_dashboard_checklist()
                     if ($result->does_comply == 1) {
                         echo 'checked';
                     }
-                    echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(be_popia_compliant_checkbox,' . esc_attr($result->id) . ')">';
+                    // echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(be_popia_compliant_checkbox,' . esc_attr($result->id) . ')">';
+                       echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(this, ' . esc_attr($result->id) . ')">';
                 } elseif ($result->type == 2) {
                     echo '
                                                         <input type="hidden" id="be_popia_compliant_id_url" name="be_popia_compliant_id_url" value="' . esc_attr($result->id) . '">
@@ -2442,10 +2461,12 @@ function be_popia_compliant_dashboard_checklist()
                         echo 'value="' . $result->content . '"';
                     }
                     echo '>
-                                                        <button id="url_button" onclick="save_field(' . esc_attr($result->id) . ')">Save</button>      
+                                                        <button id="url_button" onclick="save_field(' . esc_attr($result->id) . ')">Save</button> 
+                                                        
+     
                                                         <script>                                                    
                                                             function save_field(check_id) {
-                                                                alert("Saved");
+                                                                alert("Saved3");
                                                                 var result_id = "input_field" + check_id;
                                                                 var input = document.getElementById(result_id).value;
                                                                 var input_id = document.getElementById("be_popia_compliant_id_url").value;              
@@ -2457,6 +2478,7 @@ function be_popia_compliant_dashboard_checklist()
                                                                     data: {
                                                                         "action":"be_popia_compliant_checklist_update_url",
                                                                         "check_id" : check_id,
+                                                                        "_wpnonce": be_popia_nonce_object.nonce,
                                                                         "input" : input
                                                                     },
                                                                     success:function(data) {
@@ -2479,7 +2501,8 @@ function be_popia_compliant_dashboard_checklist()
                                                 url: ajaxurl,
                                                 data: {
                                                     "action":"be_popia_compliant_checklist_update",
-                                                    "check_id" : check_id
+                                                    "check_id" : check_id,
+                                                    "_wpnonce": be_popia_nonce_object.nonce
                                                 },
                                                 success:function(data) {
                                                     document.getElementById(label_id).style.background = "#B7191A";
@@ -2493,7 +2516,8 @@ function be_popia_compliant_dashboard_checklist()
                                                 url: ajaxurl,
                                                 data: {
                                                     "action":"be_popia_compliant_checklist_update",
-                                                    "check_id" : check_id
+                                                    "check_id" : check_id,
+                                                    "_wpnonce": be_popia_nonce_object.nonce
                                                 },
                                                 success:function(data) {
                                                     document.getElementById(label_id).style.background = "#1D2327";
@@ -2517,11 +2541,13 @@ function be_popia_compliant_dashboard_checklist()
 
 function be_popia_compliant_checklist_update()
 {
+    // Verify the nonce
+    check_ajax_referer('be_popia_compliant_nonce', '_wpnonce');
     if (isset($_REQUEST)) {
         global $wpdb;
         $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
-        $check_id = sanitize_text_field($_REQUEST["check_id"]);
-        $results = $wpdb->get_results("SELECT * FROM $table_name WHERE id = $check_id");
+        $check_id = intval($_REQUEST["check_id"]); // Convert to integer for safety
+        $results = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $check_id));
         foreach ($results as $result) {
             if ($result->does_comply == 0) {
                 $wpdb->update($table_name, array('does_comply' => 1), array('id' => $check_id));
@@ -2537,10 +2563,12 @@ add_action('wp_ajax_be_popia_compliant_checklist_update', 'be_popia_compliant_ch
 
 function be_popia_compliant_checklist_update_url()
 {
+    // Verify the nonce
+    check_ajax_referer('be_popia_compliant_nonce', '_wpnonce');
     if (isset($_REQUEST)) {
         global $wpdb;
         $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
-        $check_id = sanitize_text_field($_REQUEST["check_id"]);
+        $check_id = intval($_REQUEST["check_id"]); // Convert to integer for safety
         $input = sanitize_text_field($_REQUEST["input"]);
         if ($input != '') {
             $wpdb->update($table_name, array('content' => $input, 'does_comply' => 1), array('id' => $check_id));
@@ -5054,148 +5082,4 @@ if (get_option('active_plugins')) {
         }
         
     }
-
-    
-
-    
-    // add_filter( 'default_checkout_billing_country', 'change_default_checkout_country' );
-    // add_filter( 'default_checkout_billing_state', 'change_default_checkout_state' );
-    
-    // function change_default_checkout_country() {
-    //   return 'South Africa'; // country code
-    // }
-    
-    // function change_default_checkout_state() {
-    //   return 'XX'; // state code
-    // }
-
-
-    // WooCommerce ends
 }
-
-// function on_footer() {
-
-    // $user_email = 'john@email.com';
-
-    // global $wpdb;
-    // $table_name = $wpdb->prefix . 'arf_payfast_order';
-    // $wpdb->show_errors(); 
-    // $result = $wpdb->get_results("SELECT * FROM $table_name WHERE `payer_email` = '$user_email'");
-    // //Get Personal Data from arf_payfast_order multiple rows possible
-    // if (count($result) > 0) {
-    //     $tb_count++;
-    //     $tb_name = $wpdb->base_prefix . 'arf_payfast_order';
-    //     $data_to_send = $data_to_send . '[t' . $tb_count . '][tn]' . $tb_name . '[/tn][dbs]1[/dbs][pk]id[/pk]';
-
-    //     foreach($result as $theResult) {
-    //         $r_count = 0;
-
-    //         $id = $theResult->id;
-    //         if(isset($id)) {
-    //             $r_count++;
-    //             $data_to_send = $data_to_send . '[r' . $r_count . ']id,' . $id . ',n,i,11[/r' . $r_count . ']';
-    //         }
-
-    //         $item_name = $theResult->id;
-    //         if(isset($item_name)) {
-    //             $r_count++;
-    //             $data_to_send = $data_to_send . '[r' . $r_count . ']item_name,' . $item_name . ',n,v,255[/r' . $r_count . ']';
-    //         }
-            
-    //         $txn_id = $theResult->txn_id;
-    //         if(isset($txn_id)) {
-    //             $r_count++;
-    //             $data_to_send = $data_to_send . '[r' . $r_count . ']txn_id,' . $txn_id . ',n,v,255[/r' . $r_count . ']';
-    //         }
-                
-    //         $payment_status = $theResult->payment_status;
-    //         if(isset($payment_status)) {
-    //             $r_count++;
-    //             $data_to_send = $data_to_send . '[r' . $r_count . ']payment_status,' . $payment_status . ',n,v,225[/r' . $r_count . ']';
-    //         }
-
-    //         $mc_gross = $theResult->mc_gross;
-    //         if(isset($mc_gross)) {
-    //             $r_count++;
-    //             $data_to_send = $data_to_send . '[r' . $r_count . ']mc_gross,' . $mc_gross . ',n,f,11.2[/r' . $r_count . ']';
-    //         }
-
-    //         $mc_currency = $theResult->mc_currency;
-    //         if(isset($mc_currency)) {
-    //             $r_count++;
-    //             $data_to_send = $data_to_send . '[r' . $r_count . ']mc_currency,' . $mc_currency . ',n,v,255[/r' . $r_count . ']';
-    //         }
-
-    //         $quantity = $theResult->quantity;
-    //         if($quantity != '') {
-    //             $r_count++;
-    //             $data_to_send = $data_to_send . '[r' . $r_count . ']quantity,' . $quantity . ',n,v,255[/r' . $r_count . ']';
-    //         }
-
-    //         $payer_email = $theResult->payer_email;
-    //         if(isset($payer_email)) {
-    //             $r_count++;
-    //             $data_to_send = $data_to_send . '[r' . $r_count . ']payer_email,' . $payer_email . ',y,v,255[/r' . $r_count . ']';
-    //         }
-
-    //         $payer_name = $theResult->payer_name;
-    //         if(isset($payer_name)) {
-    //             $r_count++;
-    //             $data_to_send = $data_to_send . '[r' . $r_count . ']payer_name,' . $payer_name . ',y,v,255[/r' . $r_count . ']';
-    //         }
-
-    //         $payment_type = $theResult->payment_type;
-    //         if($payment_type != 0) {
-    //             $r_count++;
-    //             $data_to_send = $data_to_send . '[r' . $r_count . ']payment_type,' . $payment_type . ',n,v,255[/r' . $r_count . ']';
-    //         }
-            
-    //         $user_id = $theResult->user_id;
-    //         if($user_id != 0) {
-    //             $r_count++;
-    //             $data_to_send = $data_to_send . '[r' . $r_count . ']user_id,' . $user_id . ',n,i,11[/r' . $r_count . ']';
-    //         }
-
-    //         $entry_id = $theResult->entry_id;
-    //         if(isset($entry_id)) {
-    //             $r_count++;
-    //             $data_to_send = $data_to_send . '[r' . $r_count . ']entry_id,' . $entry_id . ',n,i,11[/r' . $r_count . ']';
-    //         }
-
-    //         $form_id = $theResult->form_id;
-    //         if(isset($form_id)) {
-    //             $r_count++;
-    //             $data_to_send = $data_to_send . '[r' . $r_count . ']form_id,' . $form_id . ',n,i,11[/r' . $r_count . ']';
-    //         }
-
-    //         $payment_date = $theResult->payment_date;
-    //         if(isset($payment_date)) {
-    //             $r_count++;
-    //             $data_to_send = $data_to_send . '[r' . $r_count . ']payment_date,' . $payment_date . ',n,v,255[/r' . $r_count . ']';
-    //         }
-
-    //         $created_at = $theResult->created_at;
-    //         if(isset($created_at)) {
-    //             $r_count++;
-    //             $data_to_send = $data_to_send . '[r' . $r_count . ']created_at,' . $created_at . ',n,D[/r' . $r_count . ']';
-    //         }
-
-    //         $is_verified = $theResult->is_verified;
-    //         if(isset($is_verified)) {
-    //             $r_count++;
-    //             $data_to_send = $data_to_send . '[r' . $r_count . ']is_verified,' . $is_verified . ',n,i,1[/r' . $r_count . ']';
-    //         }
-
-    //         $token = $theResult->token;
-    //         if($token != '') {
-    //             $r_count++;
-    //             $data_to_send = $data_to_send . '[r' . $r_count . ']token,' . $token . ',n,v,255[/r' . $r_count . ']';
-    //         }
-    //     $data_to_send = $data_to_send . '[rc]' . $r_count . '[/rc]';
-        
-    //     }
-    //     $data_to_send = $data_to_send . '[/t' . $tb_count . ']';
-    // } echo $data_to_send;
-// }
-            
-// add_action( 'admin_footer', 'on_footer');
