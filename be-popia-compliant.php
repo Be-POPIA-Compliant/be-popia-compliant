@@ -3,7 +3,7 @@
     Plugin Name: Be POPIA Compliant
     Plugin URI: https://bepopiacompliant.co.za
     Description: Cookie banners does not make you POPIA Compliant, there is <strong>MUCH MORE TO POPIA THAN just adding a Cookie Banner to your site!</strong> The BPC Plugin enables your clients to Manage Consent. Get your site compliant in as little as 15 minutes.
-    Version: 1.2.0
+    Version: 1.3.0
     Author: Web-X | For Everything Web | South Africa
     Author URI: https://web-x.co.za/
     License: GPLv2 or later
@@ -25,7 +25,7 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
     
     Copyright 2022 Automatic, Inc.
-    Be POPIA Compliant, Copyright (C) 2022, comes with ABSOLUTELY NO WARRANTY; This is free software,and you are welcome
+    Be POPIA Compliant (PTY) Ltd, Copyright (C) 2022-2023, comes with ABSOLUTELY NO WARRANTY; This is free software,and you are welcome
     to redistribute it under certain conditions;
     1145 Combrinck Street, Villieria, Pretoria, South Africa.
     wpplugin@bepopiacompliant.co.za
@@ -58,17 +58,20 @@ add_action('admin_print_styles', 'be_popia_compliant_user_scripts');
 
 function be_popia_compliant_scripts()
 {
+    // Generate and localize the nonce
+    $bpc_nonce = wp_create_nonce('be_popia_compliant_nonce');
+    
+
     $plugin_url = wp_http_validate_url(plugin_dir_url(__FILE__));
     wp_enqueue_script('ValidateSAID', $plugin_url . 'includes/js/be_popia_compliant_validation_script.js', array('jquery'), get_option('bpc_v'), true);
     wp_enqueue_script('ValidateBillSAID', $plugin_url . 'includes/js/be_popia_compliant_validation_script_bill.js', array('jquery'), get_option('bpc_v'), true);
-    // Generate and localize the nonce
-    $ajax_nonce = wp_create_nonce('be_popia_compliant_nonce');
-    wp_localize_script('bpc-nonce', 'be_popia_nonce_object', ['nonce' => $ajax_nonce]);
-    ?> <script>console.log('<?php echo "NONCE => " . $ajax_nonce;?>') </script> <?php
+    wp_enqueue_script('Basic', $plugin_url . 'includes/js/be_popia_compliant_basic.js', array('jquery'), get_option('bpc_v'), true);
+    
+    wp_localize_script('Basic', 'be_popia_nonce_object', ['nonce' => $bpc_nonce]);
 }
 
 add_action('wp_enqueue_scripts', 'be_popia_compliant_scripts');
-add_action('login_enqueue_scripts', 'be_popia_compliant_scripts', 1);
+add_action('admin_enqueue_scripts', 'be_popia_compliant_scripts', 1);
 
 /* Adds new links to plugin in plugins.php */
 function add_action_links($actions)
@@ -94,99 +97,98 @@ function add_action_links($actions)
 add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'add_action_links');
 
 //* Create Database Table for Be POPIA Compliant 
-function be_popia_compliant_create()
-{
+function be_popia_compliant_create() {
     global $wpdb;
 
-    $table_name = $wpdb->base_prefix . 'be_popia_compliant_checklist';
-    $query = $wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table_name));
+    $table_name = $wpdb->get_blog_prefix() . 'be_popia_compliant_checklist';
+    $query = $wpdb->prepare("SHOW TABLES LIKE %s", $table_name);
 
-    if (!$wpdb->get_var($query) == $table_name) {
-        $be_popia_compliant_tb_checklist = $wpdb->prefix . "be_popia_compliant_checklist";
+    if ($wpdb->get_var($query) != $table_name) {
         require_once(ABSPATH . "wp-admin/includes/upgrade.php");
 
+        $be_popia_compliant_tb_checklist = $wpdb->get_blog_prefix() . "be_popia_compliant_checklist";
         $be_popia_compliant_query_checklist = "
-            CREATE TABLE $be_popia_compliant_tb_checklist(
+            CREATE TABLE $be_popia_compliant_tb_checklist (
                 id int(12) NOT NULL AUTO_INCREMENT,
                 title varchar(100) DEFAULT '',
                 description varchar(1500) DEFAULT '',
                 content varchar(500) DEFAULT '',
                 type int(1) DEFAULT '0',
                 does_comply int(1) DEFAULT '0',
-                is_active int(1) DEFAULT'1',
-                PRIMARY KEY (id))";
+                is_active int(1) DEFAULT '1',
+                PRIMARY KEY (id)
+            )";
         dbDelta($be_popia_compliant_query_checklist);
 
-        $be_popia_compliant_tb_admin = $wpdb->prefix . "be_popia_compliant_admin";
+        $be_popia_compliant_tb_admin = $wpdb->get_blog_prefix() . "be_popia_compliant_admin";
         $be_popia_compliant_query_admin = "
             CREATE TABLE $be_popia_compliant_tb_admin (
                 id int(12) NOT NULL AUTO_INCREMENT,
                 title varchar(100) DEFAULT '',
                 value varchar(1500) DEFAULT '',
-                PRIMARY KEY (id))";
+                PRIMARY KEY (id)
+            )";
         dbDelta($be_popia_compliant_query_admin);
 
-        $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME']);
+        $url = "https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME'];
         $args = array(
             'headers' => array(
                 'Content-Type' => 'application/json',
             ),
-            'body'    => array(),
         );
 
-        $response = wp_remote_get(wp_http_validate_url($url), $args);
-        $response_code = wp_remote_retrieve_response_code($response);
-        $body = wp_remote_retrieve_body($response);
+        $response = wp_safe_remote_get($url, $args);
 
-        if (401 === $response_code) {
-            echo "Unauthorized access";
-        }
+        if (is_wp_error($response)) {
+            echo "Error accessing remote API: " . $response->get_error_message();
+        } else {
+            $response_code = wp_remote_retrieve_response_code($response);
 
-        if (200 === $response_code) {
-            $body = json_decode($body);
+            if ($response_code === 401) {
+                echo "Unauthorized access";
+            } elseif ($response_code === 200) {
+                $body = wp_remote_retrieve_body($response);
+                $data = json_decode($body);
 
-            if ($body != []) {
-                foreach ($body as $data) {
-                    $id = $data->id;
+                if (!empty($data)) {
+                    $id = $data[0]->id;
+                    $update_url = "https://py.bepopiacompliant.co.za/api/plugindetails/" . $id;
+                    $t = date("h:i:sa d-m-Y", time());
+                    $update_body = array(
+                        'activated' => $t,
+                        'active' => 1
+                    );
+                    $update_args = array(
+                        'headers' => array(
+                            'Content-Type' => 'application/json',
+                        ),
+                        'body' => json_encode($update_body),
+                        'method' => 'PUT'
+                    );
+
+                    $update_response = wp_safe_remote_request($update_url, $update_args);
+                } else {
+                    $t = date("h:i:sa d-m-Y", time());
+                    $url = "https://py.bepopiacompliant.co.za/api/plugindetails/";
+                    $create_body = array(
+                        'domain' => $_SERVER['SERVER_NAME'],
+                        'downloaded' => $t,
+                        'activated' => $t,
+                        'active' => 1
+                    );
+
+                    $create_args = array(
+                        'method' => 'POST',
+                        'timeout' => 45,
+                        'sslverify' => true,
+                        'headers' => array(
+                            'Content-Type' => 'application/json',
+                        ),
+                        'body' => json_encode($create_body),
+                    );
+
+                    $create_response = wp_safe_remote_post($url, $create_args);
                 }
-
-                $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/plugindetails/" . $id);
-
-                $t = date("h:i:sa d-m-Y", time());
-                $body = array(
-                    'activated' => $t,
-                    'active' => 1
-                );
-                $args = array(
-                    'headers' => array(
-                        'Content-Type'   => 'application/json',
-                    ),
-                    'body'      => json_encode($body),
-                    'method'    => 'PUT'
-                );
-
-                $result = wp_remote_request(wp_http_validate_url($url), $args);
-            } else {
-                $t = date("h:i:sa d-m-Y", time());
-                $url  = wp_http_validate_url('https://py.bepopiacompliant.co.za/api/plugindetails/');
-                $body = array(
-                    'domain' => $_SERVER['SERVER_NAME'],
-                    'downloaded' => $t,
-                    'activated' => $t,
-                    'active' => 1
-                );
-
-                $args = array(
-                    'method'      => 'POST',
-                    'timeout'     => 45,
-                    'sslverify'   => false,
-                    'headers'     => array(
-                        'Content-Type'  => 'application/json',
-                    ),
-                    'body'        => json_encode($body),
-                );
-
-                $request = wp_remote_post(wp_http_validate_url($url), $args);
             }
         }
     }
@@ -238,7 +240,7 @@ function be_popia_compliant_insert_data()
             array('title' => 'Use and modify this caption for A.1.', 'description' => 'We are required by law to obtain your consent if we want/need to process your personal information.', 'type' => 1),
             array('title' => 'Use and modify this caption for A.2.', 'description' => 'To process *--insert your service here--*, we need to process your personal information.', 'type' => 1),
             array('title' => 'Use and modify this caption for A.3.', 'description' => 'Therefore, without your consent, we will not be able to process your request unless we have your express consent.', 'type' => 1),
-            array('title' => 'Use and modify this caption for A.4.', 'description' => 'None of the parties above shall store and therfore shall not use your information for the purposes of marketing.', 'type' => 5),
+            array('title' => 'Use and modify this caption for A.4.', 'description' => 'None of the parties above shall store and therefore shall not use your information for the purposes of marketing.', 'type' => 5),
             array('title' => 'Use and modify this caption for A.4.', 'description' => 'Any of the parties above shall only be allowed to market through the channels you select in section D.15.', 'type' => 6),
             array('title' => 'Consent Form | Section B - RESPONSIBLE PARTIES THAT IS REQUESTING CONSENT', 'description' => 'You need to understand that: According to POPIA, you need to appoint a "DATA OFFICER". In a small business setup, this will typically be you. Your organisation and everyone working in it as a collective is referred to as the "RESPONSIBLE PARTY". The Courier you provide data to for delivery is also a "RESPONSIBLE PARTY" and you need to also request consent on their behalf.', 'type' => 1),
             array('title' => 'List RESPONSIBLE PARTIES with responsibilities', 'description' => 'List each RESPONSIBLE PARTY and follow up with the service they will deliver. Do B.1. for the first, B.2. for the second etc.', 'type' => 1),
@@ -347,7 +349,7 @@ $comp_date = DateTime::createFromFormat('d-m-Y H:i:s', $comp_date = $comp_date[8
 $comp_date = $comp_date->getTimestamp();
 update_option('comp_date', $comp_date);
 
-if ((isset($result_api->value) && $result_api->value != '') && $comp_date < $renew_date) {
+if ((isset($result_api->value) && $result_api->value != '' && isset($renew_date)) && $comp_date < $renew_date) {
     update_option('bpc_hasPro', 1);
     update_option('bpc_disable', 0);
 } else {
@@ -1846,12 +1848,13 @@ function be_popia_compliant_dashboard()
                 }, 10000);
             }
             function check_db() {
-                
+                var nonce = be_popia_nonce_object.nonce; // Get the nonce from the localized data
                 jQuery.ajax({
                     type: "GET",
                     url: ajaxurl,
                     data: {
                         "action":"be_popia_compliant_checklist_update_compliance",
+                        "nonce": nonce // Include the nonce in the data
                     },
                     success:function(data) {
                         document.getElementById("be_popia_compliant_completeness").innerHTML = Math.floor(data);
@@ -2047,6 +2050,7 @@ function be_popia_compliant_dashboard_checklist()
     $results = $wpdb->get_results("SELECT * from $table_name");
     echo '<div class="be_popia_compliant_wrap">
                 <h1 style="text-align-last: center;font-size:50px;">POPIA CHECKLIST</h1>
+                <center><h2>Paint it Red</h2> (All black fields still need to be completed | refresh this page for a quick update on colors)</center>
                 <center><h3>Please note that this only take effect for FREE version or when membership to Pro version has expired.<br>
                 Seem like a hasstle? <a href="https://bepopiacompliant.co.za" target="_blank">Use Pro for quick and easy setup</a> and skip all below!
                 </h3>
@@ -2073,12 +2077,14 @@ function be_popia_compliant_dashboard_checklist()
                             check_db() 
                         }, 10000);
                     }
-                    function check_db() {         
+                    function check_db() {  
+                        var nonce = be_popia_nonce_object.nonce; // Get the nonce from the localized data       
                         jQuery.ajax({
                             type: "GET",
                             url: ajaxurl,
                             data: {
                                 "action":"be_popia_compliant_checklist_update_compliance",
+                                "nonce": nonce // Include the nonce in the data
                             },
                             success:function(data) {
                                 if(data == 100) {
@@ -2123,10 +2129,9 @@ function be_popia_compliant_dashboard_checklist()
             echo '</div>';
         } elseif ($result->type == 0) {
             echo '
-                                    <div class="be_popia_compliant_tab">
-                                        <input class="be_popia_compliant_input"  type="radio" id="rd' . esc_attr($result->id) . '" name="rd">
-                                        <label class="be_popia_compliant_tab-section-label_completed" for="rd' . esc_attr($result->id) . '">' . esc_attr($result->title) . '</label>
-                                        ';
+                <div class="be_popia_compliant_tab">
+                    <input class="be_popia_compliant_input"  type="radio" id="rd' . esc_attr($result->id) . '" name="rd">
+                    <label class="be_popia_compliant_tab-section-label_completed" for="rd' . esc_attr($result->id) . '">' . esc_attr($result->title) . '</label>';
             if ($result->description != "") {
 
                 echo '
@@ -2143,9 +2148,9 @@ function be_popia_compliant_dashboard_checklist()
             foreach ($checks as $check) {
                 if ($check->does_comply == 1) {
                     echo '
-                                            <div class="be_popia_compliant_tab">
-                                                <input class="be_popia_compliant_input"  type="radio" id="rd' . esc_attr($result->id) . '" name="rd">
-                                                <label ';
+                        <div class="be_popia_compliant_tab">
+                            <input class="be_popia_compliant_input"  type="radio" id="rd' . esc_attr($result->id) . '" name="rd">
+                            <label ';
                     if ($result->does_comply == 0) {
                         echo 'class="be_popia_compliant_tab-label"';
                     } else {
@@ -2155,19 +2160,17 @@ function be_popia_compliant_dashboard_checklist()
                                                 ';
                     if ($result->description != "") {
 
-                        echo '
-                                                    <div class="be_popia_compliant_tab-content">
-                                                        ' . esc_attr($result->description) . '
-                                                        <input type="hidden" id="be_popia_compliant_id" name="be_popia_compliant_id" value="' . esc_attr($result->id) . '">
-                                                        <input type="checkbox" ';
+                        echo '<div class="be_popia_compliant_tab-content">' . esc_attr($result->description) . '
+                                <input type="hidden" id="be_popia_compliant_id" name="be_popia_compliant_id" value="' . esc_attr($result->id) . '">
+                                <input type="checkbox" ';
                         if ($result->does_comply == 1) {
                             echo 'checked';
                         }
                         echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(be_popia_compliant_checkbox,' . esc_attr($result->id) . ')">';
                     }
                     echo '
-                                                </div>
-                                            </div>';
+                        </div>
+                    </div>';
                 }
             }
         } elseif ($result->type == 4) {
@@ -2182,51 +2185,47 @@ function be_popia_compliant_dashboard_checklist()
                     $needMarketing = $wpdb->get_var("SELECT does_comply FROM $table_name WHERE id = 3");
                     if ($needComms == 0 && $needMarketing == 1) {
                         echo '<div class="be_popia_compliant_tab">
-                                                    <input class="be_popia_compliant_input"  type="radio" id="rd' . esc_attr($result->id) . '" name="rd">
-                                                    <label ';
+                                <input class="be_popia_compliant_input"  type="radio" id="rd' . esc_attr($result->id) . '" name="rd">
+                                <label ';
                         if ($result->does_comply == 0) {
                             echo 'class="be_popia_compliant_tab-label"';
                         } else {
                             echo 'class="be_popia_compliant_tab-label_completed"';
                         }
-                        echo ' for="rd' . esc_attr($result->id) . '">14. MARKETING COMMUNICATION:</label>
-                                                    ';
+                        echo ' for="rd' . esc_attr($result->id) . '">14. MARKETING COMMUNICATION:</label>';
                         if ($result->description != "") {
-                            echo '<div class="be_popia_compliant_tab-content">
-                                                            ' . esc_attr($result->description) . '
-                                                            <input type="hidden" id="be_popia_compliant_id" name="be_popia_compliant_id" value="' . esc_attr($result->id) . '">
-                                                            <input type="checkbox" ';
+                            echo '<div class="be_popia_compliant_tab-content">' . esc_attr($result->description) . '
+                                <input type="hidden" id="be_popia_compliant_id" name="be_popia_compliant_id" value="' . esc_attr($result->id) . '">
+                                <input type="checkbox" ';
                             if ($result->does_comply == 1) {
                                 echo 'checked';
                             }
                             echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(be_popia_compliant_checkbox,' . esc_attr($result->id) . ')">';
                         }
                         echo '</div>
-                                                </div>';
+                        </div>';
                     } else {
                         echo '<div class="be_popia_compliant_tab">
-                                                    <input class="be_popia_compliant_input"  type="radio" id="rd' . esc_attr($result->id) . '" name="rd">
-                                                    <label ';
+                                <input class="be_popia_compliant_input"  type="radio" id="rd' . esc_attr($result->id) . '" name="rd">
+                                <label ';
                         if ($result->does_comply == 0) {
                             echo 'class="be_popia_compliant_tab-label"';
                         } else {
                             echo 'class="be_popia_compliant_tab-label_completed"';
                         }
-                        echo ' for="rd' . esc_attr($result->id) . '">' . esc_attr($result->title) . '</label>
-                                                    ';
+                        echo ' for="rd' . esc_attr($result->id) . '">' . esc_attr($result->title) . '</label>';
                         if ($result->description != "") {
 
-                            echo '<div class="be_popia_compliant_tab-content">
-                                                            ' . esc_attr($result->description) . '
-                                                            <input type="hidden" id="be_popia_compliant_id" name="be_popia_compliant_id" value="' . esc_attr($result->id) . '">
-                                                            <input type="checkbox" ';
+                            echo '<div class="be_popia_compliant_tab-content">' . esc_attr($result->description) . '
+                                <input type="hidden" id="be_popia_compliant_id" name="be_popia_compliant_id" value="' . esc_attr($result->id) . '">
+                                <input type="checkbox" ';
                             if ($result->does_comply == 1) {
                                 echo 'checked';
                             }
                             echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(be_popia_compliant_checkbox,' . esc_attr($result->id) . ')">';
                         }
                         echo '</div>
-                                                </div>';
+                        </div>';
                     }
                 }
             }
@@ -2234,58 +2233,59 @@ function be_popia_compliant_dashboard_checklist()
             if ($marketing == 38) {
                 if ($result->type == 5) {
                     echo '
-                                                <div class="be_popia_compliant_tab">
-                                                    <input class="be_popia_compliant_input"  type="radio" id="rd' . esc_attr($result->id) . '" name="rd">
-                                                    <label ';
+                        <div class="be_popia_compliant_tab">
+                            <input class="be_popia_compliant_input"  type="radio" id="rd' . esc_attr($result->id) . '" name="rd">
+                            <label ';
                     if ($result->does_comply == 0) {
                         echo 'class="be_popia_compliant_tab-label"';
                     } else {
                         echo 'class="be_popia_compliant_tab-label_completed"';
                     }
                     echo ' for="rd' . esc_attr($result->id) . '" id="be_popia_compliant_tab-label' . esc_attr($result->id) . '">' . esc_attr($result->title) . '</label>
-                                                    <div class="be_popia_compliant_tab-content"><br>
-                                                        ' . esc_html($result->description) . '
-                                                            ';
+                            <div class="be_popia_compliant_tab-content"><br>' . esc_html($result->description) . '';
                     if ($result->type == 1 || $result->type == 5 || $result->type == 6 || $result->type == 7) {
                         echo '
-                                                                        <input type="hidden" id="be_popia_compliant_id" name="be_popia_compliant_id" value="' . esc_attr($result->id) . '">
-                                                                        <input type="checkbox" ';
+                            <input type="hidden" id="be_popia_compliant_id" name="be_popia_compliant_id" value="' . esc_attr($result->id) . '">
+                            <input type="checkbox" ';
                         if ($result->does_comply == 1) {
                             echo 'checked';
                         }
+                        echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(be_popia_compliant_checkbox,' . esc_attr($result->id) . ')">';
                     } elseif ($result->type == 2) {
                         echo '
-                                                                    <input type="hidden" id="be_popia_compliant_id_url" name="be_popia_compliant_id_url" value="' . esc_attr($result->id) . '">
-                                                                    <input type="text" id="input_field' . esc_attr($result->id) . '" name="input_field' . esc_attr($result->id) . '" placeholder="eg. https://' . $_SERVER['SERVER_NAME'] . '/?page_id=3" class="widefat"';
+                            <input type="hidden" id="be_popia_compliant_id_url" name="be_popia_compliant_id_url" value="' . esc_attr($result->id) . '">
+                            <input type="text" id="input_field' . esc_attr($result->id) . '" name="input_field' . esc_attr($result->id) . '" placeholder="eg. https://' . $_SERVER['SERVER_NAME'] . '/?page_id=3" class="widefat"';
                         if ($result->content != '') {
                             echo 'value="' . $result->content . '"';
                         }
                         echo '>
-                                                                    <button id="url_button" onclick="save_field(' . esc_attr($result->id) . ')">Save</button>
-                                                                    
-                                                                    <script>                                                    
-                                                                        function save_field(check_id) {
-                                                                            alert("Saved1");
-                                                                            var result_id = "input_field" + check_id;
-                                                                            var input = document.getElementById(result_id).value;
-                                                                            var input_id = document.getElementById("be_popia_compliant_id_url").value;                        
-                                                                            jQuery.ajax({
-                                                                                type: "post",
-                                                                                cache: false,
-                                                                                dataType: "json",
-                                                                                url: ajaxurl,
-                                                                                data: {
-                                                                                    "action":"be_popia_compliant_checklist_update_url",
-                                                                                    "check_id" : check_id,
-                                                                                    "input" : input
-                                                                                },
-                                                                                success:function(data) {
-                                                                                },  
-                                                                                error: function(errorThrown) {
-                                                                                }
-                                                                            });   
-                                                                        }
-                                                                    </script>';
+                        <button id="url_button" onclick="save_field(' . esc_attr($result->id) . ')">Save</button>
+                        
+                        <script>                                                    
+                            function save_field(check_id) {
+                                alert("Saved1");
+                                var result_id = "input_field" + check_id;
+                                var input = document.getElementById(result_id).value;
+                                var input_id = document.getElementById("be_popia_compliant_id_url").value;
+                                var nonce = be_popia_nonce_object.nonce; // Get the nonce from the localized data                        
+                                jQuery.ajax({
+                                    type: "post",
+                                    cache: false,
+                                    dataType: "json",
+                                    url: ajaxurl,
+                                    data: {
+                                        "action":"be_popia_compliant_checklist_update_url",
+                                        "nonce": nonce // Include the nonce in the data
+                                        "check_id" : check_id,
+                                        "input" : input
+                                    },
+                                    success:function(data) {
+                                    },  
+                                    error: function(errorThrown) {
+                                    }
+                                });   
+                            }
+                        </script>';
                     }
                     echo '
                                                     </div>
@@ -2294,31 +2294,37 @@ function be_popia_compliant_dashboard_checklist()
                                                     function validate(el, check_id) {
                                                         var label_id = "be_popia_compliant_tab-label" + check_id;
                                                         if (el.checked) {
+                                                            var nonce = be_popia_nonce_object.nonce; // Get the nonce from the localized data
                                                             jQuery.ajax({
                                                                 url: ajaxurl,
                                                                 data: {
                                                                     "action":"be_popia_compliant_checklist_update",
                                                                     "check_id" : check_id,
+                                                                    "nonce": nonce // Include the nonce in the data
                                                                 },
                                                                 success:function(data) {
                                                                     document.getElementById(label_id).style.background = "#B7191A";
                                                                 },  
                                                                 error: function(errorThrown) {
                                                                     window.alert(errorThrown);
+                                                                    alert("Saved4");
                                                                 }
                                                             });
                                                         } else {
+                                                            var nonce = be_popia_nonce_object.nonce; // Get the nonce from the localized data
                                                             jQuery.ajax({
                                                                 url: ajaxurl,
                                                                 data: {
                                                                     "action":"be_popia_compliant_checklist_update",
                                                                     "check_id" : check_id,
+                                                                    "nonce": nonce // Include the nonce in the data
                                                                 },
                                                                 success:function(data) {
                                                                     document.getElementById(label_id).style.background = "#1D2327";
                                                                 },  
                                                                 error: function(errorThrown) {
                                                                     window.alert(errorThrown);
+                                                                    alert("Saved5");
                                                                 }
                                                             });
                                                         }
@@ -2328,16 +2334,16 @@ function be_popia_compliant_dashboard_checklist()
             } elseif ($marketing == 39) {
                 if ($result->type == 6) {
                     echo '
-                                    <div class="be_popia_compliant_tab">
-                                        <input class="be_popia_compliant_input"  type="radio" id="rd' . esc_attr($result->id) . '" name="rd">
-                                        <label ';
+                        <div class="be_popia_compliant_tab">
+                            <input class="be_popia_compliant_input"  type="radio" id="rd' . esc_attr($result->id) . '" name="rd">
+                            <label ';
                     if ($result->does_comply == 0) {
                         echo 'class="be_popia_compliant_tab-label"';
                     } else {
                         echo 'class="be_popia_compliant_tab-label_completed"';
                     }
                     echo ' for="rd' . esc_attr($result->id) . '" id="be_popia_compliant_tab-label' . esc_attr($result->id) . '">' . esc_attr($result->title) . '</label>
-                                        <div class="be_popia_compliant_tab-content"><br>' . esc_html($result->description) . '';
+                            <div class="be_popia_compliant_tab-content"><br>' . esc_html($result->description) . '';
                     if ($result->type == 1 || $result->type == 5 || $result->type == 6 || $result->type == 7) {
                         echo '<input type="hidden" id="be_popia_compliant_id" name="be_popia_compliant_id" value="' . esc_attr($result->id) . '">
                                                     <input type="checkbox" ';
@@ -2356,11 +2362,11 @@ function be_popia_compliant_dashboard_checklist()
                                                         
                                                         <script>                                                    
                                                             function save_field(check_id) {
-                                                                alert("Saved2");
+                                                                // alert("Saved2");
                                                                 var result_id = "input_field" + check_id;
                                                                 var input = document.getElementById(result_id).value;
                                                                 var input_id = document.getElementById("be_popia_compliant_id_url").value;
-                                                                
+                                                                var nonce = be_popia_nonce_object.nonce; // Get the nonce from the localized data
                                                                 jQuery.ajax({
                                                                     type: "post",
                                                                     cache: false,
@@ -2369,6 +2375,7 @@ function be_popia_compliant_dashboard_checklist()
                                                                     data: {
                                                                         "action":"be_popia_compliant_checklist_update_url",
                                                                         "check_id" : check_id,
+                                                                        "nonce": nonce // Include the nonce in the data
                                                                         "input" : input
                                                                     },
                                                                     success:function(data) {
@@ -2386,31 +2393,37 @@ function be_popia_compliant_dashboard_checklist()
                                         function validate(el, check_id) {
                                             var label_id = "be_popia_compliant_tab-label" + check_id;
                                             if (el.checked) {
+                                                var nonce = be_popia_nonce_object.nonce; // Get the nonce from the localized data
                                                 jQuery.ajax({
                                                     url: ajaxurl,
                                                     data: {
                                                         "action":"be_popia_compliant_checklist_update",
                                                         "check_id" : check_id,
+                                                        "nonce": nonce // Include the nonce in the data
                                                     },
                                                     success:function(data) {
                                                         document.getElementById(label_id).style.background = "#B7191A";
                                                     },  
                                                     error: function(errorThrown) {
                                                         window.alert(errorThrown);
+                                                        alert("Saved6");
                                                     }
                                                 });
                                             } else {
+                                                var nonce = be_popia_nonce_object.nonce; // Get the nonce from the localized data
                                                 jQuery.ajax({
                                                     url: ajaxurl,
                                                     data: {
                                                         "action":"be_popia_compliant_checklist_update",
                                                         "check_id" : check_id,
+                                                        "nonce": nonce // Include the nonce in the data
                                                     },
                                                     success:function(data) {
                                                         document.getElementById(label_id).style.background = "#1D2327";
                                                     },  
                                                     error: function(errorThrown) {
                                                         window.alert(errorThrown);
+                                                        alert("Saved7");
                                                     }
                                                 });
                                             }
@@ -2420,61 +2433,80 @@ function be_popia_compliant_dashboard_checklist()
             }
             if ($result->type != 5 && $result->type != 6) {
                 echo '
-                                    <div class="be_popia_compliant_tab">
-                                        <input class="be_popia_compliant_input"  type="radio" id="rd' . esc_attr($result->id) . '" name="rd">
-                                        <label ';
+                    <div class="be_popia_compliant_tab">
+                        <input class="be_popia_compliant_input"  type="radio" id="rd' . esc_attr($result->id) . '" name="rd">
+                        <label ';
                 if ($result->does_comply == 0) {
                     echo 'class="be_popia_compliant_tab-label"';
                 } else {
                     echo 'class="be_popia_compliant_tab-label_completed"';
                 }
                 echo ' for="rd' . esc_attr($result->id) . '" id="be_popia_compliant_tab-label' . esc_attr($result->id) . '">' . esc_attr($result->title) . '</label>
-                                        <div class="be_popia_compliant_tab-content"><br>
-                                            ' . $result->description . '
-                                                ';
+                            <div class="be_popia_compliant_tab-content"><br>
+                                ' . $result->description . '
+                                    ';
                 if ($result->type == 1 || $result->type == 5 || $result->type == 6 || $result->type == 7) {
                     echo '
-                                                            <input type="hidden" id="be_popia_compliant_id" name="be_popia_compliant_id" value="' . esc_attr($result->id) . '">
-                                                            <input type="checkbox" ';
+                        <input type="hidden" id="be_popia_compliant_id" name="be_popia_compliant_id" value="' . esc_attr($result->id) . '">
+                        <input type="checkbox" ';
                     if ($result->does_comply == 1) {
                         echo 'checked';
                     }
                     echo ' class="be_popia_compliant_checkbox" id="be_popia_compliant_checkbox" name="be_popia_compliant_checkbox" onclick="validate(be_popia_compliant_checkbox,' . esc_attr($result->id) . ')">';
                 } elseif ($result->type == 2) {
                     echo '
-                                                        <input type="hidden" id="be_popia_compliant_id_url" name="be_popia_compliant_id_url" value="' . esc_attr($result->id) . '">
-                                                        <input type="text" id="input_field' . esc_attr($result->id) . '" name="input_field' . esc_attr($result->id) . '" placeholder="eg. https://' . $_SERVER['SERVER_NAME'] . '/?page_id=3" class="widefat"';
+                        <input type="hidden" id="be_popia_compliant_id_url" name="be_popia_compliant_id_url" value="' . esc_attr($result->id) . '">
+                        <input type="text" id="input_field' . esc_attr($result->id) . '" name="input_field' . esc_attr($result->id) . '" placeholder="eg. https://' . $_SERVER['SERVER_NAME'] . '/?page_id=3" class="widefat"';
                     if ($result->content != '') {
                         echo 'value="' . $result->content . '"';
                     }
                     echo '>
                                                         <button id="url_button" onclick="save_field(' . esc_attr($result->id) . ')">Save</button> 
                                                         
-     
-                                                        <script>                                                    
+                                                        <script>
+                                                            function isValidURL(url) {
+                                                                // Regular expression for validating URLs with valid top-level domains
+                                                                var urlPattern = /^(http|https):\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(\/\S*)?$/;
+                                                                return urlPattern.test(url);
+                                                            }
+
                                                             function save_field(check_id) {
-                                                                alert("Saved3");
                                                                 var result_id = "input_field" + check_id;
                                                                 var input = document.getElementById(result_id).value;
-                                                                var input_id = document.getElementById("be_popia_compliant_id_url").value;              
+                                                                var input_id = document.getElementById("be_popia_compliant_id_url").value;
+
+                                                                // Check if the input is not a valid URL but is also not empty
+                                                                if (input.trim() !== "" && !isValidURL(input)) {
+                                                                    alert("Invalid URL format or top-level domain");
+                                                                    return; // Exit the function if URL is invalid
+                                                                }
+
+                                                                var nonce = be_popia_nonce_object.nonce; // Get the nonce from the localized data
+
                                                                 jQuery.ajax({
                                                                     type: "post",
                                                                     cache: false,
                                                                     dataType: "json",
                                                                     url: ajaxurl,
                                                                     data: {
-                                                                        "action":"be_popia_compliant_checklist_update_url",
-                                                                        "check_id" : check_id,
-                                                                        "input" : input
+                                                                        "action": "be_popia_compliant_checklist_update_url",
+                                                                        "check_id": check_id,
+                                                                        "input": input,
+                                                                        "nonce": nonce // Include the nonce in the data
                                                                     },
-                                                                    success:function(data) {
+                                                                    success: function(data) {
+                                                                        if (data.success) {
+                                                                            alert("Saved successfully");
+                                                                        } else {
+                                                                            alert("Failed to save");
+                                                                        }
                                                                     },  
                                                                     error: function(errorThrown) {
+                                                                        alert("Failed to save");
                                                                     }
                                                                 });  
                                                             }
-                                                        </script>
-                                                    ';
+                                                        </script>';
                 }
                 echo '
                                         </div>
@@ -2483,31 +2515,39 @@ function be_popia_compliant_dashboard_checklist()
                                     function validate(el, check_id) {
                                         var label_id = "be_popia_compliant_tab-label" + check_id;
                                         if (el.checked) {
+                                            var nonce = be_popia_nonce_object.nonce; // Get the nonce from the localized data
                                             jQuery.ajax({
                                                 url: ajaxurl,
                                                 data: {
                                                     "action":"be_popia_compliant_checklist_update",
                                                     "check_id" : check_id,
+                                                    "nonce": nonce // Include the nonce in the data
                                                 },
                                                 success:function(data) {
                                                     document.getElementById(label_id).style.background = "#B7191A";
                                                 },  
                                                 error: function(errorThrown) {
                                                     window.alert(errorThrown);
+                                                    alert("Saved8");
                                                 }
                                             });
                                         } else {
+
+                                            var nonce = be_popia_nonce_object.nonce; // Get the nonce from the localized data
                                             jQuery.ajax({
                                                 url: ajaxurl,
                                                 data: {
                                                     "action":"be_popia_compliant_checklist_update",
                                                     "check_id" : check_id,
+                                                    "nonce": nonce // Include the nonce in the data
+
                                                 },
                                                 success:function(data) {
                                                     document.getElementById(label_id).style.background = "#1D2327";
                                                 },  
                                                 error: function(errorThrown) {
                                                     window.alert(errorThrown);
+                                                    alert("Saved9");
                                                 }
                                             });
                                         }
@@ -2523,52 +2563,93 @@ function be_popia_compliant_dashboard_checklist()
         </div>';
 }
 
+
 function be_popia_compliant_checklist_update()
 {
     // Verify the nonce
-    // check_ajax_referer('be_popia_compliant_nonce', '_wpnonce');
-    if (isset($_REQUEST)) {
+    if(check_ajax_referer('be_popia_compliant_nonce', 'nonce')){
         global $wpdb;
+
         $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
-        $check_id = intval($_REQUEST["check_id"]); // Convert to integer for safety
-        $results = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $check_id));
-        foreach ($results as $result) {
-            if ($result->does_comply == 0) {
-                $wpdb->update($table_name, array('does_comply' => 1), array('id' => $check_id));
-            } else {
-                $wpdb->update($table_name, array('does_comply' => 0), array('id' => $check_id));
-            }
-        }
+        $check_id = isset( $_REQUEST["check_id"] ) ? intval( $_REQUEST["check_id"] ) : 0; // Convert to integer for safety
+
+        // Check if the checklist item exists
+        $item_exists = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $table_name WHERE id = %d", $check_id ) );
+
+        if ( $item_exists ) {
+            // Toggle compliance status
+            $does_comply = $wpdb->get_var( $wpdb->prepare( "SELECT does_comply FROM $table_name WHERE id = %d", $check_id ) );
+            $new_compliance = $does_comply ? 0 : 1;
+
+            $wpdb->update(
+                $table_name,
+                array( 'does_comply' => $new_compliance ),
+                array( 'id' => $check_id ),
+                array( '%d' ),
+                array( '%d' )
+            );
+        } 
     }
-    die();
+    // Always exit after processing AJAX requests
+    wp_die();
 }
 
 add_action('wp_ajax_be_popia_compliant_checklist_update', 'be_popia_compliant_checklist_update');
 
+
 function be_popia_compliant_checklist_update_url()
-{
+{   
     // Verify the nonce
-    // check_ajax_referer('be_popia_compliant_nonce', '_wpnonce');
-    if (isset($_REQUEST)) {
+    if(check_ajax_referer('be_popia_compliant_nonce', 'nonce')){
         global $wpdb;
+
         $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
-        $check_id = intval($_REQUEST["check_id"]); // Convert to integer for safety
-        $input = sanitize_text_field($_REQUEST["input"]);
-        if ($input != '') {
-            $wpdb->update($table_name, array('content' => $input, 'does_comply' => 1), array('id' => $check_id));
-        } else {
-            $wpdb->update($table_name, array('content' => $input, 'does_comply' => 0), array('id' => $check_id));
+        $check_id = isset( $_REQUEST["check_id"] ) ? intval( $_REQUEST["check_id"] ) : 0; // Convert to integer for safety
+        $input = isset( $_REQUEST["input"] ) ? sanitize_text_field( $_REQUEST["input"] ) : '';
+
+        // Check if the input is a valid URL with a valid top-level domain
+        if ($input !== '' && !filter_var($input, FILTER_VALIDATE_URL)) {
+            // Send a JSON response indicating failure
+            wp_send_json_error();
         }
+
+        // Check if the checklist item exists
+        $item_exists = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $table_name WHERE id = %d", $check_id ) );
+
+        if ( $item_exists ) {
+            $new_compliance = ( $input !== '' ) ? 1 : 0;
+
+            $wpdb->update(
+                $table_name,
+                array( 'content' => $input, 'does_comply' => $new_compliance ),
+                array( 'id' => $check_id ),
+                array( '%s', '%d' ),
+                array( '%d' )
+            );
+
+        // Send a JSON response indicating success
+        wp_send_json_success();
+    } else {
+        // Send a JSON response indicating failure
+        wp_send_json_error();
     }
-    die();
 }
+
+// Always exit after processing AJAX requests
+wp_die();
+}
+
+
+
+// Register the AJAX handler for authenticated users
+add_action('wp_ajax_my_ajax_action', 'my_ajax_handler');
 
 add_action('wp_ajax_be_popia_compliant_checklist_update_url', 'be_popia_compliant_checklist_update_url');
 
 function be_popia_compliant_checklist_update_compliance()
 {
 
-    if (isset($_REQUEST)) {
+    if(check_ajax_referer('be_popia_compliant_nonce', 'nonce')){
         global $wpdb;
         $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
         $needComms = $wpdb->get_var("SELECT does_comply FROM $table_name WHERE id = 2");
