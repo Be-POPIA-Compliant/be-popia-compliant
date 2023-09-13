@@ -81,4 +81,11 @@ jQuery(document).ready(function($){
     }
     
     $('#billing_user_SAID').blur(ValidateBillSAID);
+
+    //   // Prevent user registration if validation fails
+    //   $('#registerform').submit(function (event) {
+    //     if (!ValidateBillSAID()) {
+    //         event.preventDefault(); // Prevent user registration
+    //     }
+    // });
 });
