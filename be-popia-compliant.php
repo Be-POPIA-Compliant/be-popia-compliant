@@ -47,88 +47,160 @@ if (!defined('ABSPATH')) {
 $bpcV = '1.3.0';
 update_option('bpc_v', $bpcV);
 
-/* Enqueue scripts*/
-function be_popia_compliant_user_scripts()
-{
-    $plugin_url = wp_http_validate_url(plugin_dir_url(__FILE__));
-    wp_enqueue_style('style',  $plugin_url . "styles.css");
+/* Enqueue style scripts*/
+function be_popia_compliant_user_scripts() {
+    $plugin_url = esc_url(plugin_dir_url(__FILE__));
+    wp_enqueue_style('be_popia_compliant_style', $plugin_url . "styles.css");
 }
 
-add_action('admin_print_styles', 'be_popia_compliant_user_scripts');
+// Enqueue styles for both front-end and back-end
+add_action('wp_enqueue_scripts', 'be_popia_compliant_user_scripts');
+add_action('admin_enqueue_scripts', 'be_popia_compliant_user_scripts');
 
-function be_popia_compliant_scripts()
-{
+                    // function be_popia_compliant_user_scripts()
+                    // {
+                    //     $plugin_url = wp_http_validate_url(plugin_dir_url(__FILE__));
+                    //     wp_enqueue_style('style',  $plugin_url . "styles.css");
+                    // }
+
+                    // add_action('admin_print_styles', 'be_popia_compliant_user_scripts');
+
+/* Enqueue js scripts*/
+function be_popia_compliant_scripts() {
     // Generate and localize the nonce
     $bpc_nonce = wp_create_nonce('be_popia_compliant_nonce');
-    
 
-    $plugin_url = wp_http_validate_url(plugin_dir_url(__FILE__));
+    $plugin_url = esc_url(plugin_dir_url(__FILE__));
+
+    // Enqueue scripts with proper dependencies and version
     wp_enqueue_script('ValidateSAID', $plugin_url . 'includes/js/be_popia_compliant_validation_script.js', array('jquery'), get_option('bpc_v'), true);
     wp_enqueue_script('ValidateBillSAID', $plugin_url . 'includes/js/be_popia_compliant_validation_script_bill.js', array('jquery'), get_option('bpc_v'), true);
     wp_enqueue_script('Basic', $plugin_url . 'includes/js/be_popia_compliant_basic.js', array('jquery'), get_option('bpc_v'), true);
-    
+
+    // Localize nonce object for use in scripts
     wp_localize_script('Basic', 'be_popia_nonce_object', ['nonce' => $bpc_nonce]);
 }
 
+// Enqueue scripts for both front-end and back-end and Reg page
+add_action('login_enqueue_scripts', 'be_popia_compliant_scripts');
 add_action('wp_enqueue_scripts', 'be_popia_compliant_scripts');
-add_action('admin_enqueue_scripts', 'be_popia_compliant_scripts', 1);
+add_action('admin_enqueue_scripts', 'be_popia_compliant_scripts', 1);                    
+
+                        // function be_popia_compliant_scripts()
+                        // {
+                        //     // Generate and localize the nonce
+                        //     $bpc_nonce = wp_create_nonce('be_popia_compliant_nonce');
+                            
+
+                        //     $plugin_url = wp_http_validate_url(plugin_dir_url(__FILE__));
+                        //     wp_enqueue_script('ValidateSAID', $plugin_url . 'includes/js/be_popia_compliant_validation_script.js', array('jquery'), get_option('bpc_v'), true);
+                        //     wp_enqueue_script('ValidateBillSAID', $plugin_url . 'includes/js/be_popia_compliant_validation_script_bill.js', array('jquery'), get_option('bpc_v'), true);
+                        //     wp_enqueue_script('Basic', $plugin_url . 'includes/js/be_popia_compliant_basic.js', array('jquery'), get_option('bpc_v'), true);
+                            
+                        //     wp_localize_script('Basic', 'be_popia_nonce_object', ['nonce' => $bpc_nonce]);
+                        // }
+
+                        // add_action('wp_enqueue_scripts', 'be_popia_compliant_scripts');
+                        // add_action('admin_enqueue_scripts', 'be_popia_compliant_scripts', 1);
 
 /* Adds new links to plugin in plugins.php */
-function add_action_links($actions)
-{
-    if (get_option('bpc_hasPro') == 1) {
-        $mylinks = array(
-            '<a href="' . admin_url('admin.php?page=privacy-policy') . '"><b>Banner & Cookie Settings</b></a>',
-            '<a href="' . admin_url('admin.php?page=be_popia_compliant_checklist') . '"><b>POPIA Checklist</b></a>',
-            '<a href="' . admin_url('users.php') . '"><b>Manage Consent</b></a>'
-        );
-    } else {
-        $mylinks = array(
-            '<a href="' . admin_url('admin.php?page=privacy-policy') . '"><b>Cookie Banner</b></a>',
-            '<a href="' . admin_url('admin.php?page=be_popia_compliant_checklist') . '"><b>POPIA Checklist</b></a>',
-            '<a href="' . admin_url('users.php') . '"><b>Manage Consent</b></a>',
-            '<a href="https://bepopiacompliant.co.za/#/main" target="_blank" style="color:#D63638;font-weight:700;">Go Pro</a>',
-        );
-    };
-    $actions = array_merge($actions, $mylinks);
-    return $actions;
-}
 
-add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'add_action_links');
+                        // function add_action_links($actions)
+                        // {
+                        //     if (get_option('bpc_hasPro') == 1) {
+                        //         $mylinks = array(
+                        //             '<a href="' . admin_url('admin.php?page=privacy-policy') . '"><b>Banner & Cookie Settings</b></a>',
+                        //             '<a href="' . admin_url('admin.php?page=be_popia_compliant_checklist') . '"><b>POPIA Checklist</b></a>',
+                        //             '<a href="' . admin_url('users.php') . '"><b>Manage Consent</b></a>'
+                        //         );
+                        //     } else {
+                        //         $mylinks = array(
+                        //             '<a href="' . admin_url('admin.php?page=privacy-policy') . '"><b>Cookie Banner</b></a>',
+                        //             '<a href="' . admin_url('admin.php?page=be_popia_compliant_checklist') . '"><b>POPIA Checklist</b></a>',
+                        //             '<a href="' . admin_url('users.php') . '"><b>Manage Consent</b></a>',
+                        //             '<a href="https://bepopiacompliant.co.za/#/main" target="_blank" style="color:#D63638;font-weight:700;">Go Pro</a>',
+                        //         );
+                        //     };
+                        //     $actions = array_merge($actions, $mylinks);
+                        //     return $actions;
+                        // }
+
+                        // add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'add_action_links');
 
 //* Create Database Table for Be POPIA Compliant 
 function be_popia_compliant_create() {
     global $wpdb;
 
-    $table_name = $wpdb->get_blog_prefix() . 'be_popia_compliant_checklist';
-    $query = $wpdb->prepare("SHOW TABLES LIKE %s", $table_name);
+        $table_name = $wpdb->get_blog_prefix() . 'be_popia_compliant_checklist';
+        $query = $wpdb->prepare("SHOW TABLES LIKE %s", $table_name);
 
-    if ($wpdb->get_var($query) != $table_name) {
-        require_once(ABSPATH . "wp-admin/includes/upgrade.php");
+        if ($wpdb->get_var($query) != $table_name) {
+            require_once(ABSPATH . "wp-admin/includes/upgrade.php");
 
-        $be_popia_compliant_tb_checklist = $wpdb->get_blog_prefix() . "be_popia_compliant_checklist";
-        $be_popia_compliant_query_checklist = "
-            CREATE TABLE $be_popia_compliant_tb_checklist (
-                id int(12) NOT NULL AUTO_INCREMENT,
-                title varchar(100) DEFAULT '',
-                description varchar(1500) DEFAULT '',
-                content varchar(500) DEFAULT '',
-                type int(1) DEFAULT '0',
-                does_comply int(1) DEFAULT '0',
-                is_active int(1) DEFAULT '1',
-                PRIMARY KEY (id)
-            )";
-        dbDelta($be_popia_compliant_query_checklist);
+            $charset_collate = $wpdb->get_charset_collate();
 
-        $be_popia_compliant_tb_admin = $wpdb->get_blog_prefix() . "be_popia_compliant_admin";
-        $be_popia_compliant_query_admin = "
-            CREATE TABLE $be_popia_compliant_tb_admin (
-                id int(12) NOT NULL AUTO_INCREMENT,
-                title varchar(100) DEFAULT '',
-                value varchar(1500) DEFAULT '',
-                PRIMARY KEY (id)
-            )";
-        dbDelta($be_popia_compliant_query_admin);
+            $be_popia_compliant_tb_checklist = $wpdb->get_blog_prefix() . "be_popia_compliant_checklist";
+            $be_popia_compliant_query_checklist = "
+                CREATE TABLE $be_popia_compliant_tb_checklist (
+                    id int(12) NOT NULL AUTO_INCREMENT,
+                    title varchar(100) DEFAULT '',
+                    description TEXT,
+                    content TEXT,
+                    type int(1) DEFAULT 0,
+                    does_comply int(1) DEFAULT 0,
+                    is_active int(1) DEFAULT 1,
+                    PRIMARY KEY (id)
+                ) $charset_collate";
+            dbDelta($be_popia_compliant_query_checklist);
+
+            $be_popia_compliant_tb_admin = $wpdb->get_blog_prefix() . "be_popia_compliant_admin";
+            $be_popia_compliant_query_admin = "
+                CREATE TABLE $be_popia_compliant_tb_admin (
+                    id int(12) NOT NULL AUTO_INCREMENT,
+                    title varchar(100) DEFAULT '',
+                    value TEXT,
+                    PRIMARY KEY (id)
+                ) $charset_collate";
+            dbDelta($be_popia_compliant_query_admin);
+
+            if (empty($wpdb->last_error)) {
+                // Table creation was successful.
+            } else {
+                // Handle the error gracefully, e.g., log or display an error message.
+            }
+        }
+
+                        // global $wpdb;
+
+                        // $table_name = $wpdb->get_blog_prefix() . 'be_popia_compliant_checklist';
+                        // $query = $wpdb->prepare("SHOW TABLES LIKE %s", $table_name);
+
+                        // if ($wpdb->get_var($query) != $table_name) {
+                        //     require_once(ABSPATH . "wp-admin/includes/upgrade.php");
+
+                        //     $be_popia_compliant_tb_checklist = $wpdb->get_blog_prefix() . "be_popia_compliant_checklist";
+                        //     $be_popia_compliant_query_checklist = "
+                        //         CREATE TABLE $be_popia_compliant_tb_checklist (
+                        //             id int(12) NOT NULL AUTO_INCREMENT,
+                        //             title varchar(100) DEFAULT '',
+                        //             description varchar(1500) DEFAULT '',
+                        //             content varchar(500) DEFAULT '',
+                        //             type int(1) DEFAULT '0',
+                        //             does_comply int(1) DEFAULT '0',
+                        //             is_active int(1) DEFAULT '1',
+                        //             PRIMARY KEY (id)
+                        //         )";
+                        //     dbDelta($be_popia_compliant_query_checklist);
+
+                        //     $be_popia_compliant_tb_admin = $wpdb->get_blog_prefix() . "be_popia_compliant_admin";
+                        //     $be_popia_compliant_query_admin = "
+                        //         CREATE TABLE $be_popia_compliant_tb_admin (
+                        //             id int(12) NOT NULL AUTO_INCREMENT,
+                        //             title varchar(100) DEFAULT '',
+                        //             value varchar(1500) DEFAULT '',
+                        //             PRIMARY KEY (id)
+                        //         )";
+                        //     dbDelta($be_popia_compliant_query_admin);
 
         $url = "https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME'];
         $args = array(
@@ -192,16 +264,20 @@ function be_popia_compliant_create() {
             }
         }
     }
-}
 
+
+// Insert data into database if not precent
 function be_popia_compliant_insert_data()
 {
-
     global $wpdb;
     $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
-    $result = $wpdb->get_results("SELECT ID from $table_name");
-    if (count($result) > 0) {
-    } else {
+
+    // Check if the table exists before inserting data
+    if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") == $table_name) {
+        return; // Table already exists, no need to insert data
+    }
+
+        // Data to be inserted
         $all_items = array(
             array('title' => 'Communication with Clients', 'description' => 'There are mainly two types of communication, service level communication and marketing communication.', 'type' => -1),
             array('title' => 'Service Level Communication', 'description' => 'Do you communicate with your clients via Telephone, Email, SMS or WhatsApp or any other means, for service delivery excluding marketing?', 'type' => 1),
@@ -281,36 +357,86 @@ function be_popia_compliant_insert_data()
             array('title' => 'After completing a transaction/order:', 'description' => '<span class="pro"><span class="withpro">With Pro: </span>We take care of all of this for you!</span><br><br><ul><li>- If no consent form was received from the data subject, you have to remind the data subject that if they do not provide a signed consent form within 72 hours, that by law you will have to delete their data. And that this in return will require them to setup a new account in future, if they want to order from you again.</li><li>- If you have received consent and already stored it and linked it to the user, no further action is nessesary</li></ul>', 'type' => 7),
             array('title' => 'What to do when data gets breached?', 'description' => '<span class="pro"><span class="withpro">With Pro: </span>We allow you to answer a few questions and we will do the rest.</span><br><br>In the event that your website has been compromised or it becomes evident that any of your employees collected or distributed any of your clients data, or any other event happened where data got lost you should send out a notice to all affected parties. If you are not sure who was affected you should send a notice to your entire database notifying them that their data might have been compromised.', 'type' => 7),
         );
-        foreach ($all_items as $item) {
-            $wpdb->insert(
-                $table_name,
-                $item
+
+        $prepared_items = array_map(function($item) use ($table_name, $wpdb) {
+            return array(
+                'title' => esc_sql($item['title']),
+                'description' => esc_sql($item['description']),
+                'type' => intval($item['type'])
             );
+        }, $all_items);
+        
+        foreach ($prepared_items as $item) {
+            $wpdb->insert($table_name, $item);
+        
+            // Check for insertion errors and handle them as needed
+            if ($wpdb->last_error) {
+                // Handle the error, e.g., log or display an error message
+            }
         }
     }
-}
 
+// Add Administration Data                            
 function be_popia_compliant_insert_p_data()
 {
     global $wpdb;
     $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
-    $result = $wpdb->get_results("SELECT ID from $table_name");
-    if (count($result) > 0) {
-    } else {
-        $all_items = array(
-            array('title' => 'API Key'), array('title' => 'Company Key'), array('title' => 'Suspended'), array('title' => 'Complete'), // array( 'title' => 'flag_IR_Problem', 'value' => '(They have been experiancing technical issues with the Portal, which results in not being accessible)<br> - If this is still the case, they provided a <a href=https://www.justice.gov.za/inforeg/docs/forms/InfoRegSA-eForm-InformationOfficersRegistration-2021.pdf target="_blank">PDF Registration</a> as an alternative, that can be filled out in the browser. You\'d still have to print it out in order to sign the document. Thereafter you can send it via email to: <a href=mailto:registration.IR@justice.gov.za>registration.IR@justice.gov.za</a>'),
+
+    // Check if the table exists before inserting data
+    if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") == $table_name) {
+        return; // Table already exists, no need to insert data
+    }
+
+    // Data to be inserted
+    $all_items = array(
+        array('title' => 'API Key', 'value' => ''),
+        array('title' => 'Company Key', 'value' => ''),
+        array('title' => 'Suspended', 'value' => ''),
+        array('title' => 'Complete', 'value' => ''),
+        array(
+            'title' => 'flag_IR_Problem',
+            'value' => '(They have been experiencing technical issues with the Portal, which results in not being accessible)<br> - If this is still the case, they provided a <a href=https://www.justice.gov.za/inforeg/docs/forms/InfoRegSA-eForm-InformationOfficersRegistration-2021.pdf target="_blank">PDF Registration</a> as an alternative, that can be filled out in the browser. You\'d still have to print it out in order to sign the document. Thereafter you can send it via email to: <a href=mailto:registration.IR@justice.gov.za>registration.IR@justice.gov.za</a>'
+        )
+    );
+
+    $prepared_items = array_map(function ($item) use ($table_name) {
+        return array(
+            'title' => sanitize_text_field($item['title']),
+            'value' => isset($item['value']) ? sanitize_text_field($item['value']) : ''
         );
-        foreach ($all_items as $item) {
-            $wpdb->insert(
-                $table_name,
-                $item
-            );
+    }, $all_items);
+
+    foreach ($prepared_items as $item) {
+        $wpdb->insert($table_name, $item);
+
+        // Check for insertion errors and handle them as needed
+        if ($wpdb->last_error) {
+            // Handle the error, e.g., log or display an error message
         }
     }
 }
+                            
+                            // function be_popia_compliant_insert_p_data()
+                            // {
+                            //     global $wpdb;
+                            //     $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
+                            //     $result = $wpdb->get_results("SELECT ID from $table_name");
+                            //     if (count($result) > 0) {
+                            //     } else {
+                            //         $all_items = array(
+                            //             array('title' => 'API Key'), array('title' => 'Company Key'), array('title' => 'Suspended'), array('title' => 'Complete'), // array( 'title' => 'flag_IR_Problem', 'value' => '(They have been experiancing technical issues with the Portal, which results in not being accessible)<br> - If this is still the case, they provided a <a href=https://www.justice.gov.za/inforeg/docs/forms/InfoRegSA-eForm-InformationOfficersRegistration-2021.pdf target="_blank">PDF Registration</a> as an alternative, that can be filled out in the browser. You\'d still have to print it out in order to sign the document. Thereafter you can send it via email to: <a href=mailto:registration.IR@justice.gov.za>registration.IR@justice.gov.za</a>'),
+                            //         );
+                            //         foreach ($all_items as $item) {
+                            //             $wpdb->insert(
+                            //                 $table_name,
+                            //                 $item
+                            //             );
+                            //         }
+                            //     }
+                            // }
 
 
-
+// Check Pro Functionality
 global $wpdb;
 $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
 $result_api = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 1");
@@ -363,36 +489,41 @@ register_activation_hook(__FILE__, 'be_popia_compliant_insert_p_data');
 
 /* Front end registration */
 if (get_option('bpc_hasPro') == 1) {
-    add_action('register_form', 'be_popiaCompliant_registration_form');
-    function be_popiaCompliant_registration_form()
+    add_action('register_form', 'be_popia_compliant_registration_form');
+    function be_popia_compliant_registration_form()
     {
-        $identificationNumber = !empty($_POST['user_identification_number']) ? ($_POST['user_identification_number']) : '';
-        if(!isset($identificationNumber)) {
-            $identificationNumber = get_user_meta( $user_id, 'user_identification_number', true );
-        }
-        $otherIdNumber = !empty($_POST['other_identification_number']) ? ($_POST['other_identification_number']) : '';
-        if(!isset($otherIdNumber)) {
-            $otherIdNumber = get_user_meta( $user_id, 'other_identification_number', true );
-        }
-        $otherIdType = !empty($_POST['other_identification_type']) ? ($_POST['other_identification_type']) : '';
-        if(!isset($otherIdType)) {
-            $otherIdType = get_user_meta( $user_id, 'other_identification_type', true );
-        }
-        $otherIdIssue = !empty($_POST['other_identification_issue']) ? ($_POST['other_identification_issue']) : '';
-        if(!isset($otherIdIssue)) {
-            $otherIdIssue = get_user_meta( $user_id, 'other_identification_issue', true );
-        }
+        $nonce = wp_create_nonce('be_popia_compliant_registration_nonce');
+        wp_nonce_field('be_popia_compliant_registration_nonce', 'be_popia_compliant_registration_nonce');
+        $identificationNumber = isset($_POST['user_identification_number']) ? sanitize_text_field($_POST['user_identification_number']) : '';
+        $otherIdNumber = isset($_POST['other_identification_number']) ? sanitize_text_field($_POST['other_identification_number']) : '';
+        $otherIdType = isset($_POST['other_identification_type']) ? sanitize_text_field($_POST['other_identification_type']) : '';
+        $otherIdIssue = isset($_POST['other_identification_issue']) ? sanitize_text_field($_POST['other_identification_issue']) : '';
+        
+
+        // $identificationNumber = !empty($_POST['user_identification_number']) ? ($_POST['user_identification_number']) : '';
+        // if(!isset($identificationNumber)) {
+        //     $identificationNumber = get_user_meta( $user_id, 'user_identification_number', true );
+        // }
+        // $otherIdNumber = !empty($_POST['other_identification_number']) ? ($_POST['other_identification_number']) : '';
+        // if(!isset($otherIdNumber)) {
+        //     $otherIdNumber = get_user_meta( $user_id, 'other_identification_number', true );
+        // }
+        // $otherIdType = !empty($_POST['other_identification_type']) ? ($_POST['other_identification_type']) : '';
+        // if(!isset($otherIdType)) {
+        //     $otherIdType = get_user_meta( $user_id, 'other_identification_type', true );
+        // }
+        // $otherIdIssue = !empty($_POST['other_identification_issue']) ? ($_POST['other_identification_issue']) : '';
+        // if(!isset($otherIdIssue)) {
+        //     $otherIdIssue = get_user_meta( $user_id, 'other_identification_issue', true );
+        // }
     
         ?>
         <p>
-            <center>
-                <div style='font-size:10px!important'>(Powered by <a href="https://bepopiacompliant.co.za" target="_blank"><span style="color:#B61F20">Be POPIA Compliant</span></a> & <a href="https://manageconsent.co.za" target="_blank"><span style="color:#7a7a7a">Manage Consent</span></a>)</div><br>
-            </center>
-        <div id="saiderror" style="color: red; padding: 5px; display: none; font-size: 14px; line-height: 14px;"></div><br><label for="user_identification_number"><?php esc_html_e('South African Identity Number', 'be_popiaCompliant') ?><br />
-            <input type="text" id="user_identification_number" name="user_identification_number" value="<?php echo esc_attr($identificationNumber); ?>" class="input" />
-        </label>
-        </p><br>
-        <center><span><b>OR</b><br>(If not South African ID Number)<br><br></span></center>
+            <div id="saiderror" style="color: red; padding: 5px; display: none; font-size: 14px; line-height: 14px;"></div><br><label for="user_identification_number"><?php esc_html_e('South African Identity Number', 'be_popiaCompliant') ?><br />
+                <input type="text" id="user_identification_number" name="user_identification_number" value="<?php echo esc_attr($identificationNumber); ?>" class="input" />
+            </label>
+            </p>
+            <p style="text-align: center;"><span><b>OR</b><br>(If not South African ID Number)<br><br></span></p>
         <p>
             <label for="other_identification_number"><?php esc_html_e('Passport, Social Security or other Identification Number', 'be_popiaCompliant') ?><br />
                 <input type="text" id="other_identification_number" name="other_identification_number" value="<?php echo esc_attr($otherIdNumber); ?>" class="input" placeholder="If not SA ID Number"/>
@@ -407,75 +538,115 @@ if (get_option('bpc_hasPro') == 1) {
             <label for="other_identification_issue"><?php esc_html_e('What Country issued this Identification Number?', 'be_popiaCompliant') ?><br />
                 <input type="text" id="other_identification_issue" name="other_identification_issue" value="<?php echo esc_attr($otherIdIssue); ?>" class="input" placeholder="If not SA ID Number"/>
             </label>
-            <br><br>
         </p>
+            <div style='text-align: center;font-size:10px!important'>(Powered by <a href="https://bepopiacompliant.co.za" target="_blank"><span style="color:#B61F20">Be POPIA Compliant</span></a> & <a href="https://manageconsent.co.za" target="_blank"><span style="color:#7a7a7a">Manage Consent</span></a>)</div><br><br><br>
         <?php
     }
 }
 
 // registration Field validation
 if (get_option('bpc_hasPro') == 1) {
-    add_filter('registration_errors', 'be_popiaCompliant_registration_errors', 10, 3);
-    function be_popiaCompliant_registration_errors($errors, $sanitized_user_login, $user_email)
+    add_filter('registration_errors', 'be_popia_compliant_registration_errors', 10, 3);
+    function be_popia_compliant_registration_errors($errors, $sanitized_user_login, $user_email)
     {
+        if (isset($_POST['be_popia_compliant_registration_nonce']) &&
+        wp_verify_nonce($_POST['be_popia_compliant_registration_nonce'], 'be_popia_compliant_registration_nonce')) {
     
-        if (empty($_POST['user_identification_number']) && empty($_POST['other_identification_number'])) {
-            $errors->add('user_identification_number', __('<strong>We require some form of Identificatin for POPIA (Without an authentication identifier, you will never be able to <a href="https://www.manageconsent.co.za" target="blank">Manage Your Consent</a></strong>:<br>Please enter your South African ID Number (if South African) <br><br>OR<br><br>Passport, Social Security or other Identification Number (if not using South African ID Number).<br><br>', 'be_popiaCompliant'));
+            if (empty($_POST['user_identification_number']) && empty($_POST['other_identification_number'])) {
+                $errors->add('user_identification_number', __('<strong>We require some form of Identificatin for POPIA (Without an authentication identifier, you will never be able to <a href="https://www.manageconsent.co.za" target="blank">Manage Your Consent</a></strong>:<br>Please enter your South African ID Number (if South African) <br><br>OR<br><br>Passport, Social Security or other Identification Number (if not using South African ID Number).<br><br>', 'be_popiaCompliant'));
+            }
+
+            if (!empty($_POST['user_identification_number']) && empty(!$_POST['other_identification_number'])) {
+                $errors->add('user_identification_number', __('<strong>Provide only one (1) Identification Number</strong>:<br>If you are a South African Citizen, please only enter your South African Identification Number.<br><br>If you are a foreign citizen, please leave "South African Identity Number" blank and provide:<br> - Your Local Identification number or Passport number.<br>- The type of Identification number you are using.<br>- The country that issued the Identification number.<br><br>', 'be_popiaCompliant'));
+            }
+
+            if (!empty($_POST['user_identification_number']) && (strlen($_POST['user_identification_number']) != 13)) {
+                $errors->add('user_identification_number', __('<strong>South African ID Number</strong>:<br>Your South African Identity Number does not seem to be correct.<br>', 'be_popiaCompliant'));
+            }
+
+            if (!empty($_POST['other_identification_number']) && (empty($_POST['other_identification_type'])) && (empty($_POST['other_identification_issue']))) {
+                $errors->add('other_identification_type', __('<strong>When using Passport, Social Security or other Identification Number</strong>:<br>Please also provide your Identification Type and Country of Issue.<br>', 'be_popiaCompliant'));
+            }
+
+            if (!empty($_POST['other_identification_number']) && (empty($_POST['other_identification_type'])) && (!empty($_POST['other_identification_issue']))) {
+                $errors->add('other_identification_type', __('<strong>When using Passport, Social Security or other Identification Number</strong>:<br>Please also provide the Type of Identification Number you are using.<br>', 'be_popiaCompliant'));
+            }
+
+            if (!empty($_POST['other_identification_number']) && (!empty($_POST['other_identification_type'])) && (empty($_POST['other_identification_issue']))) {
+                $errors->add('other_identification_issue', __('<strong>When using Passport, Social Security or other Identification Number</strong>:<br>Please also provide the Country of Issue for the Identification number you are using.<br>', 'be_popiaCompliant'));
+            }
+
+            if (!empty($_POST['other_identification_number']) && (strlen($_POST['other_identification_number']) < 7)) {
+                $errors->add('other_identification_number', __('<strong>Other Identificatin number</strong>:<br>Please provide a number that we will be able to confirm your Identity with, when providing a fake number, you will never be able to <a href="https://www.manageconsent.co.za" target="blank">Manage Your Consent</a>.<br>', 'be_popiaCompliant'));
+            }
+
+            if (!empty($_POST['other_identification_number']) && (strlen($_POST['other_identification_type']) < 4) && (!empty($_POST['other_identification_type']))) {
+                $errors->add('other_identification_issue', __('<strong>Other Identificatin Type</strong>:<br>Please write out the name of the Identification Type, do not use the abbreviation.<br>', 'be_popiaCompliant'));
+            }
+
+            if (!empty($_POST['other_identification_number']) && (strlen($_POST['other_identification_issue']) < 4) && (!empty($_POST['other_identification_issue']))) {
+                $errors->add('other_identification_issue', __('<strong>Country of Issue</strong>:<br>Ensure your Country of Issue is correct and fully written out.<br>', 'be_popiaCompliant'));
+            } 
+        } else {
+            $errors->add('be_popia_compliant_registration_nonce', __('<strong>Security Warning.</strong><br><br>It appears that the request did not originate on this page.', 'be_popiaCompliant'));
         }
 
-        if (!empty($_POST['user_identification_number']) && empty(!$_POST['other_identification_number'])) {
-            $errors->add('user_identification_number', __('<strong>Provide only one (1) Identification Number</strong>:<br>If you are a South African Citizen, please only enter your South African Identification Number.<br><br>If you are a foreign citizen, please leave "South African Identity Number" blank and provide:<br> - Your Local Identification number or Passport number.<br>- The type of Identification number you are using.<br>- The country that issued the Identification number.<br><br>', 'be_popiaCompliant'));
-        }
-
-        if (!empty($_POST['user_identification_number']) && (strlen($_POST['user_identification_number']) != 13)) {
-            $errors->add('user_identification_number', __('<strong>South African ID Number</strong>:<br>Your South African Identity Number does not seem to be correct.<br>', 'be_popiaCompliant'));
-        }
-
-        if (!empty($_POST['other_identification_number']) && (empty($_POST['other_identification_type'])) && (empty($_POST['other_identification_issue']))) {
-            $errors->add('other_identification_type', __('<strong>When using Passport, Social Security or other Identification Number</strong>:<br>Please also provide your Identification Type and Country of Issue.<br>', 'be_popiaCompliant'));
-        }
-
-        if (!empty($_POST['other_identification_number']) && (empty($_POST['other_identification_type'])) && (!empty($_POST['other_identification_issue']))) {
-            $errors->add('other_identification_type', __('<strong>When using Passport, Social Security or other Identification Number</strong>:<br>Please also provide the Type of Identification Number you are using.<br>', 'be_popiaCompliant'));
-        }
-
-        if (!empty($_POST['other_identification_number']) && (!empty($_POST['other_identification_type'])) && (empty($_POST['other_identification_issue']))) {
-            $errors->add('other_identification_issue', __('<strong>When using Passport, Social Security or other Identification Number</strong>:<br>Please also provide the Country of Issue for the Identification number you are using.<br>', 'be_popiaCompliant'));
-        }
-
-        if (!empty($_POST['other_identification_number']) && (strlen($_POST['other_identification_number']) < 7)) {
-            $errors->add('other_identification_number', __('<strong>Other Identificatin number</strong>:<br>Please provide a number that we will be able to confirm your Identity with, when providing a fake number, you will never be able to <a href="https://www.manageconsent.co.za" target="blank">Manage Your Consent</a>.<br>', 'be_popiaCompliant'));
-        }
-
-        if (!empty($_POST['other_identification_number']) && (strlen($_POST['other_identification_type']) < 4) && (!empty($_POST['other_identification_type']))) {
-            $errors->add('other_identification_issue', __('<strong>Other Identificatin Type</strong>:<br>Please write out the name of the Identification Type, do not use the abbreviation.<br>', 'be_popiaCompliant'));
-        }
-
-        if (!empty($_POST['other_identification_number']) && (strlen($_POST['other_identification_issue']) < 4) && (!empty($_POST['other_identification_issue']))) {
-            $errors->add('other_identification_issue', __('<strong>Country of Issue</strong>:<br>Ensure your Country of Issue is correct and fully written out.<br>', 'be_popiaCompliant'));
-        }
         return $errors;
     }
 }
 
 // save Fields
 if (get_option('bpc_hasPro') == 1) {
-    add_action('user_register', 'be_popiaCompliant_user_register');
-    function be_popiaCompliant_user_register($user_id)
+    add_action('user_register', 'be_popia_compliant_user_register');
+    function be_popia_compliant_user_register($user_id)
     {   
-        if (!empty($_POST['user_identification_number'])) {
-            if (strlen($_POST['user_identification_number']) == 13) {
-                update_user_meta($user_id, 'user_identification_number', $_POST['user_identification_number']);
+        // Check if the nonce is valid
+    if (isset($_POST['be_popia_compliant_nonce1']) &&
+        wp_verify_nonce($_POST['be_popia_compliant_registration_nonce'], 'be_popia_compliant_registration')) {
+        // Nonce is valid, proceed with processing the form data
+            // Sanitize and validate user_identification_number
+            $user_identification_number = isset($_POST['user_identification_number']) ? sanitize_text_field($_POST['user_identification_number']) : '';
+            if (!empty($user_identification_number) && strlen($user_identification_number) == 13) {
+                update_user_meta($user_id, 'user_identification_number', $user_identification_number);
             }
-        }
-        if (!empty($_POST['other_identification_number'])) {
-            update_user_meta($user_id, 'other_identification_number', $_POST['other_identification_number']);
-        }
-        if (!empty($_POST['other_identification_type'])) {
-            update_user_meta($user_id, 'other_identification_type', $_POST['other_identification_type']);
-        }
-        if (!empty($_POST['other_identification_issue'])) {
-            update_user_meta($user_id, 'other_identification_issue', $_POST['other_identification_issue']);
+
+            // Sanitize and store other_identification_number
+            $other_identification_number = isset($_POST['other_identification_number']) ? sanitize_text_field($_POST['other_identification_number']) : '';
+            if (!empty($other_identification_number)) {
+                update_user_meta($user_id, 'other_identification_number', $other_identification_number);
+            }
+
+            // Sanitize and store other_identification_type
+            $other_identification_type = isset($_POST['other_identification_type']) ? sanitize_text_field($_POST['other_identification_type']) : '';
+            if (!empty($other_identification_type)) {
+                update_user_meta($user_id, 'other_identification_type', $other_identification_type);
+            }
+
+            // Sanitize and store other_identification_issue
+            $other_identification_issue = isset($_POST['other_identification_issue']) ? sanitize_text_field($_POST['other_identification_issue']) : '';
+            if (!empty($other_identification_issue)) {
+                update_user_meta($user_id, 'other_identification_issue', $other_identification_issue);
+            }
+            
+                                        // if (!empty($_POST['user_identification_number'])) {
+                                        //     if (strlen($_POST['user_identification_number']) == 13) {
+                                        //         update_user_meta($user_id, 'user_identification_number', $_POST['user_identification_number']);
+                                        //     }
+                                        // }
+                                        // if (!empty($_POST['other_identification_number'])) {
+                                        //     update_user_meta($user_id, 'other_identification_number', $_POST['other_identification_number']);
+                                        // }
+                                        // if (!empty($_POST['other_identification_type'])) {
+                                        //     update_user_meta($user_id, 'other_identification_type', $_POST['other_identification_type']);
+                                        // }
+                                        // if (!empty($_POST['other_identification_issue'])) {
+                                        //     update_user_meta($user_id, 'other_identification_issue', $_POST['other_identification_issue']);
+                                        // }
+
+
+        } else {
+            // Nonce is not valid, handle the error or reject the submission
+            echo '<strong>Security Issue</strong>:<br>It seem like this request did not originate on this website<br>';
         }
     }
 }
@@ -549,7 +720,7 @@ if (get_option('bpc_hasPro') == 1) {
             }
 
             if (!$new_user) {
-                error_log('Unable to get userdata!');
+                error_log('Unable to get user data!');
                 return;
             }
 
@@ -671,15 +842,19 @@ if(!get_option('be_popia_compliant_banner-field11-background-color')) update_opt
 if(!get_option('be_popia_compliant_banner-field12-text-color')) update_option('be_popia_compliant_banner-field12-text-color', '#B61F20');
 
 /* Back end registration */
-add_action('user_new_form', 'be_popiaCompliant_admin_registration_form');
-function be_popiaCompliant_admin_registration_form($operation)
+add_action('user_new_form', 'be_popia_compliant_admin_registration_form');
+function be_popia_compliant_admin_registration_form($operation)
 {
     if ('add-new-user' !== $operation) {
         return;
     }
 
-    $user_identification_number = !empty($_POST['user_identification_number']) ? ($_POST['user_identification_number']) : 0; ?>
-    <h3><?php esc_html_e('Personal Information for POPIA Purposesw', 'be_popiaCompliant'); ?></h3>
+    // Generate a nonce for the form
+    $nonce = wp_create_nonce('be_popiaCompliant_admin_registration');
+
+    $user_identification_number = !empty($_POST['user_identification_number']) ? sanitize_text_field($_POST['user_identification_number']) : ''; ?>
+
+    <h3><?php esc_html_e('Personal Information for POPIA Purposes', 'be_popiaCompliant'); ?></h3>
 
     <table class="form-table">
         <tr>
@@ -690,9 +865,12 @@ function be_popiaCompliant_admin_registration_form($operation)
                 <input type="text" id="user_identification_number" name="user_identification_number" value="<?php echo esc_attr($user_identification_number); ?>" class="regular-text" />
             </td>
         </tr>
-    </table><br>OR<br>
+    </table>
+    <!-- Add the nonce field to the form -->
+    <input type="hidden" name="be_popia_compliant_admin_nonce" value="<?php echo esc_attr($nonce); ?>" />
+    <br>OR<br>
     <?php
-    $other_identification_number = !empty($_POST['other_identification_number']) ? ($_POST['other_identification_number']) : '';
+        $other_identification_number = !empty($_POST['other_identification_number']) ? sanitize_text_field($_POST['other_identification_number']) : '';
     ?>
 
     <table class="form-table">
@@ -783,7 +961,7 @@ function be_popiaCompliant_user_profile_update_errors($errors, $update, $user)
 }
 
 if (get_option('bpc_hasPro') != 1) {    
-    add_action('edit_user_created_user', 'be_popiaCompliant_user_register');
+    add_action('edit_user_created_user', 'be_popia_compliant_user_register');
 }
 
 add_action('user_profile_update_errors', 'be_popiaCompliant_user_profile_update_errors', 10, 3);
@@ -1675,39 +1853,112 @@ function be_popia_compliant_dashboard()
         echo "Unauthorized access";
     }
 
-    if (200 === $response_code) {
-        $body = json_decode($body);
+    global $wpdb;
+$table_name = $wpdb->prefix . 'be_popia_compliant_admin';
 
+if (200 === $response_code) {
+    $body = json_decode($body);
+
+    if (!empty($body)) {
+        $update_values = [];
+        
         foreach ($body as $data) {
-            $privacy_policy = $data->privacy_policy;
             $domain_form_complete = $data->domain_form_complete;
             $consent_form_complete = $data->consent_form_complete;
             $other_parties = $data->other_parties;
 
-            global $wpdb;
-            $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
-
             if ($domain_form_complete == 1 && $consent_form_complete == 1 && $other_parties != null) {
-                $wpdb->update($table_name, array('value' => 1), array('id' => 4));
+                $update_values[] = 1;
             } else {
-                $wpdb->update($table_name, array('value' => 0), array('id' => 4));
+                $update_values[] = 0;
+            }
+        }
+
+        if (!empty($update_values)) {
+            // Assuming there is an ID (e.g., 4) that identifies the row to update
+            $id_to_update = 4;
+            
+            // Create placeholders for the update values
+            $placeholders = implode(', ', array_fill(0, count($update_values), '%d'));
+
+            // Run a single update query for all rows
+            $wpdb->query(
+                $wpdb->prepare(
+                    "UPDATE $table_name SET value = CASE id $placeholders ELSE value END WHERE id = %d",
+                    $update_values,
+                    $id_to_update
+                )
+            );
+
+            // Check for database errors
+            if ($wpdb->last_error) {
+                // Handle the database update error
+                update_option('update_status', 'Database update failed: ' . $wpdb->last_error);
+            } else {
+                // Database update was successful
+                update_option('update_status', 'Database update successful');
             }
         }
     }
+}
+
+                        // if (200 === $response_code) {
+                        //     $body = json_decode($body);
+
+                        //     foreach ($body as $data) {
+                        //         $privacy_policy = $data->privacy_policy;
+                        //         $domain_form_complete = $data->domain_form_complete;
+                        //         $consent_form_complete = $data->consent_form_complete;
+                        //         $other_parties = $data->other_parties;
+
+                        //         global $wpdb;
+                        //         $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
+
+                        //         if ($domain_form_complete == 1 && $consent_form_complete == 1 && $other_parties != null) {
+                        //             $wpdb->update($table_name, array('value' => 1), array('id' => 4));
+                        //         } else {
+                        //             $wpdb->update($table_name, array('value' => 0), array('id' => 4));
+                        //         }
+                        //     }
+                        // }
 
     echo '<div class="be_popia_compliant_wrap_dashboard">
             <div class="be_popia_compliant_dashboard_one">';
+
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
+        
+        // Retrieve values for id 1 and 2
+        $result_api = $wpdb->get_var("SELECT value FROM $table_name WHERE id = 1");
+        $result_company = $wpdb->get_var("SELECT value FROM $table_name WHERE id = 2");
+        
+        // Check if both values are set and not empty
+        if (isset($result_api) && $result_api !== '' && isset($result_company) && $result_company !== '') {
+            update_option('has_active_keys', 1);
+        } else {
+            update_option('has_active_keys', NULL);
+        }
+                        // global $wpdb;
+                        // $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
+                        // $result_api = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 1");
+                        // $result_company = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 2");
+                        // if (isset($result_api) && isset($result_company) && $result_api != '' && $result_company != '') {
+                        //     update_option('has_active_keys', 1);
+                        // } else {
+                        //     update_option('has_active_keys', NULL);
+                        // }
+
     global $wpdb;
     $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
-    $result_api = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 1");
-    $result_company = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 2");
-    if (isset($result_api) && isset($result_company) && $result_api != '' && $result_company != '') {
-        update_option('has_active_keys', 1);
-    } else {
-        update_option('has_active_keys', NULL);
-    }
-    $result_suspended = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 3");
-    $result_complete = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 4");
+
+    // Retrieve values for id 3 and 4
+    $result_suspended = $wpdb->get_var("SELECT value FROM $table_name WHERE id = 3");
+    $result_complete = $wpdb->get_var("SELECT value FROM $table_name WHERE id = 4");
+
+                        // $result_suspended = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 3");
+                        // $result_complete = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 4");
+
+
     if ((isset($result_api->value) && $result_api->value != '') && (isset($result_company->value) && $result_company->value != '') && $result_suspended->value != 1 && $result_complete->value == 1) {
         echo '<div class="be_popia_compliant_p_version">
                         You are using a pro version of BPC
@@ -1768,21 +2019,41 @@ function be_popia_compliant_dashboard()
     }
 
     if ((isset($body)) && (!empty($body)) && ($body != '') && ($body != "[]")) {
+        
         global $wpdb;
         $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
+
+        // Retrieve value for id 1
         $result = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 1");
+
         echo '<h2 class="be_popia_compliant_dashboard_upgrade_heading" id="be_popia_compliant_dashboard_upgrade_heading">BPC Pro</h2>';
-        $result_suspended = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 3");
-        if ($result_suspended->value == 1) {
+
+        if ($result !== null && $result->value == 1) {
             echo '<h2 style="text-align:center;color:#B61F21;">Your account has been suspended</h2>
-                              <h4 style="text-align:center;color:#B61F21;">Please view our report on your <a href="./index.php" style="font-weight: normal;margin: -13px 0px 0px 0px;">dashboard</a>.</h4>
-                        ';
-        }
+                <h4 style="text-align:center;color:#B61F21;">Please view our report on your <a href="./index.php" style="font-weight: normal;margin: -13px 0px 0px 0px;">dashboard</a>.</h4>';
+        }                     
+                            // global $wpdb;
+                            // $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
+                            // $result = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 1");
+                            // echo '<h2 class="be_popia_compliant_dashboard_upgrade_heading" id="be_popia_compliant_dashboard_upgrade_heading">BPC Pro</h2>';
+                            // $result_suspended = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 3");
+                            // if ($result_suspended->value == 1) {
+                            //     echo '<h2 style="text-align:center;color:#B61F21;">Your account has been suspended</h2>
+                            //                       <h4 style="text-align:center;color:#B61F21;">Please view our report on your <a href="./index.php" style="font-weight: normal;margin: -13px 0px 0px 0px;">dashboard</a>.</h4>
+                            //                 ';
+                            // }
 
         echo '<label class="be_popia_compliant_p_label" for="be_popia_compliant_api_key_input">API Key:</label>
                 <input class="be_popia_compliant_api_key_input widefat" type="text" id="be_popia_compliant_api_key_input" name="be_popia_compliant_api_key_input" value="' . $result->value . '">';
-        $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
-        $result = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 2");
+                global $wpdb;
+                $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
+                
+                // Retrieve value for id 2
+                $result = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 2");
+
+                            // $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
+                            // $result = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 2");
+        
         echo '<label class="be_popia_compliant_p_label" for="be_popia_compliant_company_key_input">Domain Key:</label>
                     <input class="be_popia_compliant_company_key_input widefat" type="text" id="be_popia_compliant_company_key_input" name="be_popia_compliant_company_key_input" value="' . $result->value . '">
                     <button id="url_button" onclick="save_keys(); location.reload();">Save</button>
@@ -1944,6 +2215,10 @@ function be_popia_compliant_notice()
         global $wpdb;
         $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
         $wpdb->update($table_name, array('value' => 0), array('id' => 3));
+
+                            // global $wpdb;
+                            // $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
+                            // $wpdb->update($table_name, array('value' => 0), array('id' => 3));
     }
 
     if (isset($is_approved) && ($is_approved == 0)) {
@@ -1997,24 +2272,45 @@ function be_popia_compliant_p_key_save()
         }
 
         if (200 === $response_code) {
-            if ((isset($body)) && (!empty($body)) && ($body != '') && ($body != "[]")) {
-                if ($api_key != '') {
+            if (!empty($body) && $body !== "[]") {
+                $api_key = isset($_REQUEST["api_key"]) ? sanitize_key($_REQUEST["api_key"]) : '';
+                $company_key = isset($_REQUEST["company_key"]) ? sanitize_key($_REQUEST["company_key"]) : '';
+                $suspended = isset($_REQUEST["suspended"]) ? sanitize_text_field($_REQUEST["suspended"]) : '';
+        
+                if (!empty($api_key)) {
                     $wpdb->update($table_name, array('value' => $api_key), array('id' => 1));
                 }
-                if ($company_key != '') {
+                if (!empty($company_key)) {
                     $wpdb->update($table_name, array('value' => $company_key), array('id' => 2));
                 }
-                if ($suspended != '') {
+                if (!empty($suspended)) {
                     $wpdb->update($table_name, array('value' => $suspended), array('id' => 3));
                 }
-
-                if (isset($api_key) && isset($company_key) && $api_key != '' && $company_key != '') {
-                    update_option('has_active_keys', 1);
-                } else {
-                    update_option('has_active_keys', NULL);
-                }
+        
+                $has_active_keys = (!empty($api_key) && !empty($company_key)) ? 1 : null;
+                update_option('has_active_keys', $has_active_keys);
             }
         }
+        
+                                    // if (200 === $response_code) {
+                                    //     if ((isset($body)) && (!empty($body)) && ($body != '') && ($body != "[]")) {
+                                    //         if ($api_key != '') {
+                                    //             $wpdb->update($table_name, array('value' => $api_key), array('id' => 1));
+                                    //         }
+                                    //         if ($company_key != '') {
+                                    //             $wpdb->update($table_name, array('value' => $company_key), array('id' => 2));
+                                    //         }
+                                    //         if ($suspended != '') {
+                                    //             $wpdb->update($table_name, array('value' => $suspended), array('id' => 3));
+                                    //         }
+
+                                    //         if (isset($api_key) && isset($company_key) && $api_key != '' && $company_key != '') {
+                                    //             update_option('has_active_keys', 1);
+                                    //         } else {
+                                    //             update_option('has_active_keys', NULL);
+                                    //         }
+                                    //     }
+                                    // }
 
         if (get_option('this_domain_identity') == null) {
             $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/getdomainid/" . $_SERVER['SERVER_NAME']);
@@ -2050,6 +2346,7 @@ function be_popia_compliant_dashboard_checklist()
     $results = $wpdb->get_results("SELECT * from $table_name");
     echo '<div class="be_popia_compliant_wrap">
                 <h1 style="text-align-last: center;font-size:50px;">POPIA CHECKLIST</h1>
+                <center><h2>Paint it <s>Black</s> Red -  Mmmm-mm-mm-mm-mm-mm-mm-mm-mm-mm-mm Mmmm...</h2> (All black fields still need to be completed | refresh this page for a quick update on colors)</center>
                 <center><h2>Paint it Red</h2> (All black fields still need to be completed | refresh this page for a quick update on colors)</center>
                 <center><h3>Please note that this only take effect for FREE version or when membership to Pro version has expired.<br>
                 Seem like a hasstle? <a href="https://bepopiacompliant.co.za" target="_blank">Use Pro for quick and easy setup</a> and skip all below!
@@ -2144,7 +2441,12 @@ function be_popia_compliant_dashboard_checklist()
         } elseif ($result->type == 3) {
             global $wpdb;
             $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
-            $checks = $wpdb->get_results("SELECT does_comply FROM $table_name WHERE id = 2");
+            $id = 2;        
+            $prepared_statement = $wpdb->prepare("SELECT does_comply FROM $table_name WHERE id = %d", $id);
+            $checks = $wpdb->get_results($prepared_statement);
+
+                                // $checks = $wpdb->get_results("SELECT does_comply FROM $table_name WHERE id = 2");
+
             foreach ($checks as $check) {
                 if ($check->does_comply == 1) {
                     echo '
@@ -2176,13 +2478,30 @@ function be_popia_compliant_dashboard_checklist()
         } elseif ($result->type == 4) {
             global $wpdb;
             $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
-            $checks = $wpdb->get_results("SELECT * FROM $table_name WHERE id = 3");
+            $id = 3;
+            $prepared_statement = $wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $id);
+            $checks = $wpdb->get_results($prepared_statement);
+
+                            // $checks = $wpdb->get_results("SELECT * FROM $table_name WHERE id = 3");  
             foreach ($checks as $check) {
                 if ($check->does_comply == 1) {
                     global $wpdb;
                     $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
-                    $needComms = $wpdb->get_var("SELECT does_comply FROM $table_name WHERE id = 2");
-                    $needMarketing = $wpdb->get_var("SELECT does_comply FROM $table_name WHERE id = 3");
+                    $id1 = 2; // Example ID values
+                    $id2 = 3;
+
+                    $prepared_statement1 = $wpdb->prepare("SELECT does_comply FROM $table_name WHERE id = %d", $id1);
+                    $needComms = $wpdb->get_var($prepared_statement1);
+
+                    $prepared_statement2 = $wpdb->prepare("SELECT does_comply FROM $table_name WHERE id = %d", $id2);
+                    $needMarketing = $wpdb->get_var($prepared_statement2);                    
+                    
+                                        // global $wpdb;
+                                        // $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
+                                        // $needComms = $wpdb->get_var("SELECT does_comply FROM $table_name WHERE id = 2");
+                                        // $needMarketing = $wpdb->get_var("SELECT does_comply FROM $table_name WHERE id = 3");
+                    
+                    
                     if ($needComms == 0 && $needMarketing == 1) {
                         echo '<div class="be_popia_compliant_tab">
                                 <input class="be_popia_compliant_input"  type="radio" id="rd' . esc_attr($result->id) . '" name="rd">
@@ -2477,7 +2796,7 @@ function be_popia_compliant_dashboard_checklist()
 
                                                                 // Check if the input is not a valid URL but is also not empty
                                                                 if (input.trim() !== "" && !isValidURL(input)) {
-                                                                    alert("Invalid URL format or top-level domain");
+                                                                    alert("Invalid URL format or top-level domain\\n\\n Example:\\n https://domain-name/folder/file.php");
                                                                     return; // Exit the function if URL is invalid
                                                                 }
 
@@ -2652,8 +2971,16 @@ function be_popia_compliant_checklist_update_compliance()
     if(check_ajax_referer('be_popia_compliant_nonce', 'nonce')){
         global $wpdb;
         $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
-        $needComms = $wpdb->get_var("SELECT does_comply FROM $table_name WHERE id = 2");
-        $needMarketing = $wpdb->get_var("SELECT does_comply FROM $table_name WHERE id = 3");
+        $id1 = 2;
+        $id2 = 3;
+
+        $needComms = $wpdb->get_var($wpdb->prepare("SELECT does_comply FROM $table_name WHERE id = %d", $id1));
+        $needMarketing = $wpdb->get_var($wpdb->prepare("SELECT does_comply FROM $table_name WHERE id = %d", $id2));
+
+                        // global $wpdb;
+                        // $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
+                        // $needComms = $wpdb->get_var("SELECT does_comply FROM $table_name WHERE id = 2");
+                        // $needMarketing = $wpdb->get_var("SELECT does_comply FROM $table_name WHERE id = 3");
         if ($needComms == 1 && $needMarketing == 0) {
             $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND (id != 3) AND (id != 59) AND is_active = 1");
             $rowcount = sanitize_text_field($wpdb->num_rows);
@@ -2698,6 +3025,7 @@ function be_popia_compliant_add_hourly($schedules)
 if (!wp_next_scheduled('be_popia_compliant_add_hourly')) {
     wp_schedule_event(time(), 'hourly', 'be_popia_compliant_add_hourly');
 }
+
 // Hook into that action that'll fire every hour
 add_action('be_popia_compliant_add_hourly', 'bpc_popia_data_processing');
 function bpc_popia_data_processing()
@@ -2710,11 +3038,12 @@ function bpc_popia_data_processing()
         'headers' => array(
             'Content-Type' => 'application/json',
         ),
-        'body'    => array(),
+        'body' => array(),
     );
     $response = wp_remote_get(wp_http_validate_url($url), $args);
     $response_code = wp_remote_retrieve_response_code($response);
     $body = wp_remote_retrieve_body($response);
+
     if (200 === $response_code) {
         $body = json_decode($body);
         foreach ($body as $data) {
@@ -2774,6 +3103,7 @@ function bpc_popia_data_processing()
             }
         }
     }
+
     // Ping url to ensure plugin is active
     $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/pingwordpressplugin/" . $id . "/");
     $t = time();
@@ -4004,13 +4334,26 @@ function checkKeys()
 {
     global $wpdb;
     $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
-    $result_api = $wpdb->get_var("SELECT value FROM $table_name WHERE id = 1");
-    if ($result_api != '') {
+    $result_api = $wpdb->get_var($wpdb->prepare("SELECT value FROM $table_name WHERE id = %d", 1));
+
+    if ($result_api !== null) { // Check if a value is found
         update_option('has_active_keys', 1);
     } else {
-        update_option('has_active_keys', NULL);
+        update_option('has_active_keys', null); // Use null instead of NULL
     }
 }
+
+                // function checkKeys()
+                // {
+                //     global $wpdb;
+                //     $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
+                //     $result_api = $wpdb->get_var("SELECT value FROM $table_name WHERE id = 1");
+                //     if ($result_api != '') {
+                //         update_option('has_active_keys', 1);
+                //     } else {
+                //         update_option('has_active_keys', NULL);
+                //     }
+                // }
 
 
 add_action('wp_footer', 'be_popia_compliant_echo_footer');

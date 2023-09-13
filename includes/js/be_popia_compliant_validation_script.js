@@ -16,7 +16,7 @@ jQuery(document).ready(function($){
             //Ref: http://www.sadev.co.za/content/what-south-african-id-number-made
             // SA ID Number have to be 13 digits, so check the length
             if (idNumber.length != 13 || !isNumber(idNumber)) {
-                error.append('<p>ID number does not appear to be authentic - input not a valid number</p>');
+                error.append('<p>ID number does not appear to be correct <!-- - input not a valid number--></p>');
                 correct = false;
             }
     
@@ -30,7 +30,7 @@ jQuery(document).ready(function($){
             var fullDate = id_date + "-" + id_month + 1 + "-" + id_year;
     
             if (!((tempDate.getYear() == idNumber.substring(0, 2)) && (id_month == idNumber.substring(2, 4) - 1) && (id_date == idNumber.substring(4, 6)))) {
-                error.append('<p>ID number does not appear to be authentic - date part not valid</p>');
+                error.append('<p>ID number does not appear to be correct <!-- - date part not valid --></p>');
                 correct = false;
             }
     
@@ -54,7 +54,7 @@ jQuery(document).ready(function($){
                 multiplier = (multiplier % 2 === 0) ? 1 : 2;
             }
             if ((checkSum % 10) !== 0) {
-                error.append('<p>ID number does not appear to be authentic - check digit is not valid</p>');
+                error.append('<p>ID number does not appear to be correct <!-- - check digit is not valid --></p>');
                 correct = false;
             }
             // console.log(idNumber.length);
@@ -83,4 +83,11 @@ jQuery(document).ready(function($){
     }
     
     $('#user_identification_number').blur(ValidateSAID);
+
+      // Prevent user registration if validation fails
+      $('#registerform').submit(function (event) {
+        if (!ValidateBillSAID()) {
+            event.preventDefault(); // Prevent user registration
+        }
+    });
 });
