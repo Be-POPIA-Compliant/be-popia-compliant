@@ -57,14 +57,6 @@ function be_popia_compliant_user_scripts() {
 add_action('wp_enqueue_scripts', 'be_popia_compliant_user_scripts');
 add_action('admin_enqueue_scripts', 'be_popia_compliant_user_scripts');
 
-                    // function be_popia_compliant_user_scripts()
-                    // {
-                    //     $plugin_url = wp_http_validate_url(plugin_dir_url(__FILE__));
-                    //     wp_enqueue_style('style',  $plugin_url . "styles.css");
-                    // }
-
-                    // add_action('admin_print_styles', 'be_popia_compliant_user_scripts');
-
 /* Enqueue js scripts*/
 function be_popia_compliant_scripts() {
     // Generate and localize the nonce
@@ -86,46 +78,29 @@ add_action('login_enqueue_scripts', 'be_popia_compliant_scripts');
 add_action('wp_enqueue_scripts', 'be_popia_compliant_scripts');
 add_action('admin_enqueue_scripts', 'be_popia_compliant_scripts', 1);                    
 
-                        // function be_popia_compliant_scripts()
-                        // {
-                        //     // Generate and localize the nonce
-                        //     $bpc_nonce = wp_create_nonce('be_popia_compliant_nonce');
-                            
-
-                        //     $plugin_url = wp_http_validate_url(plugin_dir_url(__FILE__));
-                        //     wp_enqueue_script('ValidateSAID', $plugin_url . 'includes/js/be_popia_compliant_validation_script.js', array('jquery'), get_option('bpc_v'), true);
-                        //     wp_enqueue_script('ValidateBillSAID', $plugin_url . 'includes/js/be_popia_compliant_validation_script_bill.js', array('jquery'), get_option('bpc_v'), true);
-                        //     wp_enqueue_script('Basic', $plugin_url . 'includes/js/be_popia_compliant_basic.js', array('jquery'), get_option('bpc_v'), true);
-                            
-                        //     wp_localize_script('Basic', 'be_popia_nonce_object', ['nonce' => $bpc_nonce]);
-                        // }
-
-                        // add_action('wp_enqueue_scripts', 'be_popia_compliant_scripts');
-                        // add_action('admin_enqueue_scripts', 'be_popia_compliant_scripts', 1);
-
 /* Adds new links to plugin in plugins.php */
+function add_action_links($actions)
+{
+    if (get_option('bpc_hasPro') == 1) {
+        $mylinks = array(
+            '<a href="' . admin_url('admin.php?page=privacy-policy') . '"><b>Banner & Cookie Settings</b></a>',
+            '<a href="' . admin_url('admin.php?page=be_popia_compliant_checklist') . '"><b>POPIA Checklist</b></a>',
+            '<a href="' . admin_url('users.php') . '"><b>Manage Consent</b></a>'
+        );
+    } else {
+        $mylinks = array(
+            '<a href="' . admin_url('admin.php?page=privacy-policy') . '"><b>Cookie Banner</b></a>',
+            '<a href="' . admin_url('admin.php?page=be_popia_compliant_checklist') . '"><b>POPIA Checklist</b></a>',
+            '<a href="' . admin_url('users.php') . '"><b>Manage Consent</b></a>',
+            '<a href="https://bepopiacompliant.co.za/#/main" target="_blank" style="color:#D63638;font-weight:700;">Go Pro</a>',
+        );
+    };
+    $actions = array_merge($actions, $mylinks);
+    return $actions;
+}
 
-                        // function add_action_links($actions)
-                        // {
-                        //     if (get_option('bpc_hasPro') == 1) {
-                        //         $mylinks = array(
-                        //             '<a href="' . admin_url('admin.php?page=privacy-policy') . '"><b>Banner & Cookie Settings</b></a>',
-                        //             '<a href="' . admin_url('admin.php?page=be_popia_compliant_checklist') . '"><b>POPIA Checklist</b></a>',
-                        //             '<a href="' . admin_url('users.php') . '"><b>Manage Consent</b></a>'
-                        //         );
-                        //     } else {
-                        //         $mylinks = array(
-                        //             '<a href="' . admin_url('admin.php?page=privacy-policy') . '"><b>Cookie Banner</b></a>',
-                        //             '<a href="' . admin_url('admin.php?page=be_popia_compliant_checklist') . '"><b>POPIA Checklist</b></a>',
-                        //             '<a href="' . admin_url('users.php') . '"><b>Manage Consent</b></a>',
-                        //             '<a href="https://bepopiacompliant.co.za/#/main" target="_blank" style="color:#D63638;font-weight:700;">Go Pro</a>',
-                        //         );
-                        //     };
-                        //     $actions = array_merge($actions, $mylinks);
-                        //     return $actions;
-                        // }
+add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'add_action_links');
 
-                        // add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'add_action_links');
 
 //* Create Database Table for Be POPIA Compliant 
 function be_popia_compliant_create() {
@@ -162,45 +137,7 @@ function be_popia_compliant_create() {
                     PRIMARY KEY (id)
                 ) $charset_collate";
             dbDelta($be_popia_compliant_query_admin);
-
-            if (empty($wpdb->last_error)) {
-                // Table creation was successful.
-            } else {
-                // Handle the error gracefully, e.g., log or display an error message.
-            }
         }
-
-                        // global $wpdb;
-
-                        // $table_name = $wpdb->get_blog_prefix() . 'be_popia_compliant_checklist';
-                        // $query = $wpdb->prepare("SHOW TABLES LIKE %s", $table_name);
-
-                        // if ($wpdb->get_var($query) != $table_name) {
-                        //     require_once(ABSPATH . "wp-admin/includes/upgrade.php");
-
-                        //     $be_popia_compliant_tb_checklist = $wpdb->get_blog_prefix() . "be_popia_compliant_checklist";
-                        //     $be_popia_compliant_query_checklist = "
-                        //         CREATE TABLE $be_popia_compliant_tb_checklist (
-                        //             id int(12) NOT NULL AUTO_INCREMENT,
-                        //             title varchar(100) DEFAULT '',
-                        //             description varchar(1500) DEFAULT '',
-                        //             content varchar(500) DEFAULT '',
-                        //             type int(1) DEFAULT '0',
-                        //             does_comply int(1) DEFAULT '0',
-                        //             is_active int(1) DEFAULT '1',
-                        //             PRIMARY KEY (id)
-                        //         )";
-                        //     dbDelta($be_popia_compliant_query_checklist);
-
-                        //     $be_popia_compliant_tb_admin = $wpdb->get_blog_prefix() . "be_popia_compliant_admin";
-                        //     $be_popia_compliant_query_admin = "
-                        //         CREATE TABLE $be_popia_compliant_tb_admin (
-                        //             id int(12) NOT NULL AUTO_INCREMENT,
-                        //             title varchar(100) DEFAULT '',
-                        //             value varchar(1500) DEFAULT '',
-                        //             PRIMARY KEY (id)
-                        //         )";
-                        //     dbDelta($be_popia_compliant_query_admin);
 
         $url = "https://py.bepopiacompliant.co.za/api/plugindetailscheck/" . $_SERVER['SERVER_NAME'];
         $args = array(
@@ -368,11 +305,6 @@ function be_popia_compliant_insert_data()
         
         foreach ($prepared_items as $item) {
             $wpdb->insert($table_name, $item);
-        
-            // Check for insertion errors and handle them as needed
-            if ($wpdb->last_error) {
-                // Handle the error, e.g., log or display an error message
-            }
         }
     }
 
@@ -408,33 +340,9 @@ function be_popia_compliant_insert_p_data()
 
     foreach ($prepared_items as $item) {
         $wpdb->insert($table_name, $item);
-
-        // Check for insertion errors and handle them as needed
-        if ($wpdb->last_error) {
-            // Handle the error, e.g., log or display an error message
-        }
     }
 }
                             
-                            // function be_popia_compliant_insert_p_data()
-                            // {
-                            //     global $wpdb;
-                            //     $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
-                            //     $result = $wpdb->get_results("SELECT ID from $table_name");
-                            //     if (count($result) > 0) {
-                            //     } else {
-                            //         $all_items = array(
-                            //             array('title' => 'API Key'), array('title' => 'Company Key'), array('title' => 'Suspended'), array('title' => 'Complete'), // array( 'title' => 'flag_IR_Problem', 'value' => '(They have been experiancing technical issues with the Portal, which results in not being accessible)<br> - If this is still the case, they provided a <a href=https://www.justice.gov.za/inforeg/docs/forms/InfoRegSA-eForm-InformationOfficersRegistration-2021.pdf target="_blank">PDF Registration</a> as an alternative, that can be filled out in the browser. You\'d still have to print it out in order to sign the document. Thereafter you can send it via email to: <a href=mailto:registration.IR@justice.gov.za>registration.IR@justice.gov.za</a>'),
-                            //         );
-                            //         foreach ($all_items as $item) {
-                            //             $wpdb->insert(
-                            //                 $table_name,
-                            //                 $item
-                            //             );
-                            //         }
-                            //     }
-                            // }
-
 
 // Check Pro Functionality
 global $wpdb;
@@ -497,26 +405,7 @@ if (get_option('bpc_hasPro') == 1) {
         $identificationNumber = isset($_POST['user_identification_number']) ? sanitize_text_field($_POST['user_identification_number']) : '';
         $otherIdNumber = isset($_POST['other_identification_number']) ? sanitize_text_field($_POST['other_identification_number']) : '';
         $otherIdType = isset($_POST['other_identification_type']) ? sanitize_text_field($_POST['other_identification_type']) : '';
-        $otherIdIssue = isset($_POST['other_identification_issue']) ? sanitize_text_field($_POST['other_identification_issue']) : '';
-        
-
-        // $identificationNumber = !empty($_POST['user_identification_number']) ? ($_POST['user_identification_number']) : '';
-        // if(!isset($identificationNumber)) {
-        //     $identificationNumber = get_user_meta( $user_id, 'user_identification_number', true );
-        // }
-        // $otherIdNumber = !empty($_POST['other_identification_number']) ? ($_POST['other_identification_number']) : '';
-        // if(!isset($otherIdNumber)) {
-        //     $otherIdNumber = get_user_meta( $user_id, 'other_identification_number', true );
-        // }
-        // $otherIdType = !empty($_POST['other_identification_type']) ? ($_POST['other_identification_type']) : '';
-        // if(!isset($otherIdType)) {
-        //     $otherIdType = get_user_meta( $user_id, 'other_identification_type', true );
-        // }
-        // $otherIdIssue = !empty($_POST['other_identification_issue']) ? ($_POST['other_identification_issue']) : '';
-        // if(!isset($otherIdIssue)) {
-        //     $otherIdIssue = get_user_meta( $user_id, 'other_identification_issue', true );
-        // }
-    
+        $otherIdIssue = isset($_POST['other_identification_issue']) ? sanitize_text_field($_POST['other_identification_issue']) : '';    
         ?>
         <p>
             <div id="saiderror" style="color: red; padding: 5px; display: none; font-size: 14px; line-height: 14px;"></div><br><label for="user_identification_number"><?php esc_html_e('South African Identity Number', 'be_popiaCompliant') ?><br />
@@ -627,23 +516,6 @@ if (get_option('bpc_hasPro') == 1) {
             if (!empty($other_identification_issue)) {
                 update_user_meta($user_id, 'other_identification_issue', $other_identification_issue);
             }
-            
-                                        // if (!empty($_POST['user_identification_number'])) {
-                                        //     if (strlen($_POST['user_identification_number']) == 13) {
-                                        //         update_user_meta($user_id, 'user_identification_number', $_POST['user_identification_number']);
-                                        //     }
-                                        // }
-                                        // if (!empty($_POST['other_identification_number'])) {
-                                        //     update_user_meta($user_id, 'other_identification_number', $_POST['other_identification_number']);
-                                        // }
-                                        // if (!empty($_POST['other_identification_type'])) {
-                                        //     update_user_meta($user_id, 'other_identification_type', $_POST['other_identification_type']);
-                                        // }
-                                        // if (!empty($_POST['other_identification_issue'])) {
-                                        //     update_user_meta($user_id, 'other_identification_issue', $_POST['other_identification_issue']);
-                                        // }
-
-
         } else {
             // Nonce is not valid, handle the error or reject the submission
             echo '<strong>Security Issue</strong>:<br>It seem like this request did not originate on this website<br>';
@@ -1289,14 +1161,14 @@ function be_popia_compliant_modify_user_table($columns)
     $columns['comms_messenger'] = 'Comms Messenger';
     $columns['comms_telegram'] = 'Comms Telegram';
     $columns['comms_email'] = 'Comms Email';
-    $columns['comms_customa'] = 'Comms Custom'; /*$columns['comms_customb'] = 'Comms Custom 2'; $columns['comms_customc'] = 'Comms Custom 3';*/
+    $columns['comms_customa'] = 'Comms Custom'; 
     $columns['market_phone'] = 'Marketing Phone';
     $columns['market_sms'] = 'Marketing SMS';
     $columns['market_whatsapp'] = 'Marketing WhatsApp';
     $columns['market_messenger'] = 'Marketing Messenger';
     $columns['market_telegram'] = 'Marketing Telegram';
     $columns['market_email'] = 'Marketing Email';
-    $columns['market_customa'] = 'Marketing Custom'; /* $columns['market_customb'] = 'Marketing Custom 2'; $columns['market_customc'] = 'Marketing Custom' 3*/;
+    $columns['market_customa'] = 'Marketing Custom';
     return $columns;
 }
 
@@ -1443,7 +1315,7 @@ function be_popia_compliant_modify_user_table_row($row_output, $column_id_attr, 
                 update_option('bpc_mcc', $user_output[19]);
             } else {
                 update_option('bpc_mcc', 0);
-            } /* if(isset($user_output[20]) && ($user_output[20] !== '')) {update_option('bpc_ccn1', $user_output[20]);} else {update_option('bpc_ccn1, 'Comms Custom 1');} if(isset($user_output[21]) && ($user_output[21] !== '')) {update_option('bpc_ccn2', $user_output[21]);} else {update_option('bpc_ccn2', 'Comms Custom 2');} if(isset($user_output[22]) && ($user_output[22] !== '')) {update_option('bpc_ccn3'], $user_output[22]);} else {update_option('bpc_ccn3', 'Comms Custom 3');} if(isset($user_output[23]) && ($user_output[23] !== '')) {update_option('bpc_cmn1', $user_output[23]);} else {update_option('bpc_cmn1', 'Marketing Custom 1');} if(isset($user_output[24]) && ($user_output[24] !== '')) {update_option('bpc_cmn2', $user_output[24]);} else {update_option('bpc_cmn2', 'Marketing Custom 2');} if(isset($user_output[25]) && ($user_output[25] !== '')) {update_option('bpc_cmn3', $user_output[25]);} else {update_option('bpc_cmn3', 'Marketing Custom 3');} */
+            } 
             if (isset($timestamp) & $timestamp > 1356998400) {
                 if ($time = date($time_format, $timestamp) == "00:00") {
                     $friendly_date = date($date_format, $timestamp);
@@ -1558,7 +1430,7 @@ function be_popia_compliant_modify_user_table_row($row_output, $column_id_attr, 
                 $comms_customa = '<input type="checkbox" class="bpc_down" name="bpc_comms_customa" onclick="save_comms_market_val(\'comms_customa\', ' . $user . ', 1, ' . get_option('bpc_timestamp') . ', \'' . get_option('bpc_consent_url') . '\', ' . get_option('bpc_cp') . ', ' . get_option('bpc_cs') . ', ' . get_option('bpc_cw') . ', ' . get_option('bpc_cm') . ', ' . get_option('bpc_ct') . ', ' . get_option('bpc_ce') . ', ' . get_option('bpc_cca') . ', ' . get_option('bpc_ccb') . ', ' . get_option('bpc_ccc') . ', ' . get_option('bpc_mp') . ', ' . get_option('bpc_ms') . ', ' . get_option('bpc_mw') . ', ' . get_option('bpc_mm') . ', ' . get_option('bpc_mt') . ', ' . get_option('bpc_me') . ', ' . get_option('bpc_mca') . ', ' . get_option('bpc_mcb') . ', ' . get_option('bpc_mcc') . ')"' . get_option('bpc_disable') . ' /> <br><span style="text-decoration: line-through rgba(255, 99, 71, 0.3);color: #d1cccc;">Custom</span></div>';
             }
             return $comms_customa;
-            break;            // case 'comms_customb' :            //     $check_comms_customb = $user_output[9];            //     if(isset($check_comms_customb) && ($check_comms_customb == 1)) {            //         $comms_customb= '<input type="checkbox" class="bpc_down" name="bpc_comms_customb" checked="checked" onclick="save_comms_market_val(\'comms_customb\', ' . $user . ', 0, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' /> <br>Custom 2';            //     } else {            //         $comms_customb= '<input type="checkbox" class="bpc_down" name="bpc_comms_customb" onclick="save_comms_market_val(\'comms_customb\', ' . $user . ', 1, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' /> <br><span style="text-decoration: line-through rgba(255, 99, 71, 0.3);color: #d1cccc;">Custom 2</span></div>';            //     }            //     return $comms_customb;            // break;            // case 'comms_customc' :            //     $check_comms_customc = $user_output[10];            //     if(isset($check_comms_customc) && ($check_comms_customc == 1)) {            //         $comms_customc= '<input type="checkbox" class="bpc_down" name="bpc_comms_customc" checked="checked" onclick="save_comms_market_val(\'comms_customc\', ' . $user . ', 0, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' /> <br>Custom 3';            //     } else {            //         $comms_customc= '<input type="checkbox" class="bpc_down" name="bpc_comms_customc" onclick="save_comms_market_val(\'comms_customc\', ' . $user . ', 1, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' /> <br><span style="text-decoration: line-through rgba(255, 99, 71, 0.3);color: #d1cccc;">Custom 3</span></div>';            //     }            //     return $comms_customc;            // break;
+            break;          
         case 'market_phone':
             $check_market_phone = $user_output[11];
             if (isset($check_market_phone) && ($check_market_phone == 1)) {
@@ -1622,7 +1494,7 @@ function be_popia_compliant_modify_user_table_row($row_output, $column_id_attr, 
             }
             return $market_customa;
             break;
-            // case 'market_customb' :            //     $check_market_customb = $user_output[18];            //     if(isset($check_market_customb) && ($check_market_customb == 1)) {            //         $market_customb= '<input type="checkbox" class="bpc_down" name="bpc_market_customb" checked="checked" onclick="save_comms_market_val(\'market_customb\', ' . $user . ', 0, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' /> <br>Custom 2';            //     } else {            //         $market_customb= '<input type="checkbox" class="bpc_down" name="bpc_market_customb" onclick="save_comms_market_val(\'market_customb\', ' . $user . ', 1, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' /> <br><span style="text-decoration: line-through rgba(255, 99, 71, 0.3);color: #d1cccc;">Custom 2</span></div>';            //     }            //     return $market_customb;            // break;            // case 'market_customc' :            //     $check_market_customc = $user_output[19];            //     if(isset($check_market_customc) && ($check_market_customc == 1)) {            //         $market_customc= '<input type="checkbox" class="bpc_down" name="bpc_market_customc" checked="checked" onclick="save_comms_market_val(\'market_customc\', ' . $user . ', 0, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' /> <br>Custom 3';            //     } else {            //         $market_customc= '<input type="checkbox" class="bpc_down" name="bpc_market_customc" onclick="save_comms_market_val(\'market_customc\', ' . $user . ', 1, ' . get_option( 'bpc_timestamp' ) . ', \'' . get_option( 'bpc_consent_url' ) . '\', ' . get_option( 'bpc_cp') . ', ' . get_option( 'bpc_cs') . ', ' . get_option( 'bpc_cw') . ', ' . get_option( 'bpc_cm' ) . ', ' . get_option( 'bpc_ct' ) . ', ' . get_option( 'bpc_ce' ) . ', ' . get_option( 'bpc_cca' ) . ', ' . get_option( 'bpc_ccb' ) . ', ' . get_option( 'bpc_ccc' ) . ', ' . get_option( 'bpc_mp' ) . ', ' . get_option( 'bpc_ms' ) . ', ' . get_option( 'bpc_mw' ) . ', ' . get_option( 'bpc_mm' ) . ', ' . get_option( 'bpc_mt' ) . ', ' . get_option( 'bpc_me' ) . ', ' . get_option( 'bpc_mca' ) . ', ' . get_option( 'bpc_mcb' ) . ', ' . get_option( 'bpc_mcc' ) . ')"' . get_option( 'bpc_disable') . ' /> <br><span style="text-decoration: line-through rgba(255, 99, 71, 0.3);color: #d1cccc;">Custom 3</span></div>';            //     }            //     return $market_customc;            // break;
+            
         default:
             echo '';
             break;
@@ -1902,26 +1774,7 @@ if (200 === $response_code) {
     }
 }
 
-                        // if (200 === $response_code) {
-                        //     $body = json_decode($body);
-
-                        //     foreach ($body as $data) {
-                        //         $privacy_policy = $data->privacy_policy;
-                        //         $domain_form_complete = $data->domain_form_complete;
-                        //         $consent_form_complete = $data->consent_form_complete;
-                        //         $other_parties = $data->other_parties;
-
-                        //         global $wpdb;
-                        //         $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
-
-                        //         if ($domain_form_complete == 1 && $consent_form_complete == 1 && $other_parties != null) {
-                        //             $wpdb->update($table_name, array('value' => 1), array('id' => 4));
-                        //         } else {
-                        //             $wpdb->update($table_name, array('value' => 0), array('id' => 4));
-                        //         }
-                        //     }
-                        // }
-
+                      
     echo '<div class="be_popia_compliant_wrap_dashboard">
             <div class="be_popia_compliant_dashboard_one">';
 
@@ -1938,15 +1791,6 @@ if (200 === $response_code) {
         } else {
             update_option('has_active_keys', NULL);
         }
-                        // global $wpdb;
-                        // $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
-                        // $result_api = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 1");
-                        // $result_company = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 2");
-                        // if (isset($result_api) && isset($result_company) && $result_api != '' && $result_company != '') {
-                        //     update_option('has_active_keys', 1);
-                        // } else {
-                        //     update_option('has_active_keys', NULL);
-                        // }
 
     global $wpdb;
     $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
@@ -1954,10 +1798,6 @@ if (200 === $response_code) {
     // Retrieve values for id 3 and 4
     $result_suspended = $wpdb->get_var("SELECT value FROM $table_name WHERE id = 3");
     $result_complete = $wpdb->get_var("SELECT value FROM $table_name WHERE id = 4");
-
-                        // $result_suspended = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 3");
-                        // $result_complete = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 4");
-
 
     if ((isset($result_api->value) && $result_api->value != '') && (isset($result_company->value) && $result_company->value != '') && $result_suspended->value != 1 && $result_complete->value == 1) {
         echo '<div class="be_popia_compliant_p_version">
@@ -2032,16 +1872,6 @@ if (200 === $response_code) {
             echo '<h2 style="text-align:center;color:#B61F21;">Your account has been suspended</h2>
                 <h4 style="text-align:center;color:#B61F21;">Please view our report on your <a href="./index.php" style="font-weight: normal;margin: -13px 0px 0px 0px;">dashboard</a>.</h4>';
         }                     
-                            // global $wpdb;
-                            // $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
-                            // $result = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 1");
-                            // echo '<h2 class="be_popia_compliant_dashboard_upgrade_heading" id="be_popia_compliant_dashboard_upgrade_heading">BPC Pro</h2>';
-                            // $result_suspended = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 3");
-                            // if ($result_suspended->value == 1) {
-                            //     echo '<h2 style="text-align:center;color:#B61F21;">Your account has been suspended</h2>
-                            //                       <h4 style="text-align:center;color:#B61F21;">Please view our report on your <a href="./index.php" style="font-weight: normal;margin: -13px 0px 0px 0px;">dashboard</a>.</h4>
-                            //                 ';
-                            // }
 
         echo '<label class="be_popia_compliant_p_label" for="be_popia_compliant_api_key_input">API Key:</label>
                 <input class="be_popia_compliant_api_key_input widefat" type="text" id="be_popia_compliant_api_key_input" name="be_popia_compliant_api_key_input" value="' . $result->value . '">';
@@ -2050,9 +1880,6 @@ if (200 === $response_code) {
                 
                 // Retrieve value for id 2
                 $result = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 2");
-
-                            // $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
-                            // $result = $wpdb->get_row("SELECT value FROM $table_name WHERE id = 2");
         
         echo '<label class="be_popia_compliant_p_label" for="be_popia_compliant_company_key_input">Domain Key:</label>
                     <input class="be_popia_compliant_company_key_input widefat" type="text" id="be_popia_compliant_company_key_input" name="be_popia_compliant_company_key_input" value="' . $result->value . '">
@@ -2215,10 +2042,6 @@ function be_popia_compliant_notice()
         global $wpdb;
         $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
         $wpdb->update($table_name, array('value' => 0), array('id' => 3));
-
-                            // global $wpdb;
-                            // $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
-                            // $wpdb->update($table_name, array('value' => 0), array('id' => 3));
     }
 
     if (isset($is_approved) && ($is_approved == 0)) {
@@ -2292,26 +2115,6 @@ function be_popia_compliant_p_key_save()
             }
         }
         
-                                    // if (200 === $response_code) {
-                                    //     if ((isset($body)) && (!empty($body)) && ($body != '') && ($body != "[]")) {
-                                    //         if ($api_key != '') {
-                                    //             $wpdb->update($table_name, array('value' => $api_key), array('id' => 1));
-                                    //         }
-                                    //         if ($company_key != '') {
-                                    //             $wpdb->update($table_name, array('value' => $company_key), array('id' => 2));
-                                    //         }
-                                    //         if ($suspended != '') {
-                                    //             $wpdb->update($table_name, array('value' => $suspended), array('id' => 3));
-                                    //         }
-
-                                    //         if (isset($api_key) && isset($company_key) && $api_key != '' && $company_key != '') {
-                                    //             update_option('has_active_keys', 1);
-                                    //         } else {
-                                    //             update_option('has_active_keys', NULL);
-                                    //         }
-                                    //     }
-                                    // }
-
         if (get_option('this_domain_identity') == null) {
             $url = wp_http_validate_url("https://py.bepopiacompliant.co.za/api/getdomainid/" . $_SERVER['SERVER_NAME']);
             $args = array(
@@ -2496,12 +2299,7 @@ function be_popia_compliant_dashboard_checklist()
                     $prepared_statement2 = $wpdb->prepare("SELECT does_comply FROM $table_name WHERE id = %d", $id2);
                     $needMarketing = $wpdb->get_var($prepared_statement2);                    
                     
-                                        // global $wpdb;
-                                        // $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
-                                        // $needComms = $wpdb->get_var("SELECT does_comply FROM $table_name WHERE id = 2");
-                                        // $needMarketing = $wpdb->get_var("SELECT does_comply FROM $table_name WHERE id = 3");
-                    
-                    
+                                    
                     if ($needComms == 0 && $needMarketing == 1) {
                         echo '<div class="be_popia_compliant_tab">
                                 <input class="be_popia_compliant_input"  type="radio" id="rd' . esc_attr($result->id) . '" name="rd">
@@ -2977,10 +2775,6 @@ function be_popia_compliant_checklist_update_compliance()
         $needComms = $wpdb->get_var($wpdb->prepare("SELECT does_comply FROM $table_name WHERE id = %d", $id1));
         $needMarketing = $wpdb->get_var($wpdb->prepare("SELECT does_comply FROM $table_name WHERE id = %d", $id2));
 
-                        // global $wpdb;
-                        // $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
-                        // $needComms = $wpdb->get_var("SELECT does_comply FROM $table_name WHERE id = 2");
-                        // $needMarketing = $wpdb->get_var("SELECT does_comply FROM $table_name WHERE id = 3");
         if ($needComms == 1 && $needMarketing == 0) {
             $wpdb->get_results("SELECT * FROM $table_name WHERE (type < 8 AND type > 0) AND does_comply = 1 AND (id != 3) AND (id != 59) AND is_active = 1");
             $rowcount = sanitize_text_field($wpdb->num_rows);
@@ -3482,6 +3276,7 @@ function bpc_popia_data_processing()
                     $table_name = $wpdb->prefix . 'arf_payfast_order';
                     $wpdb->show_errors(); 
                     $result = $wpdb->get_results("SELECT * FROM $table_name WHERE `payer_email` = '$user_email'");
+                    
                     //Get Personal Data from arf_payfast_order multiple rows possible
                     update_option('multi_result', $result);
                     if (count($result) > 0) {
@@ -4342,19 +4137,6 @@ function checkKeys()
         update_option('has_active_keys', null); // Use null instead of NULL
     }
 }
-
-                // function checkKeys()
-                // {
-                //     global $wpdb;
-                //     $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
-                //     $result_api = $wpdb->get_var("SELECT value FROM $table_name WHERE id = 1");
-                //     if ($result_api != '') {
-                //         update_option('has_active_keys', 1);
-                //     } else {
-                //         update_option('has_active_keys', NULL);
-                //     }
-                // }
-
 
 add_action('wp_footer', 'be_popia_compliant_echo_footer');
 
@@ -5299,15 +5081,6 @@ if (get_option('active_plugins')) {
                     }
                 }
 
-                // if logged in and provided consent
-                if(isset($consent_provided)) { 
-                    if(($consent_provided == 1)) {
-                        
-                    } else {
-                    // if logged in and not yet provided consent
-                    }
-                }
-
                 if($bpc_logged_in_user> 0) {
                     $bpc_logged_in_user = intval($bpc_logged_in_user);
                     
@@ -5330,7 +5103,6 @@ if (get_option('active_plugins')) {
                     }
                     
                     if(isset($priorityID)) {
-                        // THIS WORKS FINE BUT REPLACE $PRIOROTY id AND $SECONDARY id WITH RELEVANT OPTIONS
                         // Update all fields
                         update_user_meta( $bpc_logged_in_user, 'user_identification_number', $priorityID );
                         update_user_meta( $bpc_logged_in_user, 'billing_user_SAID', $priorityID);
@@ -5371,17 +5143,13 @@ if (get_option('active_plugins')) {
                 if(isset($billUserOtherIDis)) unset($billUserOtherIDis);
                 if(isset($billUserOtherIDtypeIs)) unset($billUserOtherIDtypeIs);
                 if(isset($billUserOtherIDIssueIs)) unset($billUserOtherIDIssueIs);
-
-                } else {
-                    // if not logged in
-                }
-            
+                }           
 
                 add_action('woocommerce_checkout_process', 'be_popiaCompliant_check_if_selected');
 
+
                 function be_popiaCompliant_check_if_selected()
                 {
-
                     if (empty($_POST['billing_user_SAID']) && empty($_POST['billing_user_OtherID'])) {
                         wc_add_notice('<strong>(Without an authentication identifier, you will never be able to <a href="https://www.manageconsent.co.za" target="blank">Manage Your Consent</a></strong>:<br>Please enter your South African ID Number (if South African) <br>OR<br>Passport, Social Security or other Identification Number (if not using South African ID Number).<br>', 'error');
                     }
