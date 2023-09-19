@@ -209,9 +209,12 @@ function be_popia_compliant_insert_data()
     global $wpdb;
     $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
 
-    // Check if the table exists before inserting data
-    if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") == $table_name) {
-        return; // Table already exists, no need to insert data
+    // Check if data exists in the table
+    $data_exists = $wpdb->get_var("SELECT COUNT(*) FROM $table_name");
+
+    // If data exists, return early
+    if ($data_exists > 0) {
+        return; // Data already exists, no need to insert more data
     }
 
         // Data to be inserted
@@ -308,15 +311,18 @@ function be_popia_compliant_insert_data()
         }
     }
 
+
 // Add Administration Data                            
 function be_popia_compliant_insert_p_data()
 {
     global $wpdb;
     $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
 
-    // Check if the table exists before inserting data
-    if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") == $table_name) {
-        return; // Table already exists, no need to insert data
+    // Check if there's any data in the table
+    $data_exists = $wpdb->get_var("SELECT COUNT(*) FROM $table_name");
+
+    if ($data_exists > 0) {
+        return; // Data already exists, no need to insert more data
     }
 
     // Data to be inserted
@@ -1794,12 +1800,11 @@ if (200 === $response_code) {
 
     global $wpdb;
     $table_name = $wpdb->prefix . 'be_popia_compliant_admin';
-
     // Retrieve values for id 3 and 4
     $result_suspended = $wpdb->get_var("SELECT value FROM $table_name WHERE id = 3");
     $result_complete = $wpdb->get_var("SELECT value FROM $table_name WHERE id = 4");
 
-    if ((isset($result_api->value) && $result_api->value != '') && (isset($result_company->value) && $result_company->value != '') && $result_suspended->value != 1 && $result_complete->value == 1) {
+    if (isset($result_api, $result_company) && $result_api !== '' && $result_company !== '' && $result_suspended !== 1) {
         echo '<div class="be_popia_compliant_p_version">
                         You are using a pro version of BPC
                     </div>
@@ -1812,8 +1817,8 @@ if (200 === $response_code) {
                         </div>
                     </div>
                     ';
-    } elseif ((isset($result_api->value) && $result_api->value != '') && (isset($result_company->value) && $result_company->value != '') && $result_suspended->value != 1 && $result_complete->value != 1) {
-        echo '<div class="be_popia_compliant_p_version">
+    } elseif (isset($result_api, $result_company) && $result_api !== '' && $result_company !== '' && $result_suspended !== 1 && $result_complete !== 1) {
+                echo '<div class="be_popia_compliant_p_version">
                         You are connected to Pro, but action on your account is required and the free version is still in effect. <a href="https://bepopiacompliant.co.za" style="color:#B7191A"; target="_blank"><span style="line-height: 45px; margin: 30px important;"> Fix it now!</span></a>
                     </div>
                     <div class="be_popia_compliant_dashboard_main_content">
@@ -2150,7 +2155,6 @@ function be_popia_compliant_dashboard_checklist()
     echo '<div class="be_popia_compliant_wrap">
                 <h1 style="text-align-last: center;font-size:50px;">POPIA CHECKLIST</h1>
                 <center><h2>Paint it <s>Black</s> Red -  Mmmm-mm-mm-mm-mm-mm-mm-mm-mm-mm-mm Mmmm...</h2> (All black fields still need to be completed | refresh this page for a quick update on colors)</center>
-                <center><h2>Paint it Red</h2> (All black fields still need to be completed | refresh this page for a quick update on colors)</center>
                 <center><h3>Please note that this only take effect for FREE version or when membership to Pro version has expired.<br>
                 Seem like a hasstle? <a href="https://bepopiacompliant.co.za" target="_blank">Use Pro for quick and easy setup</a> and skip all below!
                 </h3>
@@ -2765,7 +2769,6 @@ add_action('wp_ajax_be_popia_compliant_checklist_update_url', 'be_popia_complian
 
 function be_popia_compliant_checklist_update_compliance()
 {
-
     if(check_ajax_referer('be_popia_compliant_nonce', 'nonce')){
         global $wpdb;
         $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
@@ -5062,10 +5065,10 @@ if (get_option('active_plugins')) {
                     }
                 } else {
                     $consent_provided = 2;
-                    if ($userIDis == 1) {
+                    if (isset($userIDis) && $userIDis == 1) {
                         $secondaryID = NULL;
                         $priorityID = get_user_meta($bpc_logged_in_user, 'user_identification_number');
-                    } elseif ($billUserIDis == 1) {
+                    } elseif (isset($billUserIDis) && $billUserIDis == 1) {
                         $secondaryID = NULL;
                         $priorityID = get_user_meta($bpc_logged_in_user, 'billing_user_SAID');
                     } elseif(isset($userOtherIDis) && ($userOtherIDis == 1 && $userOtherIDtypeIs == 1 && $userOtherIDIssueIs == 1)) {
