@@ -142,6 +142,14 @@ function be_popia_compliant_active_check()
                     } else {
                         echo "No SSL";
                     }
+                    $table_name = $wpdb->base_prefix . 'be_popia_compliant_checklist';
+                    $query = $wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table_name));
+
+                    if (!$wpdb->get_var($query) == $table_name) {
+                        echo ' Checklist Table Not Built';
+                    } else {
+                        echo ' Checklist Table Built';
+                    }
                     echo '</span>
                             </div>
                         </div>';
@@ -201,7 +209,7 @@ function be_popia_compliant_active_check()
                         if ($body != []) {
                             foreach ($body as $data) {
                                 $is_approved = $data->is_approved;
-                                // If Premium expired and the free vresion is 100% and not blocked by PBC Office it will show the free footer instead.
+                                // IF Premium expired and the free vresion is 100% and not blocked by PBC Office it will show the free footer instead.
                                 if ($is_approved) {
                                     if ($rowcount == 100) {
                                         $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
@@ -285,6 +293,13 @@ function be_popia_compliant_active_check()
                                             echo "Has SSL";
                                         } else {
                                             echo "No SSL";
+                                        }
+                                        $table_name = $wpdb->base_prefix . 'be_popia_compliant_checklist';
+                                        $query = $wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table_name));
+                                        if (!$wpdb->get_var($query) == $table_name) {
+                                            echo ' Checklist Table Not Built';
+                                        } else {
+                                            echo ' Checklist Table Built';
                                         }
                                         echo "is_subscribed = 0";
                                         echo '</span>
@@ -428,6 +443,13 @@ function be_popia_compliant_active_check()
                                         echo "Has SSL";
                                     } else {
                                         echo "No SSL";
+                                    }
+                                    $table_name = $wpdb->base_prefix . 'be_popia_compliant_checklist';
+                                    $query = $wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table_name));
+                                    if (!$wpdb->get_var($query) == $table_name) {
+                                        echo ' Checklist Table Not Built';
+                                    } else {
+                                        echo ' Checklist Table Built';
                                     }
                                     echo '</span>
                                         </div>
