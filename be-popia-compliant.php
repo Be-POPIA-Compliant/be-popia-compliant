@@ -378,7 +378,7 @@ if (200 === $response_code) {
         foreach ($body as $data) {
             $renew_date = $data->renew_date;
             $renew_date = DateTime::createFromFormat('d-m-Y H:i:s', $renew_date[8] . $renew_date[9] . '-' . $renew_date[5] . $renew_date[6] . '-' . $renew_date[0] . $renew_date[1] . $renew_date[2] . $renew_date[3] . ' 00:00:00');
-            $renew_date = $renew_date->getTimestamp();
+            // $renew_date = $renew_date->getTimestamp();
             update_option('expiry', $renew_date);
         }
     }
@@ -386,7 +386,7 @@ if (200 === $response_code) {
 
 $comp_date = date("Y-m-d");
 $comp_date = DateTime::createFromFormat('d-m-Y H:i:s', $comp_date = $comp_date[8] . $comp_date[9] . '-' . $comp_date[5] . $comp_date[6] . '-' . $comp_date[0] . $comp_date[1] . $comp_date[2] . $comp_date[3] . ' 00:00:00');
-$comp_date = $comp_date->getTimestamp();
+// $comp_date = $comp_date->getTimestamp();
 update_option('comp_date', $comp_date);
 
 if ((isset($result_api->value) && $result_api->value != '' && isset($renew_date)) && $comp_date < $renew_date) {
@@ -5237,7 +5237,7 @@ if (get_option('active_plugins')) {
                 }
 
 
-                // save WooCommerce Fields when user is created
+                // save WooCommerce Fields when the user is created
                 add_action('woocommerce_created_customer', 'account_registration_field_save');
 
                 function account_registration_field_save($customer_id)

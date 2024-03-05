@@ -201,7 +201,7 @@ function be_popia_compliant_active_check()
                         if ($body != []) {
                             foreach ($body as $data) {
                                 $is_approved = $data->is_approved;
-                                // If Premium expired and the free vresion is 100% and not blocked by PBC Office it will show the free footer instead.
+                                // IF Premium expired and the free vresion is 100% and not blocked by PBC Office it will show the free footer instead.
                                 if ($is_approved) {
                                     if ($rowcount == 100) {
                                         $table_name = $wpdb->prefix . 'be_popia_compliant_checklist';
