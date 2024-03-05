@@ -196,5 +196,9 @@ Fix - Simplified API Call to improve performance
 
 Added functionality on PRO for emails to be sent for collecting consent once a user registers on your site (Ensure you ask for email as usernames)
 = 1.0.0 =
+<<<<<<< HEAD
 
 Initial Be POPIA Compliant Plugin
+=======
+* Initial Be POPIA Compliant Plugin
+>>>>>>> a7967510bb2a589ecadda9c4339edd422ba52476
